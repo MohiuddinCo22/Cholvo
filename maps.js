@@ -43,11 +43,10 @@ function getDeliveryCharge(km) {
   }
 
   if (km <= 1) return 80;
-  if (km <= 2) return 100;
-  if (km <= 3) return 120;
-  if (km <= 5) return 140;
+  if (km <= 3) return 100;
+  if (km <= 5) return 120;
 
-  return 140 + Math.ceil(km - 5) * 10;
+  return 120 + Math.ceil(km - 5) * 10;
 }
 
 function show(km) {
