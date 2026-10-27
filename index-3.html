@@ -300,7 +300,18 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
   <button class="btn b-or">Submit order</button>
  </form>
 </div></div>
+<div class="modal" id="m-done"><div class="sheet" style="text-align:center">
+ <button class="x" data-close aria-label="Close">&times;</button>
+ <h3>Order confirmed</h3><p>Your tracking number</p>
+ <p id="doneTN" style="font-size:2rem;font-weight:800;color:var(--orange);margin:10px 0"></p>
+ <p class="hint">Save this number to track your parcel.</p>
+ <button class="btn b-or" data-close style="margin-top:14px">Done</button>
+</div></div>
 <div class="toast" id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
 
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -324,21 +335,59 @@ $('#calcForm').onsubmit=e=>{e.preventDefault();
  <div class="row"><span>Extra distance (${Math.ceil(km)} km)</span><span>${f(p.extra)}</span></div>
  <div class="row"><span>COD charge (1% of ${f(cod)})</span><span>${f(cc)}</span></div>
  <div class="total"><span>Grand total</span><b>${f(tot)}</b></div>`};
-// Step 2 hooks: these will write to Firestore, send the email and return a tracking number
-const done=(e,msg)=>{e.preventDefault();if(e.target.website&&e.target.website.value)return;close();e.target.reset();toast(msg)};
-$('#loginForm').onsubmit=e=>{merchant={};done(e,'Logged in. You can book now.');open('book')};
-$('#regForm').onsubmit=e=>{const f=e.target;if(f.pin.value!==f.pin2.value){e.preventDefault();toast('The 6-digit passes do not match.');return}merchant={};done(e,'Account created.');open('book')};
-$('#bookForm').onsubmit=e=>done(e,'Parcel booked. Tracking number will appear here.');
-$('#orderForm').onsubmit=e=>done(e,'Order submitted. We will call you soon.');
+// ===== CONFIG: paste your keys here =====
+const CFG={apiKey:'AIzaSyC5cZRg2y8uciG2IqCNfNUBbO1SdI-rxL4',authDomain:'chovo-35252.firebaseapp.com',projectId:'chovo-35252',appId:'1:324753082605:web:5b511ba890467441c524e4'};
+const MAIL={service:'YOUR_SERVICE_ID',template:'YOUR_TEMPLATE_ID',key:'YOUR_PUBLIC_KEY'};
+// ========================================
+const LIVE=CFG.apiKey!=='YOUR_API_KEY',MAILON=MAIL.key!=='YOUR_PUBLIC_KEY';
+let auth,db,TS;
+if(LIVE){firebase.initializeApp(CFG);auth=firebase.auth();db=firebase.firestore();TS=firebase.firestore.FieldValue.serverTimestamp();auth.onAuthStateChanged(u=>{merchant=u});if(MAILON)emailjs.init({publicKey:MAIL.key})}
+const em=p=>p+'@cholvo.app',busy=(f,on)=>{const b=f.querySelector('button:not(.x)');if(b)b.disabled=on};
+const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(x=>x.toString(16).padStart(2,'0')).join('');
+const newTN=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';crypto.getRandomValues(new Uint8Array(6)).forEach(n=>r+=c[n%c.length]);return'CHV-'+r};
+const cool=()=>{try{const t=+localStorage.getItem('cvt')||0;if(Date.now()-t<30000)return true;localStorage.setItem('cvt',Date.now())}catch(_){}return false};
+const vals=f=>{const x=Object.fromEntries(new FormData(f));delete x.website;if('cod' in x)x.cod=+x.cod||0;return x};
+async function save(e,type){e.preventDefault();const f=e.target;if(f.website&&f.website.value)return;
+ if(!LIVE){toast('Demo mode: add your Firebase config to save orders.');return}
+ if(cool()){toast('Please wait a few seconds before sending again.');return}
+ busy(f,true);
+ try{const tn=newTN(),d=vals(f),bt=db.batch();
+  bt.set(db.doc('orders/'+tn),{...d,type,tn,status:'Order Received',merchantUid:merchant?merchant.uid:null,createdAt:TS});
+  bt.set(db.doc('tracking/'+tn),{status:'Order Received',updatedAt:TS});
+  await bt.commit();
+  if(MAILON)emailjs.send(MAIL.service,MAIL.template,{type,tracking:tn,summary:Object.entries(d).map(([k,v])=>k+': '+v).join('\n')}).catch(()=>{});
+  close();f.reset();$('#doneTN').textContent=tn;open('done')
+ }catch(err){toast('Could not send. Check your connection and try again.')}
+ busy(f,false)}
+$('#bookForm').onsubmit=e=>save(e,'book');
+$('#orderForm').onsubmit=e=>save(e,'order');
+$('#loginForm').onsubmit=async e=>{e.preventDefault();const f=e.target;
+ if(!LIVE){merchant={};close();open('book');return}
+ busy(f,true);
+ try{const c=await auth.signInWithEmailAndPassword(em(f.phone.value),f.pin.value),m=await db.doc('merchants/'+c.user.uid).get();
+  if(m.exists&&m.data().blocked){await auth.signOut();throw{code:'blocked'}}
+  f.reset();close();toast('Logged in.');open('book')
+ }catch(err){toast(err.code==='auth/too-many-requests'?'Too many attempts. Try again later.':err.code==='blocked'?'This account is blocked. Please contact support.':'Wrong phone number or 6-digit pass.')}
+ busy(f,false)};
+$('#regForm').onsubmit=async e=>{e.preventDefault();const f=e.target;
+ if(f.pin.value!==f.pin2.value){toast('The 6-digit passes do not match.');return}
+ if(!LIVE){merchant={};close();open('book');return}
+ busy(f,true);
+ try{const c=await auth.createUserWithEmailAndPassword(em(f.phone.value),f.pin.value);
+  await db.doc('merchants/'+c.user.uid).set({phone:f.phone.value,recovery:await sha(f.phone.value+f.pw.value),blocked:false,createdAt:TS});
+  f.reset();close();toast('Account created.');open('book')
+ }catch(err){toast(err.code==='auth/email-already-in-use'?'This phone number is already registered.':'Could not create the account. Try again.')}
+ busy(f,false)};
 $('#heroTrack').onsubmit=e=>{e.preventDefault();$('#tn').value=$('#ht').value;location.hash='#track';$('#trackForm').requestSubmit()};
 $$('[data-book]').forEach(b=>b.onclick=()=>$('#bookBtn').click());
 $$('[data-order]').forEach(b=>b.onclick=()=>open('order'));
 const STEPS=['Order Received','Picked Up','On the Way','Dropped Off','Delivered'];
 function renderTrack(tn,status,times={}){const i=STEPS.indexOf(status);
  $('#trackOut').innerHTML=`<div class="card"><span class="stat">${status}</span><p style="margin-top:8px">Tracking number: ${tn}</p><ul class="tl">${STEPS.map((s,k)=>`<li class="${k<=i?'ok':''} ${k===i?'now':''}">${s}${times[s]?`<small>${times[s]}</small>`:''}</li>`).join('')}</ul></div>`}
-$('#trackForm').onsubmit=e=>{e.preventDefault();const t=$('#tn').value.trim().toUpperCase();
- if(t==='CHV-DEMO')renderTrack(t,'On the Way',{'Order Received':'10:05 AM','Picked Up':'10:40 AM','On the Way':'11:10 AM'});
- else $('#trackOut').textContent='Live tracking will work once the database is connected. Type CHV-DEMO to preview.'};
+$('#trackForm').onsubmit=async e=>{e.preventDefault();const t=$('#tn').value.trim().toUpperCase(),o=$('#trackOut');
+ if(t==='CHV-DEMO'){renderTrack(t,'On the Way');return}
+ if(!LIVE){o.textContent='Live tracking works once Firebase is connected. Type CHV-DEMO to preview.';return}
+ try{const r=await db.doc('tracking/'+t).get();r.exists?renderTrack(t,r.data().status):o.textContent='No parcel found with this tracking number.'}catch(err){o.textContent='Could not load tracking. Try again.'}};
 </script>
 </body>
 </html>
