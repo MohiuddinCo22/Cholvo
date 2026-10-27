@@ -1,8 +1,7 @@
 /* Cholvo: automatic road distance for the price calculator (Google Routes API, no autocomplete).
    Paste your Google API key below. */
 (()=>{
-const KEY='YOUR_GOOGLE_MAPS_KEY';
-if(KEY==='YOUR_GOOGLE_MAPS_KEY')return; // no key yet: calculator keeps working with manual km
+// no key yet: calculator keeps working with manual km
 
 const $=s=>document.querySelector(s);
 const form=$('#calcForm'),del=$('#addr'),dist=$('#dist'),out=$('#out');
@@ -16,24 +15,65 @@ dist.readOnly=true;dist.required=false;dist.value='';dist.placeholder='Auto';
 if(dist.nextElementSibling)dist.nextElementSibling.textContent='Calculated automatically from the two addresses.';
 
 const place=i=>{let a=i.value.trim();if(!/chattogram|chittagong|ctg/i.test(a))a+=', Chattogram';return{address:a+', Bangladesh'}};
-async function roadKm(){
- const r=await fetch('https://routes.googleapis.com/directions/v2:computeRoutes',{method:'POST',
-  headers:{'Content-Type':'application/json','X-Goog-Api-Key':KEY,'X-Goog-FieldMask':'routes.distanceMeters'},
-  body:JSON.stringify({origin:place(pick),destination:place(del),travelMode:'DRIVE',regionCode:'BD'})});
- const j=await r.json(),m=j.routes&&j.routes[0]&&j.routes[0].distanceMeters;
- if(!r.ok||!m)throw new Error('no route');
- return m/1000;
+async function roadKm() {
+  const params = new URLSearchParams({
+    origin: pick.value.trim() + ", Chattogram, Bangladesh",
+    destination: del.value.trim() + ", Chattogram, Bangladesh"
+  });
+
+  const response = await fetch(
+    `/.netlify/functions/route?${params.toString()}`
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || typeof data.distanceKm !== "number") {
+    throw new Error(data.error || "Could not calculate road distance");
+  }
+
+  return data.distanceKm;
 }
 
-const f=n=>'৳'+n.toFixed(2).replace(/\.00$/,'');
-function show(km){
- const cod=+$('#cod').value||0,p=price(km),cc=cod*0.01,tot=p.base+p.extra+cc;
- out.className='';
- out.innerHTML=`<div class="row"><span>Distance by road</span><span>${km.toFixed(1)} km</span></div>
- <div class="row"><span>Base delivery (first 5 km)</span><span>${f(p.base)}</span></div>
- <div class="row"><span>Extra distance (${Math.ceil(km)} km)</span><span>${f(p.extra)}</span></div>
- <div class="row"><span>COD charge (1% of ${f(cod)})</span><span>${f(cc)}</span></div>
- <div class="total"><span>Grand total</span><b>${f(tot)}</b></div>`;
+
+const f = n => '৳' + n.toFixed(2).replace(/\.00$/, '');
+
+function getDeliveryCharge(km) {
+  if (!Number.isFinite(km) || km < 0) {
+    throw new Error('Invalid road distance');
+  }
+
+  if (km <= 1) return 80;
+  if (km <= 2) return 100;
+  if (km <= 3) return 120;
+  if (km <= 5) return 140;
+
+  return 140 + Math.ceil(km - 5) * 10;
+}
+
+function show(km) {
+  const cod = +$('#cod').value || 0;
+  const delivery = getDeliveryCharge(km);
+  const cc = cod * 0.01;
+  const total = delivery + cc;
+
+  out.className = '';
+  out.innerHTML = `
+    <div class="row">
+      <span>Distance by road</span>
+      <span>${km.toFixed(1)} km</span>
+    </div>
+    <div class="row">
+      <span>Delivery charge</span>
+      <span>${f(delivery)}</span>
+    </div>
+    <div class="row">
+      <span>COD charge (1% of ${f(cod)})</span>
+      <span>${f(cc)}</span>
+    </div>
+    <div class="total">
+      <span>Grand total</span>
+      <b>${f(total)}</b>
+    </div>`;
 }
 
 form.onsubmit=async e=>{
