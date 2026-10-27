@@ -128,7 +128,7 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
 .legal{margin-top:22px;padding-top:14px;border-top:1px solid rgba(255,255,255,.15)}
 </style>
 </head>
- <script src="maps.js"></script>
+
 <body>
 <header>
  <div class="wrap bar">
@@ -182,7 +182,11 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
   <div class="split">
    <form class="card grid c2" id="calcForm">
     <div><label for="area">Delivery area</label><select id="area"><option>Inside Chattogram</option></select></div>
-    <div><label for="dist">Distance (km)</label><input id="dist" type="number" min="1" step="0.1" value="3" required><p class="hint">Zones will replace this field once you set them.</p></div>
+    <div>
+  <label for="dist">Distance (km)</label>
+  <input id="dist" type="number" min="0" step="0.1" placeholder="Auto">
+  <p class="hint">Calculated automatically from pickup and delivery addresses.</p>
+    </div>
     <div style="grid-column:1/-1"><label for="addr">Delivery address</label><input id="addr" placeholder="House, road, area"></div>
     <div><label for="ptype">Parcel type</label><select id="ptype"><option>Document</option><option>Parcel</option><option>Food</option><option>Other</option></select></div>
     <div><label for="dtype">Delivery type</label><select id="dtype"><option>Express</option><option>Sameday</option><option>Next day</option><option selected>Standard</option></select></div>
@@ -328,14 +332,7 @@ $$('.modal').forEach(m=>m.onclick=e=>{if(e.target===m)close()});
 $('#bookBtn').onclick=()=>open(merchant?'book':'auth');
 $$('.tabs button').forEach(b=>b.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#loginForm').hidden=b.dataset.tab!=='login';$('#regForm').hidden=b.dataset.tab!=='reg'});
 // pricing: 1-5km 100; 5-10km +10/km; 10km+ +15/km; COD 1%
-function price(km){km=Math.ceil(km);if(km<=5)return{base:100,extra:0};if(km<=10)return{base:100,extra:(km-5)*10};return{base:100,extra:50+(km-10)*15}}
-$('#calcForm').onsubmit=e=>{e.preventDefault();
- const km=+$('#dist').value,cod=+$('#cod').value||0,p=price(km),cc=cod*0.01,tot=p.base+p.extra+cc,f=n=>'৳'+n.toFixed(2).replace(/\.00$/,'');
- $('#out').className='';
- $('#out').innerHTML=`<div class="row"><span>Base delivery (first 5 km)</span><span>${f(p.base)}</span></div>
- <div class="row"><span>Extra distance (${Math.ceil(km)} km)</span><span>${f(p.extra)}</span></div>
- <div class="row"><span>COD charge (1% of ${f(cod)})</span><span>${f(cc)}</span></div>
- <div class="total"><span>Grand total</span><b>${f(tot)}</b></div>`};
+
 // ===== CONFIG: paste your keys here =====
 const CFG={apiKey:'AIzaSyC5cZRg2y8uciG2IqCNfNUBbO1SdI-rxL4',authDomain:'chovo-35252.firebaseapp.com',projectId:'chovo-35252',appId:'1:324753082605:web:5b511ba890467441c524e4'};
 const MAIL={service:'service_4jw0dqu',template:'template_i8c3cf4',key:'r2rf4UWIT_uK8DB96'};
@@ -390,5 +387,6 @@ $('#trackForm').onsubmit=async e=>{e.preventDefault();const t=$('#tn').value.tri
  if(!LIVE){o.textContent='Live tracking works once Firebase is connected. Type CHV-DEMO to preview.';return}
  try{const r=await db.doc('tracking/'+t).get();r.exists?renderTrack(t,r.data().status):o.textContent='No parcel found with this tracking number.'}catch(err){o.textContent='Could not load tracking. Try again.'}};
 </script>
+  <script src="maps.js"></script>
 </body>
 </html>
