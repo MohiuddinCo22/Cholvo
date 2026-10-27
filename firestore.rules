@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function admin() {
-      return request.auth != null && request.auth.token.email == 'ADMIN_EMAIL_HERE';
+      return request.auth != null && request.auth.token.email == 'admin@cholvo.com';
     }
     // Public: customers see only status by tracking number
     match /tracking/{tn} {
