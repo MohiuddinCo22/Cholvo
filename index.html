@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHOLVO Delivery | Fast, Safe & Reliable Delivery in Chattogram</title>
+<meta name="description" content="CHOLVO helps businesses and customers in Chattogram with parcel delivery, order booking, tracking and transparent delivery cost estimates.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cholvo-premium.css">
+<style>
+:root{--navy:#0B2A5B;--deep:#071A3A;--orange:#F58220;--sun:#FFA51F;--ink:#12233F;--mist:#F3F6FB;--line:#DCE3EF;--white:#fff}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{font-family:Outfit,system-ui,sans-serif;color:var(--ink);background:var(--white);line-height:1.5}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+section{padding:56px 0}
+h2{font-size:clamp(1.6rem,4vw,2.1rem);font-weight:800;color:var(--navy);margin-bottom:8px}
+.sub{color:#4B5B77;margin-bottom:28px;max-width:56ch}
+/* header */
+header{position:sticky;top:0;z-index:20;background:var(--white);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:64px}
+.bar img{height:48px;width:auto;display:block}
+.burger{width:44px;height:44px;border:0;background:var(--navy);border-radius:12px;cursor:pointer;display:grid;place-content:center;gap:5px}
+.burger i{display:block;width:20px;height:2.5px;background:#fff;border-radius:2px}
+.burger i:nth-child(2){width:14px;margin-left:auto;background:var(--orange)}
+.menu{display:none;position:absolute;right:12px;top:68px;width:min(300px,calc(100% - 24px));background:var(--white);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 40px rgba(7,26,58,.18);padding:10px}
+.menu.open{display:block}
+.menu a.l{display:block;padding:12px 14px;border-radius:10px;font-weight:600}
+.menu a.l:hover{background:var(--mist)}
+.menu .two{display:grid;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:13px 22px;font-weight:700;cursor:pointer;transition:transform .15s}
+.btn:active{transform:scale(.97)}
+.b-or{background:var(--orange);color:#fff}
+.b-nv{background:var(--navy);color:#fff}
+.b-ol{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.7)}
+.b-fb{background:#1877F2;color:#fff}
+/* hero */
+.hero{background:linear-gradient(180deg,#FFF1E0,#FFFAF4);padding:32px 0 0;overflow:hidden}
+.hero .wrap{display:grid;gap:24px;align-items:center}
+@media(min-width:800px){.hero .wrap{grid-template-columns:1.1fr 1fr}}
+.chip{display:inline-block;background:#fff;border:1px solid #F6D3AE;color:var(--orange);font-weight:700;padding:6px 14px;border-radius:999px;font-size:.85rem}
+.hero h1{font-size:clamp(3rem,13vw,5.5rem);font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--navy);margin:16px 0 6px}
+.tag{font-size:clamp(1.15rem,3.5vw,1.5rem);font-weight:600}.tag b{color:var(--orange)}
+.lead{color:#4B5B77;margin:12px 0 22px;max-width:44ch}
+.cta{display:flex;flex-wrap:wrap;gap:12px}
+.b-ol{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+.trackbar{display:flex;background:#fff;border-radius:999px;padding:6px;box-shadow:0 10px 30px rgba(245,130,32,.2);margin:22px 0 28px;max-width:460px}
+.trackbar input{border:0;background:none;padding:12px 16px;min-width:0}
+.trackbar button{border:0;background:var(--orange);color:#fff;border-radius:999px;padding:0 22px;font-weight:700;cursor:pointer}
+.photo{border-radius:28px 28px 0 0;overflow:hidden;align-self:end}
+.photo img{display:block;width:100%;max-height:430px;object-fit:cover;object-position:top}
+.strip{background:#fff;border-bottom:1px solid var(--line)}
+.strip .wrap{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:18px 20px}
+@media(min-width:800px){.strip .wrap{grid-template-columns:repeat(4,1fr)}}
+.strip div{display:flex;gap:10px;align-items:center}
+.strip i{flex:none;width:40px;height:40px;border-radius:50%;background:#FFE9D2;color:var(--orange);display:grid;place-items:center;font-style:normal;font-weight:800}
+.strip b{display:block;font-size:.92rem;color:var(--navy)}.strip span{font-size:.78rem;color:#6B7A94}
+/* calculator */
+.calc{background:var(--mist)}
+.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:24px}
+.grid{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:760px){.grid.c2{grid-template-columns:1fr 1fr}.split{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:start}}
+label{display:block;font-weight:600;font-size:.92rem;margin-bottom:6px}
+input,select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{border-color:var(--orange);outline:0}
+.hint{font-size:.8rem;color:#6B7A94;margin-top:4px}
+.result{background:var(--navy);color:#fff;border-radius:18px;padding:24px}
+.result h3{font-size:1.1rem;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.15)}
+.row span:first-child{color:#C5D2EA}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px;font-weight:800}
+.total b{font-size:2rem;color:var(--sun)}
+.empty{color:#C5D2EA}
+/* why + partner */
+.why{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.why div{border-left:4px solid var(--orange);padding:6px 0 6px 14px}
+.why b{display:block;color:var(--navy)}
+.why span{font-size:.92rem;color:#4B5B77}
+.partner{background:var(--navy);color:#fff}
+.partner h2{color:#fff}.partner .sub{color:#CFDAEE}
+.slabs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 26px}
+.slabs div{background:rgba(255,255,255,.08);border-radius:14px;padding:14px;text-align:center}
+.slabs b{display:block;font-size:1.7rem;color:var(--sun)}
+.slabs span{font-size:.82rem;color:#CFDAEE}
+.fit{color:#CFDAEE;margin-bottom:22px}
+/* track + contact */
+.track form{display:flex;gap:10px;flex-wrap:wrap}
+.track input{flex:1;min-width:200px}
+#trackOut{margin-top:14px;font-weight:600;color:var(--navy)}
+.contact a{display:block;padding:6px 0;font-weight:600}
+footer{background:var(--deep);color:#B6C4DD;padding:28px 0 90px;font-size:.9rem}
+footer img{height:44px;background:#fff;border-radius:10px;padding:4px;margin-bottom:10px}
+.help{position:fixed;right:16px;bottom:16px;z-index:25;background:#25D366;color:#fff;border-radius:999px;padding:13px 20px;font-weight:700;box-shadow:0 10px 26px rgba(0,0,0,.28)}
+/* modal */
+.modal{display:none;position:fixed;inset:0;z-index:40;background:rgba(7,26,58,.7);padding:16px;overflow:auto}
+.modal.open{display:block}
+.sheet{background:#fff;border-radius:20px;max-width:520px;margin:20px auto;padding:24px}
+.sheet h3{color:var(--navy);font-size:1.4rem;margin-bottom:4px}
+.x{float:right;border:0;background:var(--mist);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.2rem}
+.tabs{display:flex;gap:6px;background:var(--mist);padding:4px;border-radius:12px;margin:14px 0}
+.tabs button{flex:1;border:0;background:none;padding:10px;border-radius:9px;font-weight:700;cursor:pointer;color:#4B5B77}
+.tabs button.on{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+[hidden]{display:none!important}
+.hp{position:absolute;left:-9999px}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;z-index:60;display:none;max-width:90%}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+/* services */
+.svc{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.svc button{text-align:left;background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;display:grid;gap:6px;transition:border-color .15s,transform .15s}
+.svc button:hover{border-color:var(--orange);transform:translateY(-2px)}
+.svc i{width:46px;height:46px;border-radius:14px;background:#FFE9D2;display:grid;place-items:center;font-style:normal;font-size:1.4rem}
+.svc b{color:var(--navy);font-size:1.05rem}.svc span{font-size:.88rem;color:#4B5B77}.svc em{font-style:normal;color:var(--orange);font-weight:700;font-size:.88rem}
+/* timeline */
+.tl{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:0}
+.tl li{position:relative;padding:0 0 18px 34px;color:#6B7A94;font-weight:600}
+.tl li:before{content:"";position:absolute;left:0;top:2px;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--line)}
+.tl li:after{content:"";position:absolute;left:9px;top:24px;bottom:0;width:2px;background:var(--line)}
+.tl li:last-child:after{display:none}
+.tl li.ok{color:var(--navy)}.tl li.ok:before{background:var(--orange);border-color:var(--orange)}.tl li.ok:after{background:var(--orange)}
+.tl li.now:before{box-shadow:0 0 0 5px #FFE0C2}
+.tl small{display:block;font-weight:500;color:#6B7A94}
+.stat{display:inline-block;background:#FFE9D2;color:#B85A00;padding:4px 12px;border-radius:999px;font-size:.85rem;font-weight:700}
+.fgrid{display:grid;gap:22px;grid-template-columns:1fr}
+@media(min-width:760px){.fgrid{grid-template-columns:1.4fr 1fr 1fr}}
+footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}footer a:hover{color:#fff}
+.legal{margin-top:22px;padding-top:14px;border-top:1px solid rgba(255,255,255,.15)}
+</style>
+<link rel="stylesheet" href="cholvo-reference.css">
+<link rel="stylesheet" href="cholvo-final.css">
+</head>
+
+<body>
+<header>
+ <div class="wrap bar">
+  <a href="#home"><img src="logo.jpg" alt="Cholvo, everything moves with Cholvo"></a>
+  <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false"><i></i><i></i><i></i></button>
+ </div>
+ <nav class="menu" id="menu">
+  <a class="l" href="#home">Home</a><a class="l" href="#services">Services</a><a class="l" href="#pricing">Pricing</a><a class="l" href="#track">Tracking</a><a class="l" href="#about">About</a><a class="l" href="#contact">Contact</a>
+  <div class="two"><a class="btn b-fb" href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook</a><button class="btn b-nv" data-open="auth">Merchant login</button></div>
+ </nav>
+</header>
+
+<main id="home">
+<section class="hero">
+ <div class="wrap">
+  <div>
+   <span class="chip">FAST&nbsp; · &nbsp;SAFE&nbsp; · &nbsp;RELIABLE</span>
+   <h1>আপনার প্রতিটি পার্সেলের<br><span class="hero-priority">এখন আরও সহজ</span><br>CHOLVO Delivery</h1>
+   <p class="tag">আপনার পার্সেল পৌঁছে যাবে নিরাপদে, দ্রুততম সময়ে — <b>CHOLVO</b> এর সাথে!</p>
+   <p class="lead">গুরুত্বপূর্ণ ডকুমেন্ট থেকে প্রতিদিনের পার্সেল—চট্টগ্রামজুড়ে আপনার ব্যবসা ও ডেলিভারি আরও সহজ করতে আমরা আছি আপনার পাশে।</p>
+   <div class="cta"><button class="btn b-or" id="bookBtn">Book a delivery <span aria-hidden="true">→</span></button><button class="btn b-ol" data-open="order">Order anything</button></div>
+   <form class="trackbar" id="heroTrack"><input id="ht" placeholder="Track your parcel (e.g. CHV-ABC123)" aria-label="Tracking number" required><button>Track</button></form>
+  </div>
+  <div class="photo"><img src="hero-delivery-art.jpg" alt="CHOLVO delivery rider on a motorcycle with branded delivery bag and route graphics"><div class="photo-note"><span class="note-dot"></span><span><b>Chattogram delivery</b><small>Moving your business forward</small></span></div><span class="float-pin pin-one">⌖</span><span class="float-pin pin-two">📦</span></div>
+ </div>
+</section>
+<div class="strip"><div class="wrap">
+ <div><i>⚡</i><p><b>Fast delivery</b><span>Same day, on time</span></p></div>
+ <div><i>✔</i><p><b>Safe and secure</b><span>Handled with care</span></p></div>
+ <div><i>◎</i><p><b>Live tracking</b><span>Know every step</span></p></div>
+ <div><i>☎</i><p><b>Quick support</b><span>Call or WhatsApp</span></p></div>
+</div></div>
+
+<section class="calc" id="pricing">
+ <div class="wrap">
+  <span class="section-kicker">DELIVERY CHARGE CALCULATOR</span><h2>Know your delivery cost upfront.</h2>
+  <p class="sub">Enter pickup and delivery addresses to estimate road distance, delivery charge and COD fee.</p>
+  <div class="split">
+   <form class="card grid c2" id="calcForm">
+    <div><label for="area">Delivery area</label><select id="area"><option>Inside Chattogram</option></select></div>
+    <div>
+  <label for="dist">Distance (km)</label>
+  <input id="dist" type="number" min="0" step="0.1" placeholder="Auto">
+  <p class="hint">Calculated automatically from pickup and delivery addresses.</p>
+    </div>
+    <div style="grid-column:1/-1"><label for="addr">Delivery address</label><input id="addr" placeholder="House, road, area"></div>
+    <div><label for="ptype">Parcel type</label><select id="ptype"><option>Document</option><option>Parcel</option><option>Food</option><option>Other</option></select></div>
+    <div><label for="dtype">Delivery type</label><select id="dtype"><option>Express</option><option>Sameday</option><option>Next day</option><option selected>Standard</option></select></div>
+    <div><label for="wt">Parcel weight (kg)</label><input id="wt" type="number" min="0" step="0.1" value="1"></div>
+    <div><label for="cod">COD amount (৳)</label><input id="cod" type="number" min="0" value="0"></div>
+    <button class="btn b-or" style="grid-column:1/-1" type="submit">Calculate</button>
+   </form>
+   <div class="result" aria-live="polite"><div class="route-visual"><img src="delivery-route-art.jpg" alt="Delivery route map illustration with rider and location pins"></div><h3>Your estimate</h3><div id="out" class="empty">Fill in the form and press Calculate to see your charges.</div></div>
+  </div>
+ </div>
+</section>
+
+<section id="services">
+ <div class="wrap">
+  <h2>Our services</h2>
+  <p class="sub">Flexible delivery solutions for shops, restaurants and everyday customers across Chattogram.</p>
+  <div class="svc">
+   <button data-book><i>📄</i><b>Document delivery</b><span>Important papers, delivered safely.</span><em>Book now</em></button>
+   <button data-book><i>📦</i><b>Parcel delivery</b><span>Small and medium parcels across the city.</span><em>Book now</em></button>
+   <button data-book><i>🍱</i><b>Food delivery</b><span>Hot food from restaurants, picked up fast.</span><em>Book now</em></button>
+   <button data-order><i>🛍️</i><b>Order anything</b><span>Tell us what you need and where to collect it.</span><em>Order now</em></button>
+  </div>
+ </div>
+</section>
+
+<section class="promo-wrap" aria-label="CHOLVO delivery promotion">
+ <div class="wrap">
+  <div class="promo-banner">
+   <div class="promo-copy"><span class="promo-kicker">YOUR BUSINESS, MOVING FORWARD</span><h2>More deliveries.<br><em>Less hassle.</em></h2><p>Let CHOLVO take care of the pickup and delivery, while you focus on growing your business.</p><div class="cta"><button class="btn b-or" data-open="auth">Become a partner <span aria-hidden="true">→</span></button><a class="btn promo-outline" href="#partner">Explore partnership</a></div></div>
+   <div class="promo-art" role="img" aria-label="CHOLVO rider ready for delivery"><div class="promo-orbit orbit-a"></div><div class="promo-orbit orbit-b"></div><div class="promo-box">📦<small>CHOLVO</small></div><div class="promo-sticker">FAST<br>SAFE<br><b>RELIABLE</b></div></div>
+  </div>
+ </div>
+</section>
+
+
+
+<section id="about" class="about-premium">
+ <div class="wrap">
+  <div class="about-layout">
+   <div class="about-copy">
+    <span class="section-kicker">WHY CHOOSE CHOLVO?</span>
+    <h2>More than delivery.<br><span class="accent-text">A partner for your business.</span></h2>
+    <p class="sub">Fast, reliable delivery inside Chattogram for shops, restaurants and everyday customers—backed by clear pricing and helpful support.</p>
+    <div class="why">
+     <div><b>Professional riders</b><span>Careful pickup and delivery for your parcels.</span></div>
+     <div><b>Affordable pricing</b><span>Know your estimated delivery cost upfront.</span></div>
+     <div><b>Real-time tracking</b><span>Check the latest available parcel status.</span></div>
+     <div><b>Business support</b><span>Delivery options for vendors and growing shops.</span></div>
+    </div>
+   </div>
+   <div class="about-visual">
+    <img src="rider.jpg" alt="CHOLVO delivery rider ready to deliver a parcel" loading="lazy">
+    <div class="about-visual-label"><span class="live-dot"></span><div><b>Moving your business forward</b><small>Fast · Safe · Reliable</small></div></div>
+    <span class="about-floating">📦 <b>CHOLVO</b><small>Delivery partner</small></span>
+   </div>
+  </div>
+ </div>
+</section>
+
+
+<section id="how-it-works" class="how-section">
+ <div class="wrap">
+  <div class="how-heading"><div><span class="section-kicker">SIMPLE FROM START TO FINISH</span><h2>How it works</h2><p class="sub">Four clear steps to get your parcel moving with CHOLVO.</p></div><button class="btn b-or" id="howBookBtn">Book a delivery <span aria-hidden="true">→</span></button></div>
+  <div class="how-steps">
+   <article class="how-step"><span class="step-icon">📝</span><span class="step-number">01</span><h3>Place an order</h3><p>Choose a service and share the order details.</p></article>
+   <span class="step-arrow" aria-hidden="true">→</span>
+   <article class="how-step"><span class="step-icon">📦</span><span class="step-number">02</span><h3>Parcel pickup</h3><p>We collect the parcel from the pickup address.</p></article>
+   <span class="step-arrow" aria-hidden="true">→</span>
+   <article class="how-step"><span class="step-icon">🏍️</span><span class="step-number">03</span><h3>Rider assigned</h3><p>A rider is assigned for the delivery.</p></article>
+   <span class="step-arrow" aria-hidden="true">→</span>
+   <article class="how-step"><span class="step-icon">🏠</span><span class="step-number">04</span><h3>Delivered</h3><p>Your parcel reaches its destination.</p></article>
+  </div>
+ </div>
+</section>
+
+<section class="partner" id="partner">
+ <div class="wrap">
+  <span class="section-kicker light-kicker">GROW WITH CHOLVO</span><h2>Vendor Partnership Program</h2>
+  <p class="sub">Your business’s trusted delivery partner. Save more as your monthly deliveries grow.</p>
+  <div class="slabs"><div><b>0%</b><span>0–50 deliveries</span></div><div><b>5%</b><span>51–100 deliveries</span></div><div><b>10%</b><span>101–150 deliveries</span></div></div>
+  <p class="fit">Partners with 150+ successful deliveries a month for 3 months get free brand promotion through influencers. Built for restaurants, online shops, food and product businesses.</p>
+  <button class="btn b-or" data-open="auth">Merchant login / registration</button>
+ </div>
+</section>
+
+<section class="track" id="track">
+ <div class="wrap">
+  <span class="section-kicker">STAY IN THE LOOP</span><h2>Track your package.</h2>
+  <p class="sub">Enter the tracking number you received when you booked.</p>
+  <form class="card" id="trackForm" style="display:flex;gap:10px;flex-wrap:wrap">
+   <input id="tn" placeholder="e.g. CHV-240001" required aria-label="Tracking number"><button class="btn b-nv" type="submit">Track</button>
+  </form>
+  <div id="trackOut"></div>
+ </div>
+</section>
+
+<section class="contact" id="contact" style="background:var(--mist)">
+ <div class="wrap">
+  <span class="section-kicker">WE ARE HERE TO HELP</span><h2>Let’s get moving.</h2>
+  <a href="tel:+8801622959521">Call: +8801622-959521</a>
+  <a href="https://wa.me/8801622959521" target="_blank" rel="noopener">WhatsApp: 01622-959521</a>
+  <a href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook: @cholvobd</a>
+ </div>
+</section>
+</main>
+
+<footer><div class="wrap">
+ <div class="fgrid">
+  <div><img src="logo.jpg" alt="Cholvo"><p>Cholvo Delivery. Your business grows, we are by your side.</p></div>
+  <div><h4>Quick links</h4><a href="#home">Home</a><a href="#services">Services</a><a href="#pricing">Pricing</a><a href="#track">Track parcel</a></div>
+  <div><h4>Contact</h4><a href="tel:+8801622959521">+8801622-959521</a><a href="https://wa.me/8801622959521" target="_blank" rel="noopener">WhatsApp</a><a href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook @cholvobd</a></div>
+ </div>
+ <p class="legal">&copy; 2026 Cholvo. All rights reserved.</p>
+</div></footer>
+<a class="help" href="https://wa.me/8801622959521" target="_blank" rel="noopener">Help</a>
+
+<!-- Auth -->
+<div class="modal" id="m-auth"><div class="sheet">
+ <button class="x" data-close aria-label="Close">&times;</button>
+ <h3>Merchant account</h3>
+ <div class="tabs"><button class="on" data-tab="login">Login</button><button data-tab="reg">Register</button></div>
+ <form id="loginForm" class="grid">
+  <div><label>Phone number</label><input name="phone" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" required></div>
+  <div><label>6-digit pass</label><input name="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></div>
+  <button class="btn b-or">Login</button>
+ </form>
+ <form id="regForm" class="grid" hidden>
+  <div><label>Phone number</label><input name="phone" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" required></div>
+  <div><label>Password</label><input name="pw" type="password" minlength="6" required><p class="hint">Used only to reset your 6-digit pass.</p></div>
+  <div><label>6-digit pass</label><input name="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></div>
+  <div><label>Confirm 6-digit pass</label><input name="pin2" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></div>
+  <button class="btn b-or">Create account</button>
+ </form>
+</div></div>
+
+<!-- Book -->
+<div class="modal" id="m-book"><div class="sheet">
+ <button class="x" data-close aria-label="Close">&times;</button>
+ <h3>Book delivery</h3>
+ <form id="bookForm" class="grid" style="margin-top:14px">
+  <div><label>Vendor name</label><input name="vendor" required></div>
+  <div><label>Vendor phone number</label><input name="phone" inputmode="numeric" pattern="01[0-9]{9}" required></div>
+  <div><label>Pickup address</label><textarea name="pickup" rows="2" required></textarea></div>
+  <div><label>Delivery address</label><textarea name="drop" rows="2" required></textarea></div>
+  <div class="grid c2"><div><label>Parcel type</label><select name="ptype"><option>Document</option><option>Parcel</option><option>Food</option><option>Other</option></select></div>
+  <div><label>COD (৳)</label><input name="cod" type="number" min="0" value="0"></div></div>
+  <div><label>Order date</label><input name="date" type="date" required></div>
+  <div><label>Schedule for later (optional)</label><input name="later" type="datetime-local"><p class="hint">Leave empty for the next available pickup.</p></div>
+  <input class="hp" name="website" tabindex="-1" autocomplete="off">
+  <button class="btn b-or">Book parcel</button>
+ </form>
+</div></div>
+
+<!-- Order -->
+<div class="modal" id="m-order"><div class="sheet">
+ <button class="x" data-close aria-label="Close">&times;</button>
+ <h3>Order anything</h3>
+ <form id="orderForm" class="grid" style="margin-top:14px">
+  <div><label>Name</label><input name="name" required></div>
+  <div><label>Phone number</label><input name="phone" inputmode="numeric" pattern="01[0-9]{9}" required></div>
+  <div><label>Address</label><textarea name="addr" rows="2" required></textarea></div>
+  <div><label>Product name</label><input name="product" required></div>
+  <div><label>Where should we collect it from?</label><textarea name="from" rows="2" placeholder="Restaurant or shop name and area" required></textarea></div>
+  <input class="hp" name="website" tabindex="-1" autocomplete="off">
+  <button class="btn b-or">Submit order</button>
+ </form>
+</div></div>
+<div class="modal" id="m-done"><div class="sheet" style="text-align:center">
+ <button class="x" data-close aria-label="Close">&times;</button>
+ <h3>Order confirmed</h3><p>Your tracking number</p>
+ <p id="doneTN" style="font-size:2rem;font-weight:800;color:var(--orange);margin:10px 0"></p>
+ <p class="hint">Save this number to track your parcel.</p>
+ <button class="btn b-or" data-close style="margin-top:14px">Done</button>
+</div></div>
+<div class="toast" id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let merchant=null; // Step 2: replaced by Firebase Auth state
+const toast=t=>{const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',3200)};
+const open=n=>$('#m-'+n).classList.add('open'),close=()=>$$('.modal').forEach(m=>m.classList.remove('open'));
+const menu=$('#menu'),burger=$('#burger');
+burger.onclick=()=>{const o=menu.classList.toggle('open');burger.setAttribute('aria-expanded',o)};
+menu.addEventListener('click',e=>{if(e.target.closest('a.l,button'))menu.classList.remove('open')});
+$$('[data-open]').forEach(b=>b.onclick=()=>open(b.dataset.open));
+$$('[data-close]').forEach(b=>b.onclick=close);
+$$('.modal').forEach(m=>m.onclick=e=>{if(e.target===m)close()});
+$('#bookBtn').onclick=()=>open(merchant?'book':'auth');
+const howBookBtn=$('#howBookBtn');if(howBookBtn)howBookBtn.onclick=()=>$('#bookBtn').click();
+$$('.tabs button').forEach(b=>b.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#loginForm').hidden=b.dataset.tab!=='login';$('#regForm').hidden=b.dataset.tab!=='reg'});
+// pricing: 1-5km 100; 5-10km +10/km; 10km+ +15/km; COD 1%
+
+// ===== CONFIG: paste your keys here =====
+const CFG={apiKey:'AIzaSyC5cZRg2y8uciG2IqCNfNUBbO1SdI-rxL4',authDomain:'chovo-35252.firebaseapp.com',projectId:'chovo-35252',appId:'1:324753082605:web:5b511ba890467441c524e4'};
+const MAIL={service:'service_4jw0dqu',template:'template_i8c3cf4',key:'r2rf4UWIT_uK8DB96'};
+// ========================================
+const LIVE=CFG.apiKey!=='YOUR_API_KEY',MAILON=MAIL.key!=='YOUR_PUBLIC_KEY';
+let auth,db,TS;
+if(LIVE){firebase.initializeApp(CFG);auth=firebase.auth();db=firebase.firestore();TS=firebase.firestore.FieldValue.serverTimestamp();auth.onAuthStateChanged(u=>{merchant=u});if(MAILON)emailjs.init({publicKey:MAIL.key})}
+const em=p=>p+'@cholvo.app',busy=(f,on)=>{const b=f.querySelector('button:not(.x)');if(b)b.disabled=on};
+const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(x=>x.toString(16).padStart(2,'0')).join('');
+const newTN=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';crypto.getRandomValues(new Uint8Array(6)).forEach(n=>r+=c[n%c.length]);return'CHV-'+r};
+const cool=()=>{try{const t=+localStorage.getItem('cvt')||0;if(Date.now()-t<30000)return true;localStorage.setItem('cvt',Date.now())}catch(_){}return false};
+const vals=f=>{const x=Object.fromEntries(new FormData(f));delete x.website;if('cod' in x)x.cod=+x.cod||0;return x};
+async function save(e,type){e.preventDefault();const f=e.target;if(f.website&&f.website.value)return;
+ if(!LIVE){toast('Demo mode: add your Firebase config to save orders.');return}
+ if(cool()){toast('Please wait a few seconds before sending again.');return}
+ busy(f,true);
+ try{const tn=newTN(),d=vals(f),bt=db.batch();
+  bt.set(db.doc('orders/'+tn),{...d,type,tn,status:'Order Received',merchantUid:merchant?merchant.uid:null,createdAt:TS});
+  bt.set(db.doc('tracking/'+tn),{status:'Order Received',updatedAt:TS});
+  await bt.commit();
+  if(MAILON)emailjs.send(MAIL.service,MAIL.template,{type,tracking:tn,summary:Object.entries(d).map(([k,v])=>k+': '+v).join('\n')}).catch(()=>{});
+  close();f.reset();$('#doneTN').textContent=tn;open('done')
+ }catch(err){toast('Could not send. Check your connection and try again.')}
+ busy(f,false)}
+$('#bookForm').onsubmit=e=>save(e,'book');
+$('#orderForm').onsubmit=e=>save(e,'order');
+$('#loginForm').onsubmit=async e=>{e.preventDefault();const f=e.target;
+ if(!LIVE){merchant={};close();open('book');return}
+ busy(f,true);
+ try{const c=await auth.signInWithEmailAndPassword(em(f.phone.value),f.pin.value),m=await db.doc('merchants/'+c.user.uid).get();
+  if(m.exists&&m.data().blocked){await auth.signOut();throw{code:'blocked'}}
+  f.reset();close();toast('Logged in.');open('book')
+ }catch(err){toast(err.code==='auth/too-many-requests'?'Too many attempts. Try again later.':err.code==='blocked'?'This account is blocked. Please contact support.':'Wrong phone number or 6-digit pass.')}
+ busy(f,false)};
+$('#regForm').onsubmit=async e=>{e.preventDefault();const f=e.target;
+ if(f.pin.value!==f.pin2.value){toast('The 6-digit passes do not match.');return}
+ if(!LIVE){merchant={};close();open('book');return}
+ busy(f,true);
+ try{const c=await auth.createUserWithEmailAndPassword(em(f.phone.value),f.pin.value);
+  await db.doc('merchants/'+c.user.uid).set({phone:f.phone.value,recovery:await sha(f.phone.value+f.pw.value),blocked:false,createdAt:TS});
+  f.reset();close();toast('Account created.');open('book')
+ }catch(err){toast(err.code==='auth/email-already-in-use'?'This phone number is already registered.':'Could not create the account. Try again.')}
+ busy(f,false)};
+$('#heroTrack').onsubmit=e=>{e.preventDefault();$('#tn').value=$('#ht').value;location.hash='#track';$('#trackForm').requestSubmit()};
+$$('[data-book]').forEach(b=>b.onclick=()=>$('#bookBtn').click());
+$$('[data-order]').forEach(b=>b.onclick=()=>open('order'));
+const STEPS=['Order Received','Picked Up','On the Way','Dropped Off','Delivered'];
+function renderTrack(tn,status,times={}){const i=STEPS.indexOf(status);
+ $('#trackOut').innerHTML=`<div class="card"><span class="stat">${status}</span><p style="margin-top:8px">Tracking number: ${tn}</p><ul class="tl">${STEPS.map((s,k)=>`<li class="${k<=i?'ok':''} ${k===i?'now':''}">${s}${times[s]?`<small>${times[s]}</small>`:''}</li>`).join('')}</ul></div>`}
+$('#trackForm').onsubmit=async e=>{e.preventDefault();const t=$('#tn').value.trim().toUpperCase(),o=$('#trackOut');
+ if(t==='CHV-DEMO'){renderTrack(t,'On the Way');return}
+ if(!LIVE){o.textContent='Live tracking works once Firebase is connected. Type CHV-DEMO to preview.';return}
+ try{const r=await db.doc('tracking/'+t).get();r.exists?renderTrack(t,r.data().status):o.textContent='No parcel found with this tracking number.'}catch(err){o.textContent='Could not load tracking. Try again.'}};
+</script>
+  <script src="animations.js"></script>
+  <script src="maps.js"></script>
+</body>
+</html>
