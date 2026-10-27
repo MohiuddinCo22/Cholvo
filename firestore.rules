@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function admin() {
+      return request.auth != null && request.auth.token.email == 'ADMIN_EMAIL_HERE';
+    }
+    // Public: customers see only status by tracking number
+    match /tracking/{tn} {
+      allow get: if true;
+      allow list, update, delete: if admin();
+      allow create: if request.resource.data.status == 'Order Received'
+        && request.resource.data.keys().hasOnly(['status', 'updatedAt']);
+    }
+    // Private: full order details, admin only
+    match /orders/{tn} {
+      allow create: if request.resource.data.status == 'Order Received'
+        && request.resource.data.tn == tn
+        && (request.resource.data.merchantUid == null
+            || request.resource.data.merchantUid == request.auth.uid);
+      allow read, update, delete: if admin();
+    }
+    match /merchants/{uid} {
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.blocked == false;
+      allow get: if request.auth != null && (request.auth.uid == uid || admin());
+      allow list, update, delete: if admin();
+    }
+  }
+}
