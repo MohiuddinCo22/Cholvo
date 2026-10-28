@@ -36,3 +36,12 @@ footer{background:linear-gradient(120deg,#05182f,#092d59);border-radius:36px 36p
 @media(max-width:900px){.hero .wrap{grid-template-columns:1fr;gap:20px}.hero .wrap>div:first-child{padding-top:8px}.hero h1{font-size:clamp(2.6rem,8vw,4.3rem)}.photo{min-height:340px;max-height:470px;border-radius:26px}.photo img{min-height:340px;max-height:470px;border-radius:26px}.photo:before{border-radius:26px}.strip .wrap{grid-template-columns:repeat(2,minmax(0,1fr))}.strip .wrap>div:nth-child(2){border-right:0}.calc .split{grid-template-columns:1fr}.route-visual{height:220px}#services .svc{grid-template-columns:repeat(2,minmax(0,1fr))}.promo-banner{grid-template-columns:1fr}.promo-art{min-height:210px}.about-layout{grid-template-columns:1fr}.about-visual{min-height:300px}}
 @media(max-width:560px){.bar{height:66px}.bar img{height:45px}.hero{padding-top:20px}.hero h1{font-size:clamp(2.15rem,10vw,3.2rem)}.lead{font-size:.93rem}.cta .btn{flex:1}.trackbar{max-width:none}.trackbar input{font-size:.86rem;padding:10px}.trackbar button{padding:0 16px}.photo{min-height:300px}.photo img{min-height:300px}.photo-note{left:10px;bottom:14px;padding:10px 12px}.strip .wrap{padding:18px 16px;gap:14px}.strip .wrap>div{padding:0 4px;border:0}.strip i{width:36px;height:36px}.strip b{font-size:.82rem}.strip span{font-size:.7rem}.svc button{min-height:190px;padding:14px}.svc i{height:60px;width:60px}.promo-copy{padding:24px}.promo-art:before{inset:0;background-position:center 35%}.slabs{grid-template-columns:repeat(3,minmax(0,1fr))}.slabs div{padding:10px 5px}.slabs b{font-size:1.35rem}.slabs span{font-size:.7rem}.calc .card{padding:16px}.route-visual{height:180px}.how-steps{grid-template-columns:1fr 1fr}.step-arrow{display:none}.fgrid{grid-template-columns:1fr}footer{border-radius:26px 26px 0 0}}
 @media(prefers-reduced-motion:reduce){.reveal,.photo img,.float-pin,.promo-box,.promo-orbit{animation:none!important;transition:none!important}.reveal,.reveal-ready{opacity:1;transform:none}}
+#pricing .result{color:#fff}
+#pricing .result h3{color:#fff}
+#pricing .result .row{border-color:rgba(255,255,255,.22)}
+#pricing .result .row span{color:#fff;font-weight:600}
+#pricing .result .row span:first-child{color:rgba(255,255,255,.78);font-weight:400}
+#pricing .result .total{border-color:rgba(255,255,255,.3)}
+#pricing .result .total span{color:#fff}
+#pricing .result .total b{color:#ffb85c}
+#pricing .result .empty{color:rgba(255,255,255,.85)}
