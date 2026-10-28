@@ -178,7 +178,8 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
   <input id="dist" type="number" min="0" step="0.1" placeholder="Auto">
   <p class="hint">Calculated automatically from pickup and delivery addresses.</p>
     </div>
-    <div style="grid-column:1/-1"><label for="addr">Delivery address</label><input id="addr" placeholder="House, road, area"></div>
+    <div style="grid-column:1/-1"><label for="pick">Pickup address</label><input id="pick" placeholder="Pickup area or shop name, e.g. GEC Circle" autocomplete="off"></div>
+    <div style="grid-column:1/-1"><label for="addr">Delivery address</label><input id="addr" placeholder="Delivery area or address, e.g. Agrabad" autocomplete="off"></div>
     <div><label for="ptype">Parcel type</label><select id="ptype"><option>Document</option><option>Parcel</option><option>Food</option><option>Other</option></select></div>
     <div><label for="dtype">Delivery type</label><select id="dtype"><option>Express</option><option>Sameday</option><option>Next day</option><option selected>Standard</option></select></div>
     <div><label for="wt">Parcel weight (kg)</label><input id="wt" type="number" min="0" step="0.1" value="1"></div>
@@ -322,6 +323,8 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
   <div><label>Vendor phone number</label><input name="phone" inputmode="numeric" pattern="01[0-9]{9}" required></div>
   <div><label>Pickup address</label><textarea name="pickup" rows="2" required></textarea></div>
   <div><label>Delivery address</label><textarea name="drop" rows="2" required></textarea></div>
+  <div><label>Customer name</label><input name="customerName" autocomplete="name" required></div>
+  <div><label>Customer phone number</label><input name="customerPhone" type="tel" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" autocomplete="tel" required></div>
   <div class="grid c2"><div><label>Parcel type</label><select name="ptype"><option>Document</option><option>Parcel</option><option>Food</option><option>Other</option></select></div>
   <div><label>COD (৳)</label><input name="cod" type="number" min="0" value="0"></div></div>
   <div><label>Order date</label><input name="date" type="date" required></div>
@@ -372,7 +375,7 @@ $$('.modal').forEach(m=>m.onclick=e=>{if(e.target===m)close()});
 $('#bookBtn').onclick=()=>open(merchant?'book':'auth');
 const howBookBtn=$('#howBookBtn');if(howBookBtn)howBookBtn.onclick=()=>$('#bookBtn').click();
 $$('.tabs button').forEach(b=>b.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#loginForm').hidden=b.dataset.tab!=='login';$('#regForm').hidden=b.dataset.tab!=='reg'});
-// pricing: 1-5km 100; 5-10km +10/km; 10km+ +15/km; COD 1%
+// pricing lives in maps.js
 
 // ===== CONFIG: paste your keys here =====
 const CFG={apiKey:'AIzaSyC5cZRg2y8uciG2IqCNfNUBbO1SdI-rxL4',authDomain:'chovo-35252.firebaseapp.com',projectId:'chovo-35252',appId:'1:324753082605:web:5b511ba890467441c524e4'};

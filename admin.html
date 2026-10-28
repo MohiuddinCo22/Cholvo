@@ -62,7 +62,7 @@ input,select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-
   <div class="tabs"><button class="on" data-t="orders">Orders</button><button data-t="merchants">Merchants</button></div>
   <div id="ordersV">
    <div class="tools">
-    <input id="q" placeholder="Search tracking number or phone" aria-label="Search">
+    <input id="q" placeholder="Search tracking number, name or phone" aria-label="Search">
     <select id="fs" aria-label="Filter by status"><option value="">All statuses</option></select>
     <button class="btn g" id="reload">Refresh</button>
    </div>
@@ -85,7 +85,7 @@ firebase.initializeApp(CFG);
 const auth=firebase.auth(),db=firebase.firestore(),TS=firebase.firestore.FieldValue.serverTimestamp();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const toast=t=>{const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',3000)};
-const LABEL={vendor:'Vendor',name:'Name',phone:'Phone',pickup:'Pickup',drop:'Deliver to',addr:'Address',product:'Product',from:'Collect from',ptype:'Parcel type',cod:'COD (৳)',date:'Order date',later:'Scheduled'};
+const LABEL={vendor:'Vendor',name:'Name',phone:'Phone',pickup:'Pickup',drop:'Deliver to',customerName:'Customer name',customerPhone:'Customer phone',addr:'Address',product:'Product',from:'Collect from',ptype:'Parcel type',cod:'COD (৳)',date:'Order date',later:'Scheduled'};
 let orders=[];
 
 STEPS.forEach(s=>$('#fs').insertAdjacentHTML('beforeend',`<option>${s}</option>`));
@@ -114,7 +114,7 @@ async function loadOrders(){
 
 function drawOrders(){
  const q=$('#q').value.trim().toLowerCase(),fs=$('#fs').value;
- const list=orders.filter(o=>(!fs||o.status===fs)&&(!q||(o.tn||'').toLowerCase().includes(q)||(o.phone||'').includes(q)));
+ const list=orders.filter(o=>(!fs||o.status===fs)&&(!q||(o.tn||'').toLowerCase().includes(q)||(o.phone||'').includes(q)||(o.customerPhone||'').includes(q)||(o.customerName||'').toLowerCase().includes(q)));
  if(!list.length){$('#olist').innerHTML='<p class="msg">No orders found.</p>';return}
  $('#olist').innerHTML=list.map(o=>{
   const when=o.createdAt?o.createdAt.toDate().toLocaleString():'';
