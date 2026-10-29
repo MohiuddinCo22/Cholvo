@@ -296,7 +296,7 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
   <div><h4>Contact</h4><a href="tel:+8801622959521">+8801622-959521</a><a href="https://wa.me/8801622959521" target="_blank" rel="noopener">WhatsApp</a><a href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook @cholvobd</a></div>
  </div>
  <p class="legal">&copy; 2026 Cholvo. All rights reserved.</p>
-</div></footer>
+</div><p id="buildTag" style="text-align:center;font-size:.7rem;opacity:.55;margin:10px 0 0">build 30-oct-b</p></footer>
 <a class="help" href="https://wa.me/8801622959521" target="_blank" rel="noopener">Help</a>
 
 <!-- Auth -->
@@ -462,7 +462,7 @@ $('#loginForm').onsubmit=async e=>{e.preventDefault();const f=e.target;
  try{const c=await auth.signInWithEmailAndPassword(em(f.phone.value),f.pw.value),m=await db.doc('merchants/'+c.user.uid).get();
   if(!m.exists||m.data().blocked){await auth.signOut();throw{code:m.exists?'blocked':'notapproved'}}
   f.reset();close();toast('Logged in.')
- }catch(err){toast(err.code==='auth/too-many-requests'?'Too many attempts. Try again later.':err.code==='blocked'?'This account is blocked. Please contact support.':err.code==='notapproved'?'This account is not approved yet.':'Wrong phone number or password.')}
+ }catch(err){const c=err.code||'';console.error('Login error:',c||err);toast(c==='auth/too-many-requests'?'Too many attempts. Try again later.':c==='blocked'?'This account is blocked. Please contact support.':c==='notapproved'?'This account has no approved merchant record yet. Please contact support.':c==='permission-denied'?'Login check failed (permission). Please contact support.':(c==='auth/wrong-password'||c==='auth/invalid-credential'||c==='auth/user-not-found'||c==='auth/invalid-email')?'Wrong phone number or password.':'Could not login ('+(c||'unknown error')+').')}
  busy(f,false)};
 // registration request: goes to admin for approval, no login is created here
 $('#samePhone').onchange=e=>{$('#bizPhoneWrap').hidden=e.target.checked;$('#bizPhone').required=!e.target.checked};
@@ -503,7 +503,7 @@ $('#pwForm').onsubmit=async e=>{e.preventDefault();const f=e.target,u=auth.curre
 async function checkMerchant(u){
  merchant=null;mdata={};
  if(u){try{const m=await db.doc('merchants/'+u.uid).get();
-   if(m.exists&&!m.data().blocked){merchant=u;mdata=m.data()}else if(m.exists)auth.signOut()}catch(_){}}
+   if(m.exists&&!m.data().blocked){merchant=u;mdata=m.data()}else if(m.exists)auth.signOut();else toast('No approved merchant record found for this login.')}catch(err){console.error('Merchant check failed:',err.code||err);toast('Could not verify merchant account ('+(err.code||'error')+').')}}
  const nav=$('#navAuth'),prof=$('#navProfile'),foot=$('#footAuth');
  nav.onclick=merchant?logout:()=>open('auth');
  nav.textContent=merchant?'Logout':'Merchant login';
