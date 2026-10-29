@@ -43,6 +43,12 @@ input,select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-
 .msg{text-align:center;color:#6B7A94;padding:30px 0}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 18px;border-radius:12px;display:none;z-index:9;max-width:90%}
 .err{color:#C62828;font-size:.9rem}
+.tabs button{padding:11px 4px;font-size:.85rem}
+textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-family:ui-monospace,Menlo,monospace;font-size:.8rem}
+.cred{background:#DDF3E1;border-color:#9ad3a6;white-space:pre-wrap;word-break:break-word}
+.pw{display:flex;gap:6px;margin-top:10px}
+.pw input{flex:1}
+.hint{font-size:.8rem;color:#6B7A94;margin-top:6px}
 </style>
 </head>
 <body>
@@ -59,7 +65,7 @@ input,select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-
 <div id="appView" hidden>
  <div class="top"><b>Cholvo admin</b><button class="btn g" id="out">Log out</button></div>
  <div class="wrap">
-  <div class="tabs"><button class="on" data-t="orders">Orders</button><button data-t="merchants">Merchants</button></div>
+  <div class="tabs"><button class="on" data-t="orders">Orders</button><button data-t="requests">Requests</button><button data-t="merchants">Merchants</button><button data-t="charges">Charges</button></div>
   <div id="ordersV">
    <div class="tools">
     <input id="q" placeholder="Search tracking number, name or phone" aria-label="Search">
@@ -68,7 +74,14 @@ input,select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-
    </div>
    <div id="olist"></div>
   </div>
+  <div id="reqV" hidden><div id="credBox" class="card cred" hidden></div><div id="rlist"></div></div>
   <div id="merchV" hidden><div id="mlist"></div></div>
+  <div id="chV" hidden>
+   <p class="msg" style="padding:0 0 10px;text-align:left">These charge lists (cake, parcel, food) are shown only to logged-in, approved merchants. Edit the HTML below and press Save.</p>
+   <textarea id="chText" rows="16" spellcheck="false"></textarea>
+   <div class="acts" style="margin-top:10px"><button id="chSave" class="btn">Save charge lists</button><button id="chDef" class="btn g">Load default</button></div>
+   <p class="hint" id="chInfo"></p>
+  </div>
  </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -103,8 +116,9 @@ $('#out').onclick=()=>auth.signOut();
 
 $$('.tabs button').forEach(b=>b.onclick=()=>{
  $$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
- $('#ordersV').hidden=b.dataset.t!=='orders';$('#merchV').hidden=b.dataset.t!=='merchants';
- b.dataset.t==='orders'?loadOrders():loadMerchants()});
+ const t=b.dataset.t;
+ $('#ordersV').hidden=t!=='orders';$('#reqV').hidden=t!=='requests';$('#merchV').hidden=t!=='merchants';$('#chV').hidden=t!=='charges';
+ ({orders:loadOrders,requests:loadRequests,merchants:loadMerchants,charges:loadCharges})[t]()});
 
 async function loadOrders(){
  $('#olist').innerHTML='<p class="msg">Loading orders…</p>';
@@ -140,13 +154,107 @@ async function loadMerchants(){
  try{const s=await db.collection('merchants').get();
   if(s.empty){$('#mlist').innerHTML='<p class="msg">No merchants have registered yet.</p>';return}
   $('#mlist').innerHTML=s.docs.map(d=>{const m=d.data();
-   return `<div class="card"><div class="head"><span class="tn">${esc(m.phone)}</span><span class="stat">${m.blocked?'Blocked':'Active'}</span></div>
+   return `<div class="card"><div class="head"><span class="tn">${esc(m.phone)}</span><span class="stat">${m.blocked?'Blocked':'Active'}</span></div>${m.businessName?`<small style="color:#6B7A94">${esc(m.businessName)}</small>`:''}
    <div class="acts" style="margin-top:10px"><button data-uid="${d.id}" data-b="${m.blocked?0:1}">${m.blocked?'Unblock':'Block'} merchant</button></div></div>`}).join('')}
  catch(err){$('#mlist').innerHTML='<p class="msg">Could not load merchants.</p>'}}
 $('#mlist').onclick=async e=>{const b=e.target.closest('button[data-uid]');if(!b)return;
  b.disabled=true;
  try{await db.doc('merchants/'+b.dataset.uid).update({blocked:b.dataset.b==='1'});toast('Merchant updated');loadMerchants()}
  catch(err){b.disabled=false;toast('Could not update merchant.')}};
+
+// ===== Merchant registration requests =====
+const RLABEL={businessName:'Business',ownerFirst:'Owner first name',ownerLast:'Owner last name',businessType:'Type',branches:'Branches',email:'Email',mobile:'Mobile',businessPhone:'Business phone'};
+const randPass=()=>{const n=new Uint32Array(1);crypto.getRandomValues(n);return String(100000+n[0]%900000)};
+let reqs=[];
+async function loadRequests(){
+ $('#rlist').innerHTML='<p class="msg">Loading requests…</p>';
+ try{const s=await db.collection('merchantRequests').orderBy('createdAt','desc').limit(200).get();
+  reqs=s.docs.map(d=>({id:d.id,...d.data()}));drawRequests()}
+ catch(err){$('#rlist').innerHTML='<p class="msg">Could not load requests. Publish the latest Firestore rules first.</p>'}}
+function drawRequests(){
+ if(!reqs.length){$('#rlist').innerHTML='<p class="msg">No registration requests yet.</p>';return}
+ const order={pending:0,approved:1,rejected:2};
+ const list=[...reqs].sort((x,y)=>(order[x.status]??3)-(order[y.status]??3));
+ $('#rlist').innerHTML=list.map(r=>{
+  const when=r.createdAt?r.createdAt.toDate().toLocaleString():'';
+  const kv=Object.keys(RLABEL).filter(k=>r[k]!==undefined&&r[k]!=='').map(k=>`<span>${RLABEL[k]}</span><span>${esc(r[k])}</span>`).join('');
+  const acts=r.status==='pending'?`<div class="pw"><input id="pw-${r.id}" value="${randPass()}" minlength="6" aria-label="Password for this merchant"><button class="btn" data-ap="${r.id}">Approve</button></div><div class="acts" style="margin-top:8px"><button data-rj="${r.id}">Reject</button></div><p class="hint">Login phone = mobile number above. Edit the password if you like (min 6 characters), then press Approve.</p>`:'';
+  return `<div class="card"><div class="head"><span class="tn">${esc(r.businessName)}</span><span class="stat ${r.status==='approved'?'Delivered':''}">${esc(r.status)}</span></div><small style="color:#6B7A94">${esc(when)}</small><div class="kv">${kv}</div>${acts}</div>`}).join('')}
+$('#rlist').onclick=async e=>{
+ const ap=e.target.closest('button[data-ap]'),rj=e.target.closest('button[data-rj]');
+ if(rj){if(!confirm('Reject this registration?'))return;rj.disabled=true;
+  try{await db.doc('merchantRequests/'+rj.dataset.rj).update({status:'rejected'});const r=reqs.find(x=>x.id===rj.dataset.rj);if(r)r.status='rejected';drawRequests();toast('Rejected')}
+  catch(err){rj.disabled=false;toast('Could not update.')}return}
+ if(!ap)return;
+ const id=ap.dataset.ap,r=reqs.find(x=>x.id===id),pass=$('#pw-'+id).value.trim();
+ if(pass.length<6){toast('Password must be at least 6 characters.');return}
+ ap.disabled=true;
+ try{
+  // second Firebase app, so creating the merchant login does not sign the admin out
+  const sec=firebase.apps.find(x=>x.name==='sec')||firebase.initializeApp(CFG,'sec'),sa=firebase.auth(sec);
+  const c=await sa.createUserWithEmailAndPassword(r.mobile+'@cholvo.app',pass);
+  const uid=c.user.uid;await sa.signOut();
+  await db.doc('merchants/'+uid).set({phone:r.mobile,businessName:r.businessName,blocked:false,createdAt:TS});
+  await db.doc('merchantRequests/'+id).update({status:'approved',merchantUid:uid});
+  r.status='approved';drawRequests();
+  const box=$('#credBox');box.hidden=false;
+  box.textContent='Approved: '+r.businessName+'\nPhone: '+r.mobile+'\nPassword: '+pass+'\n\nSend these login details to the merchant. The password is not saved anywhere, so copy it now.';
+  const cp=document.createElement('button');cp.className='btn';cp.style.marginTop='10px';cp.textContent='Copy message';
+  cp.onclick=()=>{navigator.clipboard.writeText('Cholvo merchant login\nPhone: '+r.mobile+'\nPassword: '+pass+'\nLogin: '+location.origin).then(()=>toast('Copied'),()=>toast('Copy failed'))};
+  box.appendChild(document.createElement('br'));box.appendChild(cp);window.scrollTo(0,0);
+ }catch(err){ap.disabled=false;toast(err.code==='auth/email-already-in-use'?'This mobile number already has a login.':err.code==='auth/weak-password'?'Password is too weak.':'Could not approve. Try again.')}};
+
+// ===== Merchant-only charge lists =====
+const DEFAULT_CHARGES=`  <span class="section-kicker">DELIVERY CHARGE LIST</span><h2>Cholvo delivery charge list</h2>
+  <p class="sub">Everything Moves With Cholvo. Cake, parcel ও food delivery-র চার্জের নিয়ম।</p>
+
+  <div class="ch-card">
+   <h3>🎂 Cake delivery charge list</h3>
+   <div class="ch-scroll"><table class="ch-table">
+    <thead><tr><th>কেকের ওজন</th><th>১ থেকে ৫ কিলোমিটারের মধ্যে ডেলিভারি চার্জ</th><th>৫ কিলোমিটারের পর প্রতি কিলোমিটারে এড হবে</th></tr></thead>
+    <tbody>
+      <tr><td>½ - ১ পাউন্ড</td><td>১০০/-</td><td>১০ টাকা</td></tr>
+      <tr><td>১½ - ২ পাউন্ড</td><td>১২০/-</td><td>১০ টাকা</td></tr>
+      <tr><td>২½ - ৩ পাউন্ড</td><td>১৪০/-</td><td>১০ টাকা</td></tr>
+      <tr><td>৩½ - ৪ পাউন্ড</td><td>১৬০/-</td><td>১০ টাকা</td></tr>
+      <tr><td>৪½ - ৫ পাউন্ড</td><td>২০০/-</td><td>১০ টাকা</td></tr>
+      <tr><td>৫½ - ৬ পাউন্ড</td><td>২২০/-</td><td>১৫ টাকা</td></tr>
+      <tr><td>৬½ - ৭ পাউন্ড</td><td>২৪০/-</td><td>১৫ টাকা</td></tr>
+      <tr><td>৭½ - ৮ পাউন্ড</td><td>২৬০/-</td><td>২০ টাকা</td></tr>
+      <tr><td>৮½ - ৯ পাউন্ড</td><td>২৮০/-</td><td>২০ টাকা</td></tr>
+      <tr><td>৯½ - ১০ পাউন্ড</td><td>৩০০/-</td><td>২০ টাকা</td></tr>
+    </tbody>
+   </table></div>
+   <div class="ch-note"><b>⭕ টিয়ার কেক:</b> এক পাউন্ড থেকে শুরু করে প্রত্যেকটা টু-টিয়ার কেক এ চার্জের সাথে এক্সট্রা ২০ টাকা এড হবে.! এবং সে ক্ষেত্রে যদি থ্রী-টিয়ার কেক হয় তাহলে ৪০ টাকা ফোর্থ টিয়ার হলে ৬০ টাকা, এবং যদি অতিরিক্ত হাইড হয়ে যায় কিংবা বক্স অতিরিক্ত বড় সাইজের হয়ে গেলে সে ক্ষেত্রে আরো বেড়ে যাবে.!</div>
+   <div class="ch-note"><b>⭕ নোট:</b> উপরের লিখিত সম্পূর্ণ চার্জটা প্রযোজ্য হবে :- কাপ্তাই রাস্তার মাথা / অক্সিজেন / সিটি গেইট / হালিশহর এ ব্লক বি ব্লক / বন্দর কাস্টম হাউস পর্যন্ত / এই লোকেশনের পরে যদি কোন কেক ডেলিভারি হয় তাহলে রেগুলার চার্জের সাথে ১০০ টাকা এক্সট্রা এড হবে এবং সেটা কেকের পাউন্ড এর উপর ডিপেন্ড করে আরো বাড়তে পারে।<br>(এবং কেক যদি অতিরিক্ত বড় হওয়ার কারণে কিংবা বক্সের সমস্যা হওয়ার জন্য লোকাল কোন ট্রান্সপোর্ট এর মাধ্যমে ডেলিভারি করতে হয় তাহলে ডেলিভারি চার্জের সাথে লোকাল ট্রান্সপোর্ট এর ভাড়া ৬০% পে করতে হবে। সেটা আপনি করেন কিংবা আপনার কাস্টমার যে কেউ একজন করলেই হচ্ছে) 💥</div>
+   <div class="ch-note soft">⭕ Cholvobd সবসময় কাস্টমার অনুযায়ী সার্ভিস প্রদান করে থাকে।</div>
+  </div>
+
+  <div class="ch-card">
+   <h3>📦 Parcel delivery charge list</h3>
+   <div class="ch-items">
+    <div class="ch-item"><span class="ch-num">1</span><div><h4>Standard Parcel Delivery</h4><p>Standard Delivery এর ক্ষেত্রে কোম্পানির নিয়ম অনুযায়ী পার্সেল রিসিভ তারিখ থেকে ২ দিনের মধ্যে চট্টগ্রাম এ ডেলিভারি দেওয়া হবে। কাপ্তাই রাস্তার মাথা / অক্সিজেন / সিটি গেইট / হালিশহর এ ব্লক বি ব্লক / বন্দর কাস্টম হাউস পর্যন্ত / এই লোকেশনের মধ্যে ডেলিভারী চার্জ <b>৮০ টাকা</b> এবং কাপ্তাই রাস্তার মাথা / অক্সিজেন / সিটি গেইট / হালিশহর এ ব্লক বি ব্লক / বন্দর কাস্টম হাউস পর্যন্ত / এই লোকেশনের পরে পার্সেল ডেলিভারীর ক্ষেত্রে ডেলিভারি চার্জ <b>প্রতি কিলোমিটার ২০ টাকা</b> করে এড হবে।</p></div></div>
+    <div class="ch-item"><span class="ch-num">2</span><div><h4>Instant Parcel Delivery</h4><p>Instant Parcel Delivery এর ক্ষেত্রে পার্সেল রিসিভ এর সাথে সাথে পার্সেল ডেলিভারি দেওয়া হবে। পার্সেল ডেলিভারির ক্ষেত্রে প্রথম ৫ কিলোমিটার <b>১০০ টাকা</b> ডেলিভারি চার্জ এবং পরবর্তী প্রতি কিলোমিটার এ <b>১০ টাকা</b> করে এড হবে এবং পার্সেল এর ওজন হিসেবে Cholvo Support এর সাথে যোগাযোগের ভিত্তিতে ডেলিভারি চার্জ কম/বেশী হতে পারে।</p></div></div>
+   </div>
+   <div class="ch-warn">⚠️ সতর্কবার্তা: কোনো প্রকার গ্লাস জাতীয় পার্সেল ডেলিভারি করা থেকে বিরত থাকুন।</div>
+  </div>
+
+  <div class="ch-card">
+   <h3>🍔 Food delivery</h3>
+   <div class="ch-items">
+    <div class="ch-item"><span class="ch-num">3</span><div><h4>Food Delivery</h4><p>Food Delivery এর ক্ষেত্রে ভেন্ডর এবং Cholvo অর্ডার টিম এর সাথে কথা বলে লোকেশন এর ভিত্তিতে ডেলিভারি চার্জ প্রযোজ্য হবে।</p></div></div>
+   </div>
+  </div>`;
+async function loadCharges(){
+ $('#chInfo').textContent='Loading…';
+ try{const d=await db.doc('private/charges').get();
+  if(d.exists&&d.data().html){$('#chText').value=d.data().html;$('#chInfo').textContent='Published. Merchants see this after login.'}
+  else{$('#chText').value=DEFAULT_CHARGES;$('#chInfo').textContent='Not published yet. Press Save to publish this list for merchants.'}}
+ catch(err){$('#chInfo').textContent='Could not load. Publish the latest Firestore rules first.'}}
+$('#chDef').onclick=()=>{$('#chText').value=DEFAULT_CHARGES;$('#chInfo').textContent='Default loaded. Press Save to publish.'};
+$('#chSave').onclick=async()=>{const b=$('#chSave');b.disabled=true;
+ try{await db.doc('private/charges').set({html:$('#chText').value,updatedAt:TS});$('#chInfo').textContent='Saved. Merchants will see it after login.';toast('Charge lists saved')}
+ catch(err){toast('Could not save.')}b.disabled=false};
 </script>
 </body>
 </html>

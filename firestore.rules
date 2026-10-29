@@ -4,6 +4,12 @@ service cloud.firestore {
     function admin() {
       return request.auth != null && request.auth.token.email == 'admin@cholvo.com';
     }
+    // A signed-in user who has an approved (not blocked) merchant record
+    function approvedMerchant() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/merchants/$(request.auth.uid))
+        && get(/databases/$(database)/documents/merchants/$(request.auth.uid)).data.blocked == false;
+    }
     // Public: customers see only status by tracking number
     match /tracking/{tn} {
       allow get: if true;
@@ -11,7 +17,7 @@ service cloud.firestore {
       allow create: if request.resource.data.status == 'Order Received'
         && request.resource.data.keys().hasOnly(['status', 'updatedAt']);
     }
-    // Private: full order details, admin only
+    // Private: full order details, admin only. Guests (no login) can book too.
     match /orders/{tn} {
       allow create: if request.resource.data.status == 'Order Received'
         && request.resource.data.tn == tn
@@ -19,11 +25,28 @@ service cloud.firestore {
             || request.resource.data.merchantUid == request.auth.uid);
       allow read, update, delete: if admin();
     }
+    // Merchant records are created by the admin only, when a registration is approved
     match /merchants/{uid} {
-      allow create: if request.auth != null && request.auth.uid == uid
-        && request.resource.data.blocked == false;
+      allow create: if admin();
       allow get: if request.auth != null && (request.auth.uid == uid || admin());
       allow list, update, delete: if admin();
+    }
+    // Registration requests: anyone can send one, only the admin can read or decide
+    match /merchantRequests/{id} {
+      allow create: if request.resource.data.status == 'pending'
+        && request.resource.data.keys().hasOnly(['businessName', 'ownerFirst', 'ownerLast',
+             'businessType', 'branches', 'email', 'mobile', 'businessPhone', 'samePhone',
+             'agreed', 'status', 'createdAt'])
+        && request.resource.data.businessType in ['Shop', 'Restaurant']
+        && request.resource.data.mobile.matches('^01[0-9]{9}$')
+        && request.resource.data.agreed == true
+        && request.resource.data.businessName.size() <= 120;
+      allow read, update, delete: if admin();
+    }
+    // Merchant-only content (cake, parcel and food charge lists)
+    match /private/{doc} {
+      allow read: if admin() || approvedMerchant();
+      allow write: if admin();
     }
   }
 }
