@@ -141,7 +141,7 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
  </div>
  <nav class="menu" id="menu">
   <a class="l" href="#home">Home</a><a class="l" href="#services">Services</a><a class="l" href="#pricing">Pricing</a><a class="l" id="navCharges" href="#charges" hidden>Charges</a><a class="l" href="#track">Tracking</a><a class="l" href="#about">About</a><a class="l" href="#contact">Contact</a>
-  <div class="two"><a class="btn b-fb" href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook</a><button class="btn b-nv" id="navAuth" data-open="auth">Merchant login</button></div>
+  <div class="two"><a class="btn b-fb" href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook</a><button class="btn b-or" id="navProfile" hidden>Profile</button><button class="btn b-nv" id="navAuth" data-open="auth">Merchant login</button></div>
  </nav>
 </header>
 
@@ -264,7 +264,7 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
   <p class="sub">Your business’s trusted delivery partner. Save more as your monthly deliveries grow.</p>
   <div class="slabs"><div><b>0%</b><span>0–50 deliveries</span></div><div><b>5%</b><span>51–100 deliveries</span></div><div><b>10%</b><span>101–150 deliveries</span></div></div>
   <p class="fit">Partners with 150+ successful deliveries a month for 3 months get free brand promotion through influencers. Built for restaurants, online shops, food and product businesses.</p>
-  <button class="btn b-or" data-open="auth">Merchant login / registration</button>
+  <button class="btn b-or" id="footAuth" data-open="auth">Merchant login / registration</button>
  </div>
 </section>
 
@@ -325,6 +325,21 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
   <button class="btn b-or">Register</button>
   <button type="button" class="linkbtn" id="openAgree">View Merchant Agreement</button>
  </form>
+</div></div>
+
+<!-- Merchant profile -->
+<div class="modal" id="m-profile"><div class="sheet">
+ <button class="x" data-close aria-label="Close">&times;</button>
+ <h3>My profile</h3>
+ <div class="pkv" id="profileInfo"></div>
+ <h4 class="ph">Change password</h4>
+ <form id="pwForm" class="grid">
+  <div><label>Current password</label><input name="cur" type="password" minlength="6" autocomplete="current-password" required></div>
+  <div><label>New password</label><input name="n1" type="password" minlength="6" autocomplete="new-password" required><p class="hint">At least 6 characters. A 6-digit number works too.</p></div>
+  <div><label>Confirm new password</label><input name="n2" type="password" minlength="6" autocomplete="new-password" required></div>
+  <button class="btn b-or">Change password</button>
+ </form>
+ <button type="button" class="btn b-nv" id="profLogout" style="margin-top:14px;width:100%">Logout</button>
 </div></div>
 
 <!-- Merchant agreement (edit the terms inside #agreeBody) -->
@@ -466,17 +481,43 @@ $('#regForm').onsubmit=async e=>{e.preventDefault();const f=e.target;if(f.websit
  }catch(err){toast('Could not send your registration. Check your connection and try again.')}
  busy(f,false)};
 // merchant-only content (charge lists) and login state in the menu
+let mdata={};
+const logout=()=>{close();auth.signOut();toast('Logged out.')};
+function showProfile(){
+ const d=mdata,rows=[['Business name',d.businessName],['Owner',[d.ownerFirst,d.ownerLast].filter(Boolean).join(' ')],['Business type',d.businessType],['Branches',d.branches],['Email',d.email],['Mobile (login number)',d.phone]];
+ const box=$('#profileInfo');box.innerHTML='';
+ rows.forEach(([k,v])=>{const a=document.createElement('span'),b=document.createElement('span');a.textContent=k;b.textContent=(v===undefined||v==='')?'-':v;box.append(a,b)});
+ open('profile')}
+$('#profLogout').onclick=logout;
+$('#navProfile').onclick=showProfile;
+$('#pwForm').onsubmit=async e=>{e.preventDefault();const f=e.target,u=auth.currentUser;
+ if(!u){toast('Please login again.');return}
+ if(f.n1.value!==f.n2.value){toast('The new passwords do not match.');return}
+ busy(f,true);
+ try{await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,f.cur.value));
+  await u.updatePassword(f.n1.value);
+  f.reset();toast('Password changed.')
+ }catch(err){const c=err.code||'';toast(c==='auth/wrong-password'||c==='auth/invalid-credential'?'Current password is wrong.':c==='auth/weak-password'?'New password is too weak.':c==='auth/too-many-requests'?'Too many attempts. Try again later.':'Could not change the password. Try again.')}
+ busy(f,false)};
+// merchant-only content (charge lists) and login state in the menu
 async function checkMerchant(u){
- merchant=null;
+ merchant=null;mdata={};
  if(u){try{const m=await db.doc('merchants/'+u.uid).get();
-   if(m.exists&&!m.data().blocked)merchant=u;else if(m.exists)auth.signOut()}catch(_){}}
- const nav=$('#navAuth');
- if(nav)nav.onclick=merchant?()=>{auth.signOut();toast('Logged out.')}:()=>open('auth');
- if(nav)nav.textContent=merchant?'Logout':'Merchant login';
+   if(m.exists&&!m.data().blocked){merchant=u;mdata=m.data()}else if(m.exists)auth.signOut()}catch(_){}}
+ const nav=$('#navAuth'),prof=$('#navProfile'),foot=$('#footAuth');
+ nav.onclick=merchant?logout:()=>open('auth');
+ nav.textContent=merchant?'Logout':'Merchant login';
+ prof.hidden=!merchant;
+ foot.textContent=merchant?'My profile':'Merchant login / registration';
+ foot.onclick=merchant?showProfile:()=>open('auth');
  const sec=$('#charges'),body=$('#chargesBody'),link=$('#navCharges');
  if(!merchant){sec.hidden=true;link.hidden=true;body.innerHTML='';return}
+ // show the section for every approved merchant; explain neutrally if the list cannot be loaded
+ sec.hidden=false;link.hidden=false;
  try{const d=await db.doc('private/charges').get();
-  if(d.exists&&d.data().html){body.innerHTML=d.data().html;sec.hidden=false;link.hidden=false}}catch(_){}
+  if(d.exists&&d.data().html)body.innerHTML=d.data().html;
+  else{body.innerHTML='<p class="sub" style="padding:10px 0">Charge lists are not available right now. Please contact Cholvo support.</p>';console.warn('private/charges is missing: open admin, Charges tab, press Save')}
+ }catch(err){body.innerHTML='<p class="sub" style="padding:10px 0">Charge lists are not available right now. Please contact Cholvo support.</p>';console.error('Could not read private/charges:',err.code||err)}
 }
 $('#heroTrack').onsubmit=e=>{e.preventDefault();$('#tn').value=$('#ht').value;location.hash='#track';$('#trackForm').requestSubmit()};
 $$('[data-book]').forEach(b=>b.onclick=()=>$('#bookBtn').click());

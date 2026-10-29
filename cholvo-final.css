@@ -67,3 +67,18 @@ footer{background:linear-gradient(120deg,#05182f,#092d59);border-radius:36px 36p
 .charges .ch-item p{color:#3a4a63;line-height:1.75;font-size:.93rem}
 .charges .ch-item b{color:var(--orange)}
 .charges .ch-warn{margin-top:16px;padding:12px 15px;background:#fdecec;color:#b42318;border-radius:10px;font-weight:700;font-size:.93rem}
+
+/* merchant registration form */
+.chk{display:flex;align-items:flex-start;gap:10px;font-weight:600;font-size:.92rem;margin:2px 0;cursor:pointer;color:var(--navy)}
+.chk input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:#ff710b}
+.linkbtn{background:none;border:0;color:var(--navy);text-decoration:underline;font-weight:700;cursor:pointer;padding:6px;text-align:center}
+.agree{margin-top:12px;color:#3a4a63;line-height:1.75;font-size:.93rem;max-height:55vh;overflow:auto}
+.agree ol{padding-left:20px;display:grid;gap:8px}
+.charges[hidden],#navCharges[hidden]{display:none!important}
+
+/* merchant profile */
+.pkv{display:grid;grid-template-columns:130px 1fr;gap:8px 12px;margin:14px 0;font-size:.93rem}
+.pkv span:nth-child(odd){color:#6B7A94}
+.pkv span:nth-child(even){font-weight:600;color:var(--navy);word-break:break-word}
+.sheet .ph{color:var(--navy);margin:18px 0 8px;font-size:1.05rem}
+#navProfile[hidden]{display:none!important}

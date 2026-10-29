@@ -194,7 +194,7 @@ $('#rlist').onclick=async e=>{
   const sec=firebase.apps.find(x=>x.name==='sec')||firebase.initializeApp(CFG,'sec'),sa=firebase.auth(sec);
   const c=await sa.createUserWithEmailAndPassword(r.mobile+'@cholvo.app',pass);
   const uid=c.user.uid;await sa.signOut();
-  await db.doc('merchants/'+uid).set({phone:r.mobile,businessName:r.businessName,blocked:false,createdAt:TS});
+  await db.doc('merchants/'+uid).set({phone:r.mobile,businessName:r.businessName,ownerFirst:r.ownerFirst||'',ownerLast:r.ownerLast||'',businessType:r.businessType||'',branches:r.branches||1,email:r.email||'',businessPhone:r.businessPhone||r.mobile,blocked:false,createdAt:TS});
   await db.doc('merchantRequests/'+id).update({status:'approved',merchantUid:uid});
   r.status='approved';drawRequests();
   const box=$('#credBox');box.hidden=false;
