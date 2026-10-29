@@ -36,6 +36,8 @@ footer{background:linear-gradient(120deg,#05182f,#092d59);border-radius:36px 36p
 @media(max-width:900px){.hero .wrap{grid-template-columns:1fr;gap:20px}.hero .wrap>div:first-child{padding-top:8px}.hero h1{font-size:clamp(2.6rem,8vw,4.3rem)}.photo{min-height:340px;max-height:470px;border-radius:26px}.photo img{min-height:340px;max-height:470px;border-radius:26px}.photo:before{border-radius:26px}.strip .wrap{grid-template-columns:repeat(2,minmax(0,1fr))}.strip .wrap>div:nth-child(2){border-right:0}.calc .split{grid-template-columns:1fr}.route-visual{height:220px}#services .svc{grid-template-columns:repeat(2,minmax(0,1fr))}.promo-banner{grid-template-columns:1fr}.promo-art{min-height:210px}.about-layout{grid-template-columns:1fr}.about-visual{min-height:300px}}
 @media(max-width:560px){.bar{height:66px}.bar img{height:45px}.hero{padding-top:20px}.hero h1{font-size:clamp(2.15rem,10vw,3.2rem)}.lead{font-size:.93rem}.cta .btn{flex:1}.trackbar{max-width:none}.trackbar input{font-size:.86rem;padding:10px}.trackbar button{padding:0 16px}.photo{min-height:300px}.photo img{min-height:300px}.photo-note{left:10px;bottom:14px;padding:10px 12px}.strip .wrap{padding:18px 16px;gap:14px}.strip .wrap>div{padding:0 4px;border:0}.strip i{width:36px;height:36px}.strip b{font-size:.82rem}.strip span{font-size:.7rem}.svc button{min-height:190px;padding:14px}.svc i{height:60px;width:60px}.promo-copy{padding:24px}.promo-art:before{inset:0;background-position:center 35%}.slabs{grid-template-columns:repeat(3,minmax(0,1fr))}.slabs div{padding:10px 5px}.slabs b{font-size:1.35rem}.slabs span{font-size:.7rem}.calc .card{padding:16px}.route-visual{height:180px}.how-steps{grid-template-columns:1fr 1fr}.step-arrow{display:none}.fgrid{grid-template-columns:1fr}footer{border-radius:26px 26px 0 0}}
 @media(prefers-reduced-motion:reduce){.reveal,.photo img,.float-pin,.promo-box,.promo-orbit{animation:none!important;transition:none!important}.reveal,.reveal-ready{opacity:1;transform:none}}
+
+/* Estimate box: light text on the dark navy background */
 #pricing .result{color:#fff}
 #pricing .result h3{color:#fff}
 #pricing .result .row{border-color:rgba(255,255,255,.22)}
@@ -45,3 +47,23 @@ footer{background:linear-gradient(120deg,#05182f,#092d59);border-radius:36px 36p
 #pricing .result .total span{color:#fff}
 #pricing .result .total b{color:#ffb85c}
 #pricing .result .empty{color:rgba(255,255,255,.85)}
+
+/* Delivery charge list */
+.charges{background:#fffaf3}
+.charges .ch-card{background:#fff;border:1px solid #eee6dc;border-radius:22px;box-shadow:0 10px 26px rgba(8,43,89,.06);padding:clamp(16px,2.5vw,28px);margin-top:20px}
+.charges .ch-card h3{color:var(--navy);font-size:1.25rem;margin-bottom:14px}
+.charges .ch-scroll{overflow-x:auto;border-radius:14px;border:1px solid #e8edf4}
+.charges .ch-table{width:100%;border-collapse:collapse;font-size:.95rem;min-width:340px}
+.charges .ch-table th{background:var(--navy);color:#fff;text-align:left;padding:11px 12px;font-size:.82rem;line-height:1.35}
+.charges .ch-table td{padding:11px 12px;border-top:1px solid #e8edf4;color:var(--navy)}
+.charges .ch-table td:nth-child(2){font-weight:800;color:var(--orange)}
+.charges .ch-table tbody tr:nth-child(even){background:#f6f9fd}
+.charges .ch-note{margin-top:14px;padding:13px 15px;background:#fff4e6;border-left:4px solid var(--orange);border-radius:10px;color:#3a4a63;line-height:1.7;font-size:.93rem}
+.charges .ch-note.soft{background:#f2f7fc;border-left-color:var(--navy)}
+.charges .ch-items{display:grid;gap:14px}
+.charges .ch-item{display:flex;gap:12px;align-items:flex-start}
+.charges .ch-num{flex:none;width:32px;height:32px;border-radius:50%;background:var(--orange);color:#fff;font-weight:800;display:grid;place-items:center}
+.charges .ch-item h4{color:var(--navy);margin-bottom:4px;font-size:1.02rem}
+.charges .ch-item p{color:#3a4a63;line-height:1.75;font-size:.93rem}
+.charges .ch-item b{color:var(--orange)}
+.charges .ch-warn{margin-top:16px;padding:12px 15px;background:#fdecec;color:#b42318;border-radius:10px;font-weight:700;font-size:.93rem}
