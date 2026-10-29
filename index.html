@@ -140,8 +140,8 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
   <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false"><i></i><i></i><i></i></button>
  </div>
  <nav class="menu" id="menu">
-  <a class="l" href="#home">Home</a><a class="l" href="#services">Services</a><a class="l" href="#pricing">Pricing</a><a class="l" href="#charges">Charges</a><a class="l" href="#track">Tracking</a><a class="l" href="#about">About</a><a class="l" href="#contact">Contact</a>
-  <div class="two"><a class="btn b-fb" href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook</a><button class="btn b-nv" data-open="auth">Merchant login</button></div>
+  <a class="l" href="#home">Home</a><a class="l" href="#services">Services</a><a class="l" href="#pricing">Pricing</a><a class="l" id="navCharges" href="#charges" hidden>Charges</a><a class="l" href="#track">Tracking</a><a class="l" href="#about">About</a><a class="l" href="#contact">Contact</a>
+  <div class="two"><a class="btn b-fb" href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook</a><button class="btn b-nv" id="navAuth" data-open="auth">Merchant login</button></div>
  </nav>
 </header>
 
@@ -166,49 +166,8 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
  <div><i>☎</i><p><b>Quick support</b><span>Call or WhatsApp</span></p></div>
 </div></div>
 
-<section class="charges" id="charges">
- <div class="wrap">
-  <span class="section-kicker">DELIVERY CHARGE LIST</span><h2>Cholvo delivery charge list</h2>
-  <p class="sub">Everything Moves With Cholvo. Cake, parcel ও food delivery-র চার্জের নিয়ম।</p>
-
-  <div class="ch-card">
-   <h3>🎂 Cake delivery charge list</h3>
-   <div class="ch-scroll"><table class="ch-table">
-    <thead><tr><th>কেকের ওজন</th><th>১ থেকে ৫ কিলোমিটারের মধ্যে ডেলিভারি চার্জ</th><th>৫ কিলোমিটারের পর প্রতি কিলোমিটারে এড হবে</th></tr></thead>
-    <tbody>
-      <tr><td>½ - ১ পাউন্ড</td><td>১০০/-</td><td>১০ টাকা</td></tr>
-      <tr><td>১½ - ২ পাউন্ড</td><td>১২০/-</td><td>১০ টাকা</td></tr>
-      <tr><td>২½ - ৩ পাউন্ড</td><td>১৪০/-</td><td>১০ টাকা</td></tr>
-      <tr><td>৩½ - ৪ পাউন্ড</td><td>১৬০/-</td><td>১০ টাকা</td></tr>
-      <tr><td>৪½ - ৫ পাউন্ড</td><td>২০০/-</td><td>১০ টাকা</td></tr>
-      <tr><td>৫½ - ৬ পাউন্ড</td><td>২২০/-</td><td>১৫ টাকা</td></tr>
-      <tr><td>৬½ - ৭ পাউন্ড</td><td>২৪০/-</td><td>১৫ টাকা</td></tr>
-      <tr><td>৭½ - ৮ পাউন্ড</td><td>২৬০/-</td><td>২০ টাকা</td></tr>
-      <tr><td>৮½ - ৯ পাউন্ড</td><td>২৮০/-</td><td>২০ টাকা</td></tr>
-      <tr><td>৯½ - ১০ পাউন্ড</td><td>৩০০/-</td><td>২০ টাকা</td></tr>
-    </tbody>
-   </table></div>
-   <div class="ch-note"><b>⭕ টিয়ার কেক:</b> এক পাউন্ড থেকে শুরু করে প্রত্যেকটা টু-টিয়ার কেক এ চার্জের সাথে এক্সট্রা ২০ টাকা এড হবে.! এবং সে ক্ষেত্রে যদি থ্রী-টিয়ার কেক হয় তাহলে ৪০ টাকা ফোর্থ টিয়ার হলে ৬০ টাকা, এবং যদি অতিরিক্ত হাইড হয়ে যায় কিংবা বক্স অতিরিক্ত বড় সাইজের হয়ে গেলে সে ক্ষেত্রে আরো বেড়ে যাবে.!</div>
-   <div class="ch-note"><b>⭕ নোট:</b> উপরের লিখিত সম্পূর্ণ চার্জটা প্রযোজ্য হবে :- কাপ্তাই রাস্তার মাথা / অক্সিজেন / সিটি গেইট / হালিশহর এ ব্লক বি ব্লক / বন্দর কাস্টম হাউস পর্যন্ত / এই লোকেশনের পরে যদি কোন কেক ডেলিভারি হয় তাহলে রেগুলার চার্জের সাথে ১০০ টাকা এক্সট্রা এড হবে এবং সেটা কেকের পাউন্ড এর উপর ডিপেন্ড করে আরো বাড়তে পারে।<br>(এবং কেক যদি অতিরিক্ত বড় হওয়ার কারণে কিংবা বক্সের সমস্যা হওয়ার জন্য লোকাল কোন ট্রান্সপোর্ট এর মাধ্যমে ডেলিভারি করতে হয় তাহলে ডেলিভারি চার্জের সাথে লোকাল ট্রান্সপোর্ট এর ভাড়া ৬০% পে করতে হবে। সেটা আপনি করেন কিংবা আপনার কাস্টমার যে কেউ একজন করলেই হচ্ছে) 💥</div>
-   <div class="ch-note soft">⭕ Cholvobd সবসময় কাস্টমার অনুযায়ী সার্ভিস প্রদান করে থাকে।</div>
-  </div>
-
-  <div class="ch-card">
-   <h3>📦 Parcel delivery charge list</h3>
-   <div class="ch-items">
-    <div class="ch-item"><span class="ch-num">1</span><div><h4>Standard Parcel Delivery</h4><p>Standard Delivery এর ক্ষেত্রে কোম্পানির নিয়ম অনুযায়ী পার্সেল রিসিভ তারিখ থেকে ২ দিনের মধ্যে চট্টগ্রাম এ ডেলিভারি দেওয়া হবে। কাপ্তাই রাস্তার মাথা / অক্সিজেন / সিটি গেইট / হালিশহর এ ব্লক বি ব্লক / বন্দর কাস্টম হাউস পর্যন্ত / এই লোকেশনের মধ্যে ডেলিভারী চার্জ <b>৮০ টাকা</b> এবং কাপ্তাই রাস্তার মাথা / অক্সিজেন / সিটি গেইট / হালিশহর এ ব্লক বি ব্লক / বন্দর কাস্টম হাউস পর্যন্ত / এই লোকেশনের পরে পার্সেল ডেলিভারীর ক্ষেত্রে ডেলিভারি চার্জ <b>প্রতি কিলোমিটার ২০ টাকা</b> করে এড হবে।</p></div></div>
-    <div class="ch-item"><span class="ch-num">2</span><div><h4>Instant Parcel Delivery</h4><p>Instant Parcel Delivery এর ক্ষেত্রে পার্সেল রিসিভ এর সাথে সাথে পার্সেল ডেলিভারি দেওয়া হবে। পার্সেল ডেলিভারির ক্ষেত্রে প্রথম ৫ কিলোমিটার <b>১০০ টাকা</b> ডেলিভারি চার্জ এবং পরবর্তী প্রতি কিলোমিটার এ <b>১০ টাকা</b> করে এড হবে এবং পার্সেল এর ওজন হিসেবে Cholvo Support এর সাথে যোগাযোগের ভিত্তিতে ডেলিভারি চার্জ কম/বেশী হতে পারে।</p></div></div>
-   </div>
-   <div class="ch-warn">⚠️ সতর্কবার্তা: কোনো প্রকার গ্লাস জাতীয় পার্সেল ডেলিভারি করা থেকে বিরত থাকুন।</div>
-  </div>
-
-  <div class="ch-card">
-   <h3>🍔 Food delivery</h3>
-   <div class="ch-items">
-    <div class="ch-item"><span class="ch-num">3</span><div><h4>Food Delivery</h4><p>Food Delivery এর ক্ষেত্রে ভেন্ডর এবং Cholvo অর্ডার টিম এর সাথে কথা বলে লোকেশন এর ভিত্তিতে ডেলিভারি চার্জ প্রযোজ্য হবে।</p></div></div>
-   </div>
-  </div>
- </div>
+<section class="charges" id="charges" hidden>
+ <div class="wrap" id="chargesBody"></div>
 </section>
 
 <section class="calc" id="pricing">
@@ -346,17 +305,51 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
  <h3>Merchant account</h3>
  <div class="tabs"><button class="on" data-tab="login">Login</button><button data-tab="reg">Register</button></div>
  <form id="loginForm" class="grid">
-  <div><label>Phone number</label><input name="phone" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" required></div>
-  <div><label>6-digit pass</label><input name="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></div>
+  <div><label>Phone number</label><input name="phone" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" autocomplete="username" required></div>
+  <div><label>Password</label><input name="pw" type="password" minlength="6" autocomplete="current-password" required></div>
   <button class="btn b-or">Login</button>
+  <p class="hint">New merchant? Register first. Your login phone number and password are given to you after Cholvo approves your registration.</p>
  </form>
  <form id="regForm" class="grid" hidden>
-  <div><label>Phone number</label><input name="phone" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" required></div>
-  <div><label>Password</label><input name="pw" type="password" minlength="6" required><p class="hint">Used only to reset your 6-digit pass.</p></div>
-  <div><label>6-digit pass</label><input name="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></div>
-  <div><label>Confirm 6-digit pass</label><input name="pin2" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></div>
-  <button class="btn b-or">Create account</button>
+  <div><label>Your business name</label><input name="businessName" maxlength="120" required></div>
+  <div class="grid c2"><div><label>Business owner first name</label><input name="ownerFirst" maxlength="60" required></div>
+  <div><label>Business owner last name</label><input name="ownerLast" maxlength="60" required></div></div>
+  <div><label>Business type</label><select name="businessType" required><option value="" selected disabled>Select business type</option><option value="Shop">Shop</option><option value="Restaurant">Restaurant</option></select></div>
+  <div><label>Number of branches to register</label><input name="branches" type="number" min="1" max="500" value="1" required></div>
+  <div><label>Enter your business email</label><input name="email" type="email" maxlength="120" autocomplete="email" required></div>
+  <div><label>Mobile phone number</label><input name="mobile" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" autocomplete="tel" required></div>
+  <label class="chk"><input type="checkbox" name="samePhone" id="samePhone" checked><span>My business phone is the same as my mobile number</span></label>
+  <div id="bizPhoneWrap" hidden><label>Business phone number</label><input name="businessPhone" id="bizPhone" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX"></div>
+  <label class="chk"><input type="checkbox" name="agreed" required><span>I am registering after agreeing to all Cholvo terms and conditions</span></label>
+  <input class="hp" name="website" tabindex="-1" autocomplete="off">
+  <button class="btn b-or">Register</button>
+  <button type="button" class="linkbtn" id="openAgree">View Merchant Agreement</button>
  </form>
+</div></div>
+
+<!-- Merchant agreement (edit the terms inside #agreeBody) -->
+<div class="modal" id="m-agree"><div class="sheet">
+ <button class="x" id="closeAgree" type="button" aria-label="Close">&times;</button>
+ <h3>Cholvo Merchant Agreement</h3>
+ <div id="agreeBody" class="agree">
+  <ol>
+   <li>Cholvo-এর সকল নিয়ম ও শর্ত মেনে মার্চেন্ট হিসেবে রেজিস্ট্রেশন করা হচ্ছে।</li>
+   <li>রেজিস্ট্রেশনের আবেদন Cholvo যাচাই করবে। অনুমোদনের পর Cholvo থেকে লগইন নম্বর ও পাসওয়ার্ড দেওয়া হবে। আবেদন গ্রহণ বা বাতিলের অধিকার Cholvo-এর থাকবে।</li>
+   <li>ডেলিভারি চার্জ Cholvo-এর নির্ধারিত চার্জ লিস্ট অনুযায়ী প্রযোজ্য হবে। মার্চেন্টদের জন্য দেওয়া চার্জ লিস্ট গোপন রাখতে হবে এবং অন্য কারও সাথে শেয়ার করা যাবে না।</li>
+   <li>COD থাকলে COD এর ১% চার্জ প্রযোজ্য হবে।</li>
+   <li>কেক অতিরিক্ত বড় হওয়ার কারণে বা বক্সের সমস্যার কারণে লোকাল ট্রান্সপোর্টে ডেলিভারি করতে হলে ডেলিভারি চার্জের সাথে লোকাল ট্রান্সপোর্ট ভাড়ার ৬০% পে করতে হবে।</li>
+   <li>কোনো প্রকার গ্লাস জাতীয় পার্সেল ডেলিভারির জন্য দেওয়া যাবে না।</li>
+   <li>মার্চেন্টকে দেওয়া লগইন তথ্য নিরাপদ রাখার দায়িত্ব মার্চেন্টের। শর্ত ভঙ্গ করলে Cholvo মার্চেন্ট অ্যাকাউন্ট ব্লক করতে পারবে।</li>
+  </ol>
+ </div>
+ <button type="button" class="btn b-or" id="closeAgree2" style="margin-top:14px;width:100%">Close</button>
+</div></div>
+
+<div class="modal" id="m-reqdone"><div class="sheet" style="text-align:center">
+ <button class="x" data-close aria-label="Close">&times;</button>
+ <h3>Registration received</h3>
+ <p style="margin-top:8px">Thank you! Cholvo will review your registration. After approval, you will receive your login phone number and password.</p>
+ <button class="btn b-or" data-close style="margin-top:14px">Done</button>
 </div></div>
 
 <!-- Book -->
@@ -417,7 +410,7 @@ menu.addEventListener('click',e=>{if(e.target.closest('a.l,button'))menu.classLi
 $$('[data-open]').forEach(b=>b.onclick=()=>open(b.dataset.open));
 $$('[data-close]').forEach(b=>b.onclick=close);
 $$('.modal').forEach(m=>m.onclick=e=>{if(e.target===m)close()});
-$('#bookBtn').onclick=()=>open(merchant?'book':'auth');
+$('#bookBtn').onclick=()=>open('book');
 const howBookBtn=$('#howBookBtn');if(howBookBtn)howBookBtn.onclick=()=>$('#bookBtn').click();
 $$('.tabs button').forEach(b=>b.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#loginForm').hidden=b.dataset.tab!=='login';$('#regForm').hidden=b.dataset.tab!=='reg'});
 // pricing lives in maps.js
@@ -428,7 +421,7 @@ const MAIL={service:'service_4jw0dqu',template:'template_i8c3cf4',key:'r2rf4UWIT
 // ========================================
 const LIVE=CFG.apiKey!=='YOUR_API_KEY',MAILON=MAIL.key!=='YOUR_PUBLIC_KEY';
 let auth,db,TS;
-if(LIVE){firebase.initializeApp(CFG);auth=firebase.auth();db=firebase.firestore();TS=firebase.firestore.FieldValue.serverTimestamp();auth.onAuthStateChanged(u=>{merchant=u});if(MAILON)emailjs.init({publicKey:MAIL.key})}
+if(LIVE){firebase.initializeApp(CFG);auth=firebase.auth();db=firebase.firestore();TS=firebase.firestore.FieldValue.serverTimestamp();auth.onAuthStateChanged(checkMerchant);if(MAILON)emailjs.init({publicKey:MAIL.key})}
 const em=p=>p+'@cholvo.app',busy=(f,on)=>{const b=f.querySelector('button:not(.x)');if(b)b.disabled=on};
 const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(x=>x.toString(16).padStart(2,'0')).join('');
 const newTN=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';crypto.getRandomValues(new Uint8Array(6)).forEach(n=>r+=c[n%c.length]);return'CHV-'+r};
@@ -449,22 +442,42 @@ async function save(e,type){e.preventDefault();const f=e.target;if(f.website&&f.
 $('#bookForm').onsubmit=e=>save(e,'book');
 $('#orderForm').onsubmit=e=>save(e,'order');
 $('#loginForm').onsubmit=async e=>{e.preventDefault();const f=e.target;
- if(!LIVE){merchant={};close();open('book');return}
+ if(!LIVE){toast('Demo mode: add your Firebase config.');return}
  busy(f,true);
- try{const c=await auth.signInWithEmailAndPassword(em(f.phone.value),f.pin.value),m=await db.doc('merchants/'+c.user.uid).get();
-  if(m.exists&&m.data().blocked){await auth.signOut();throw{code:'blocked'}}
-  f.reset();close();toast('Logged in.');open('book')
- }catch(err){toast(err.code==='auth/too-many-requests'?'Too many attempts. Try again later.':err.code==='blocked'?'This account is blocked. Please contact support.':'Wrong phone number or 6-digit pass.')}
+ try{const c=await auth.signInWithEmailAndPassword(em(f.phone.value),f.pw.value),m=await db.doc('merchants/'+c.user.uid).get();
+  if(!m.exists||m.data().blocked){await auth.signOut();throw{code:m.exists?'blocked':'notapproved'}}
+  f.reset();close();toast('Logged in.')
+ }catch(err){toast(err.code==='auth/too-many-requests'?'Too many attempts. Try again later.':err.code==='blocked'?'This account is blocked. Please contact support.':err.code==='notapproved'?'This account is not approved yet.':'Wrong phone number or password.')}
  busy(f,false)};
-$('#regForm').onsubmit=async e=>{e.preventDefault();const f=e.target;
- if(f.pin.value!==f.pin2.value){toast('The 6-digit passes do not match.');return}
- if(!LIVE){merchant={};close();open('book');return}
+// registration request: goes to admin for approval, no login is created here
+$('#samePhone').onchange=e=>{$('#bizPhoneWrap').hidden=e.target.checked;$('#bizPhone').required=!e.target.checked};
+$('#openAgree').onclick=()=>$('#m-agree').classList.add('open');
+const shutAgree=()=>$('#m-agree').classList.remove('open');
+$('#closeAgree').onclick=shutAgree;$('#closeAgree2').onclick=shutAgree;
+$('#m-agree').onclick=e=>{if(e.target.id==='m-agree')shutAgree()};
+$('#regForm').onsubmit=async e=>{e.preventDefault();const f=e.target;if(f.website.value)return;
+ if(!LIVE){toast('Demo mode: add your Firebase config.');return}
+ if(cool()){toast('Please wait a few seconds before sending again.');return}
  busy(f,true);
- try{const c=await auth.createUserWithEmailAndPassword(em(f.phone.value),f.pin.value);
-  await db.doc('merchants/'+c.user.uid).set({phone:f.phone.value,recovery:await sha(f.phone.value+f.pw.value),blocked:false,createdAt:TS});
-  f.reset();close();toast('Account created.');open('book')
- }catch(err){toast(err.code==='auth/email-already-in-use'?'This phone number is already registered.':'Could not create the account. Try again.')}
+ try{const same=f.samePhone.checked,d={businessName:f.businessName.value.trim(),ownerFirst:f.ownerFirst.value.trim(),ownerLast:f.ownerLast.value.trim(),businessType:f.businessType.value,branches:Math.max(1,parseInt(f.branches.value,10)||1),email:f.email.value.trim(),mobile:f.mobile.value.trim(),businessPhone:same?f.mobile.value.trim():f.businessPhone.value.trim(),samePhone:same,agreed:true};
+  await db.collection('merchantRequests').add({...d,status:'pending',createdAt:TS});
+  if(MAILON)emailjs.send(MAIL.service,MAIL.template,{type:'merchant registration request',tracking:'-',summary:Object.entries(d).map(([k,v])=>k+': '+v).join('\n')}).catch(()=>{});
+  f.reset();$('#bizPhoneWrap').hidden=true;close();open('reqdone')
+ }catch(err){toast('Could not send your registration. Check your connection and try again.')}
  busy(f,false)};
+// merchant-only content (charge lists) and login state in the menu
+async function checkMerchant(u){
+ merchant=null;
+ if(u){try{const m=await db.doc('merchants/'+u.uid).get();
+   if(m.exists&&!m.data().blocked)merchant=u;else if(m.exists)auth.signOut()}catch(_){}}
+ const nav=$('#navAuth');
+ if(nav)nav.onclick=merchant?()=>{auth.signOut();toast('Logged out.')}:()=>open('auth');
+ if(nav)nav.textContent=merchant?'Logout':'Merchant login';
+ const sec=$('#charges'),body=$('#chargesBody'),link=$('#navCharges');
+ if(!merchant){sec.hidden=true;link.hidden=true;body.innerHTML='';return}
+ try{const d=await db.doc('private/charges').get();
+  if(d.exists&&d.data().html){body.innerHTML=d.data().html;sec.hidden=false;link.hidden=false}}catch(_){}
+}
 $('#heroTrack').onsubmit=e=>{e.preventDefault();$('#tn').value=$('#ht').value;location.hash='#track';$('#trackForm').requestSubmit()};
 $$('[data-book]').forEach(b=>b.onclick=()=>$('#bookBtn').click());
 $$('[data-order]').forEach(b=>b.onclick=()=>open('order'));
