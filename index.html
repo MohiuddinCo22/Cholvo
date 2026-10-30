@@ -518,6 +518,10 @@ $$('.modal').forEach(m=>m.onclick=e=>{if(e.target===m)close()});
 $('#bookBtn').onclick=()=>open('book');
 const howBookBtn=$('#howBookBtn');if(howBookBtn)howBookBtn.onclick=()=>$('#bookBtn').click();
 $$('.tabs button').forEach(b=>b.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#loginForm').hidden=b.dataset.tab!=='login';$('#regForm').hidden=b.dataset.tab!=='reg'});
+// Direct link: your-site/#merchant-registration (or ?register=merchant) opens the Merchant Register form straight away
+function openMerchantReg(){open('auth');const t=document.querySelector('#m-auth .tabs button[data-tab="reg"]');if(t)t.click()}
+if(location.hash==='#merchant-registration'||/[?&]register=merchant\b/.test(location.search))window.addEventListener('load',openMerchantReg);
+window.addEventListener('hashchange',()=>{if(location.hash==='#merchant-registration')openMerchantReg()});
 // pricing lives in maps.js
 
 // ===== CONFIG: paste your keys here =====
