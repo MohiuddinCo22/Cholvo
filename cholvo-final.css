@@ -85,3 +85,15 @@ footer{background:linear-gradient(120deg,#05182f,#092d59);border-radius:36px 36p
 .pkv span:nth-child(even){font-weight:600;color:var(--navy);word-break:break-word}
 .sheet .ph{color:var(--navy);margin:18px 0 8px;font-size:1.05rem}
 #navProfile[hidden]{display:none!important}
+
+/* vendor rules section */
+.rules{background:#fff}
+.rules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;align-items:start}
+.rule{background:var(--mist);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.rule h4{margin:0 0 8px;color:var(--navy);font-size:1.02rem}
+.rule ul{padding-left:18px;display:grid;gap:6px;color:#3a4a63;line-height:1.65;font-size:.93rem}
+.rule-final{background:#fff4e6;border-color:#f7d3a8}
+.rule p{color:#3a4a63;line-height:1.65;font-size:.93rem}
+.rules-foot{margin-top:24px;text-align:center;color:var(--navy)}
+.agree .rules-grid{display:block}
+.agree .rule{background:none;border:0;padding:0;margin-top:14px}
