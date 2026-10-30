@@ -73,7 +73,10 @@ footer{background:linear-gradient(120deg,#05182f,#092d59);border-radius:36px 36p
 .chk input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:#ff710b}
 .linkbtn{background:none;border:0;color:var(--navy);text-decoration:underline;font-weight:700;cursor:pointer;padding:6px;text-align:center}
 .agree{margin-top:12px;color:#3a4a63;line-height:1.75;font-size:.93rem;max-height:55vh;overflow:auto}
-.agree ol{padding-left:20px;display:grid;gap:8px}
+.agree ol,.agree ul{padding-left:20px;display:grid;gap:8px}
+.agree h4{margin:16px 0 6px;color:#0b1f4d;font-size:1rem}
+.agree-sub{font-weight:600;margin-bottom:4px}
+.agree-foot{margin-top:18px;text-align:center}
 .charges[hidden],#navCharges[hidden]{display:none!important}
 
 /* merchant profile */
