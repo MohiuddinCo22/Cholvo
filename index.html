@@ -597,7 +597,7 @@ $('#pwForm').onsubmit=async e=>{e.preventDefault();const f=e.target,u=auth.curre
 async function checkMerchant(u){
  merchant=null;mdata={};
  if(u){try{const m=await db.doc('merchants/'+u.uid).get();
-   if(m.exists&&!m.data().blocked){merchant=u;mdata=m.data()}else if(m.exists)auth.signOut();else toast('No approved merchant record found for this login.')}catch(err){console.error('Merchant check failed:',err.code||err);toast('Could not verify merchant account ('+(err.code||'error')+').')}}
+   if(m.exists&&!m.data().blocked){merchant=u;mdata=m.data()}else if(m.exists)auth.signOut();else{const c=await db.doc('customers/'+u.uid).get();if(!c.exists)toast('No approved merchant record found for this login.')}}catch(err){console.error('Merchant check failed:',err.code||err);toast('Could not verify merchant account ('+(err.code||'error')+').')}}
  const nav=$('#navAuth'),prof=$('#navProfile'),foot=$('#footAuth');
  nav.onclick=merchant?logout:()=>open('auth');
  nav.textContent=merchant?'Logout':'Merchant login';
@@ -626,5 +626,6 @@ $('#trackForm').onsubmit=async e=>{e.preventDefault();const t=$('#tn').value.tri
 </script>
   <script src="animations.js"></script>
   <script src="maps.js"></script>
+  <script src="food.js"></script>
 </body>
 </html>

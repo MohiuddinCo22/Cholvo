@@ -43,6 +43,29 @@ service cloud.firestore {
         && request.resource.data.businessName.size() <= 120;
       allow read, update, delete: if admin();
     }
+    // Customers (food ordering)
+    match /customers/{uid} {
+      allow create, get, update: if request.auth != null && request.auth.uid == uid;
+      allow read: if admin();
+    }
+    // Restaurants: public list, listed by admin; menu edited by the owner merchant
+    match /restaurants/{uid} {
+      allow read: if true;
+      allow write: if admin();
+      match /menu/{item} {
+        allow read: if true;
+        allow write: if request.auth != null && request.auth.uid == uid && approvedMerchant();
+      }
+    }
+    // Food orders placed by customers, confirmed by the restaurant
+    match /foodOrders/{id} {
+      allow create: if request.auth != null && request.resource.data.customerUid == request.auth.uid
+        && request.resource.data.status == 'placed';
+      allow read: if request.auth != null && (resource.data.customerUid == request.auth.uid
+        || resource.data.merchantUid == request.auth.uid || admin());
+      allow update: if request.auth != null && (resource.data.merchantUid == request.auth.uid || admin())
+        && request.resource.data.status in ['accepted', 'rejected', 'ready'];
+    }
     // Merchant-only content (cake, parcel and food charge lists)
     match /private/{doc} {
       allow read: if admin() || approvedMerchant();
