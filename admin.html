@@ -86,11 +86,12 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="env.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-const CFG={apiKey:'AIzaSyC5cZRg2y8uciG2IqCNfNUBbO1SdI-rxL4',authDomain:'chovo-35252.firebaseapp.com',projectId:'chovo-35252',appId:'1:324753082605:web:5b511ba890467441c524e4'};
+// CFG now comes from env.js (staging vs production by hostname)
 const ADMIN='admin@cholvo.com';
 const STEPS=['Order Received','Picked Up','On the Way','Dropped Off','Delivered'];
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];

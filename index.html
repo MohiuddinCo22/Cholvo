@@ -500,6 +500,7 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
  <button class="btn b-or" data-close style="margin-top:14px">Done</button>
 </div></div>
 <div class="toast" id="toast"></div>
+<script src="env.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -526,10 +527,10 @@ window.addEventListener('hashchange',()=>{if(location.hash==='#merchant-registra
 // pricing lives in maps.js
 
 // ===== CONFIG: paste your keys here =====
-const CFG={apiKey:'AIzaSyC5cZRg2y8uciG2IqCNfNUBbO1SdI-rxL4',authDomain:'chovo-35252.firebaseapp.com',projectId:'chovo-35252',appId:'1:324753082605:web:5b511ba890467441c524e4'};
+// CFG now comes from env.js (staging vs production by hostname)
 const MAIL={service:'service_4jw0dqu',template:'template_i8c3cf4',key:'r2rf4UWIT_uK8DB96'};
 // ========================================
-const LIVE=CFG.apiKey!=='YOUR_API_KEY',MAILON=MAIL.key!=='YOUR_PUBLIC_KEY';
+const LIVE=CFG.apiKey!=='YOUR_API_KEY',MAILON=MAIL.key!=='YOUR_PUBLIC_KEY'&&!IS_STAGING; // no real emails in staging
 let auth,db,TS;
 if(LIVE){firebase.initializeApp(CFG);auth=firebase.auth();db=firebase.firestore();TS=firebase.firestore.FieldValue.serverTimestamp();auth.onAuthStateChanged(checkMerchant);if(MAILON)emailjs.init({publicKey:MAIL.key})}
 const em=p=>p+'@cholvo.app',busy=(f,on)=>{const b=f.querySelector('button:not(.x)');if(b)b.disabled=on};
