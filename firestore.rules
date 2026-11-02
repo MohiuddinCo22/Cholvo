@@ -12,6 +12,16 @@ service cloud.firestore {
     function okStr(d, k, max) {
       return !(k in d) || (d[k] is string && d[k].size() <= max);
     }
+    // Rider snapshot on an order: all five fields together, or none. Written by admin only.
+    function riderOk(d) {
+      return !d.keys().hasAny(['riderId', 'riderName', 'riderPhone', 'riderAssignedAt', 'riderAssignedBy'])
+        || (d.keys().hasAll(['riderId', 'riderName', 'riderPhone', 'riderAssignedAt', 'riderAssignedBy'])
+            && d.riderId is string && d.riderId.size() > 0 && d.riderId.size() <= 60
+            && d.riderName is string && d.riderName.size() > 0 && d.riderName.size() <= 120
+            && d.riderPhone is string && d.riderPhone.matches('^01[0-9]{9}$')
+            && d.riderAssignedAt is timestamp
+            && d.riderAssignedBy == request.auth.token.email);
+    }
     function validTn(tn) {
       return tn.matches('^CHV-[A-HJ-NP-Z2-9]{6}$');
     }
@@ -55,7 +65,13 @@ service cloud.firestore {
                 && approvedMerchant()));
       allow read: if admin()
         || (approvedMerchant() && resource.data.merchantUid == request.auth.uid);
-      allow update, delete: if admin();
+      allow update: if admin() && riderOk(request.resource.data);
+      allow delete: if admin();
+    }
+
+    // Riders: admin only. Never readable by merchants or the public.
+    match /riders/{id} {
+      allow read, write: if admin();
     }
 
     match /merchants/{uid} {
