@@ -63,9 +63,9 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
 </div>
 
 <div id="appView" hidden>
- <div class="top"><b>Cholvo admin</b><button class="btn g" id="out">Log out</button></div>
+ <div class="top"><b>Cholvo admin</b><span><button class="btn g" id="bk" title="Download all data as a JSON file">Backup (JSON)</button> <button class="btn g" id="out">Log out</button></span></div>
  <div class="wrap">
-  <div class="tabs"><button class="on" data-t="orders">Orders</button><button data-t="requests">Requests</button><button data-t="merchants">Merchants</button><button data-t="charges">Charges</button></div>
+  <div class="tabs"><button class="on" data-t="orders">Orders</button><button data-t="requests">Requests</button><button data-t="merchants">Merchants</button><button data-t="riders">Riders</button><button data-t="charges">Charges</button></div>
   <div id="ordersV">
    <div class="tools">
     <input id="q" placeholder="Search tracking number, name or phone" aria-label="Search">
@@ -76,6 +76,15 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
   </div>
   <div id="reqV" hidden><div id="credBox" class="card cred" hidden></div><div id="rlist"></div></div>
   <div id="merchV" hidden><div id="mlist"></div></div>
+  <div id="rdV" hidden>
+   <div class="card"><b>Add rider</b>
+    <form id="rf" style="display:grid;gap:10px;margin-top:10px">
+     <input id="rn" placeholder="Rider name" maxlength="120" required aria-label="Rider name">
+     <input id="rp" placeholder="Rider mobile (01XXXXXXXXX)" inputmode="numeric" maxlength="11" required aria-label="Rider mobile">
+     <button class="btn">Add rider</button>
+    </form></div>
+   <div id="rdlist"></div>
+  </div>
   <div id="chV" hidden>
    <p class="msg" style="padding:0 0 10px;text-align:left">These charge lists (cake, parcel, food) are shown only to logged-in, approved merchants. Edit the HTML below and press Save.</p>
    <textarea id="chText" rows="16" spellcheck="false"></textarea>
@@ -86,11 +95,12 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="env.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-const CFG={apiKey:'AIzaSyC5cZRg2y8uciG2IqCNfNUBbO1SdI-rxL4',authDomain:'chovo-35252.firebaseapp.com',projectId:'chovo-35252',appId:'1:324753082605:web:5b511ba890467441c524e4'};
+// CFG now comes from env.js (staging vs production by hostname)
 const ADMIN='admin@cholvo.com';
 const STEPS=['Order Received','Picked Up','On the Way','Dropped Off','Delivered'];
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -98,8 +108,8 @@ firebase.initializeApp(CFG);
 const auth=firebase.auth(),db=firebase.firestore(),TS=firebase.firestore.FieldValue.serverTimestamp();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const toast=t=>{const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',3000)};
-const LABEL={vendor:'Vendor',name:'Name',phone:'Phone',pickup:'Pickup',drop:'Deliver to',customerName:'Customer name',customerPhone:'Customer phone',addr:'Address',product:'Product',from:'Collect from',ptype:'Parcel type',cod:'COD (৳)',date:'Order date',later:'Scheduled'};
-let orders=[];
+const LABEL={vendor:'Vendor',name:'Name',phone:'Phone',pickup:'Pickup',drop:'Deliver to',customerName:'Customer name',customerPhone:'Customer phone',addr:'Address',product:'Product',from:'Collect from',ptype:'Parcel type',cod:'COD (৳)',date:'Order date',later:'Scheduled',riderName:'Rider',riderPhone:'Rider phone'};
+let orders=[],riders=[];
 
 STEPS.forEach(s=>$('#fs').insertAdjacentHTML('beforeend',`<option>${s}</option>`));
 
@@ -114,16 +124,37 @@ $('#lf').onsubmit=async e=>{e.preventDefault();$('#lerr').textContent='';
  catch(err){$('#lerr').textContent='Wrong email or password.'}};
 $('#out').onclick=()=>auth.signOut();
 
+// ===== Backup: download all collections as one JSON file (admin only) =====
+const BACKUP_COLS=['orders','tracking','merchants','merchantRequests','riders','private'];
+function plain(v){
+ if(v===null||v===undefined)return v;
+ if(typeof v.toDate==='function')return {__timestamp:v.toDate().toISOString()};
+ if(Array.isArray(v))return v.map(plain);
+ if(typeof v==='object'){const o={};for(const k of Object.keys(v))o[k]=plain(v[k]);return o}
+ return v}
+$('#bk').onclick=async()=>{const b=$('#bk'),old=b.textContent;b.disabled=true;b.textContent='Backing up…';
+ try{const out={project:CFG.projectId,exportedAt:new Date().toISOString(),exportedBy:auth.currentUser.email,collections:{}},counts=[];
+  for(const c of BACKUP_COLS){const s=await db.collection(c).get();out.collections[c]={};s.forEach(d=>{out.collections[c][d.id]=plain(d.data())});counts.push(c+': '+s.size)}
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='cholvo-backup-'+CFG.projectId+'-'+new Date().toISOString().replace(/[:T]/g,'-').slice(0,16)+'.json';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  toast('Backup downloaded ('+counts.join(', ')+')')}
+ catch(err){toast('Backup failed: '+(err&&err.code||'error'))}
+ b.disabled=false;b.textContent=old};
+
 $$('.tabs button').forEach(b=>b.onclick=()=>{
  $$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
  const t=b.dataset.t;
- $('#ordersV').hidden=t!=='orders';$('#reqV').hidden=t!=='requests';$('#merchV').hidden=t!=='merchants';$('#chV').hidden=t!=='charges';
- ({orders:loadOrders,requests:loadRequests,merchants:loadMerchants,charges:loadCharges})[t]()});
+ $('#ordersV').hidden=t!=='orders';$('#reqV').hidden=t!=='requests';$('#merchV').hidden=t!=='merchants';$('#chV').hidden=t!=='charges';$('#rdV').hidden=t!=='riders';
+ ({orders:loadOrders,requests:loadRequests,merchants:loadMerchants,riders:loadRiders,charges:loadCharges})[t]()});
 
 async function loadOrders(){
  $('#olist').innerHTML='<p class="msg">Loading orders…</p>';
  try{const s=await db.collection('orders').orderBy('createdAt','desc').limit(200).get();
-  orders=s.docs.map(d=>d.data());drawOrders()}
+  orders=s.docs.map(d=>d.data());
+  try{const r=await db.collection('riders').get();riders=r.docs.map(d=>({id:d.id,...d.data()}))}catch(_){riders=[]}
+  drawOrders()}
  catch(err){$('#olist').innerHTML='<p class="msg">Could not load orders. Check that the rules are published with your admin email.</p>'}}
 
 function drawOrders(){
@@ -136,10 +167,32 @@ function drawOrders(){
   return `<div class="card"><div class="head"><span class="tn">${esc(o.tn)}</span><span class="stat ${esc(o.status)}">${esc(o.status)}</span></div>
   <small style="color:#6B7A94">${o.type==='order'?'Order anything':'Parcel booking'} · ${esc(when)}</small>
   <div class="kv">${kv}</div>
-  <div class="acts">${STEPS.map(s=>`<button class="${s===o.status?'cur':''}" data-tn="${esc(o.tn)}" data-s="${s}">${s}</button>`).join('')}</div></div>`}).join('')}
+  <div class="acts">${STEPS.map(s=>`<button class="${s===o.status?'cur':''}" data-tn="${esc(o.tn)}" data-s="${s}">${s}</button>`).join('')}</div>
+  ${riderBox(o)}</div>`}).join('')}
+function riderBox(o){
+ const opts=riders.filter(r=>r.active!==false||r.id===o.riderId);
+ const sel=`<select id="rs-${esc(o.tn)}" aria-label="Choose rider"><option value="">Choose rider…</option>${opts.map(r=>`<option value="${esc(r.id)}"${r.id===o.riderId?' selected':''}>${esc(r.name)} · ${esc(r.phone)}${r.active===false?' (inactive)':''}</option>`).join('')}</select>`;
+ return `<div style="margin-top:10px;display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:10px"><small style="color:#6B7A94">🏍 ${o.riderId?'Assigned: '+esc(o.riderName):'No rider assigned'}</small>${sel}
+  <div class="acts"><button data-as="${esc(o.tn)}">${o.riderId?'Change rider':'Assign rider'}</button>${o.riderId?`<button data-rm="${esc(o.tn)}">Remove rider</button>`:''}</div></div>`}
 $('#q').oninput=drawOrders;$('#fs').onchange=drawOrders;$('#reload').onclick=loadOrders;
 
-$('#olist').onclick=async e=>{const b=e.target.closest('button[data-tn]');if(!b||b.classList.contains('cur'))return;
+$('#olist').onclick=async e=>{
+ const as=e.target.closest('button[data-as]'),rm=e.target.closest('button[data-rm]');
+ if(as||rm){const btn=as||rm,tn=btn.dataset.as||btn.dataset.rm,o=orders.find(x=>x.tn===tn);if(!o)return;
+  btn.disabled=true;
+  try{
+   if(rm){if(!confirm('Remove rider from '+tn+'?')){btn.disabled=false;return}
+    const D=firebase.firestore.FieldValue.delete();
+    await db.doc('orders/'+tn).update({riderId:D,riderName:D,riderPhone:D,riderAssignedAt:D,riderAssignedBy:D});
+    ['riderId','riderName','riderPhone','riderAssignedAt','riderAssignedBy'].forEach(k=>delete o[k]);toast('Rider removed')}
+   else{const id=$('#rs-'+tn).value,r=riders.find(x=>x.id===id);if(!r){toast('Choose a rider first.');btn.disabled=false;return}
+    const by=auth.currentUser.email;
+    await db.doc('orders/'+tn).update({riderId:r.id,riderName:r.name,riderPhone:r.phone,riderAssignedAt:TS,riderAssignedBy:by});
+    Object.assign(o,{riderId:r.id,riderName:r.name,riderPhone:r.phone,riderAssignedBy:by});toast('Rider assigned: '+r.name)}
+   drawOrders()
+  }catch(err){btn.disabled=false;toast('Could not update rider.')}
+  return}
+ const b=e.target.closest('button[data-tn]');if(!b||b.classList.contains('cur'))return;
  const tn=b.dataset.tn,s=b.dataset.s,time=new Date().toLocaleString([], {day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
  b.disabled=true;
  try{const bt=db.batch();
@@ -203,6 +256,33 @@ $('#rlist').onclick=async e=>{
   cp.onclick=()=>{navigator.clipboard.writeText('Cholvo merchant login\nPhone: '+r.mobile+'\nPassword: '+pass+'\nLogin: '+location.origin).then(()=>toast('Copied'),()=>toast('Copy failed'))};
   box.appendChild(document.createElement('br'));box.appendChild(cp);window.scrollTo(0,0);
  }catch(err){ap.disabled=false;toast(err.code==='auth/email-already-in-use'?'This mobile number already has a login.':err.code==='auth/weak-password'?'Password is too weak.':'Could not approve. Try again.')}};
+
+// ===== Riders (admin only) =====
+async function loadRiders(){
+ $('#rdlist').innerHTML='<p class="msg">Loading riders…</p>';
+ try{const s=await db.collection('riders').orderBy('name').get();
+  riders=s.docs.map(d=>({id:d.id,...d.data()}));drawRiders()}
+ catch(err){$('#rdlist').innerHTML='<p class="msg">Could not load riders. Publish the latest Firestore rules first.</p>'}}
+function drawRiders(){
+ if(!riders.length){$('#rdlist').innerHTML='<p class="msg">No riders yet. Add one above.</p>';return}
+ $('#rdlist').innerHTML=riders.map(r=>`<div class="card"><div class="head"><span class="tn">${esc(r.name)}</span><span class="stat ${r.active===false?'':'Delivered'}">${r.active===false?'Inactive':'Active'}</span></div>
+  <small style="color:#6B7A94">${esc(r.phone)}</small>
+  <div class="acts" style="margin-top:10px"><button data-rt="${esc(r.id)}">${r.active===false?'Activate':'Deactivate'}</button><button data-rd="${esc(r.id)}">Delete</button></div></div>`).join('')}
+$('#rf').onsubmit=async e=>{e.preventDefault();
+ const name=$('#rn').value.trim(),phone=$('#rp').value.trim();
+ if(!name){toast('Enter rider name.');return}
+ if(!/^01[0-9]{9}$/.test(phone)){toast('Mobile must be 11 digits, like 01712345678.');return}
+ const b=e.target.querySelector('button');b.disabled=true;
+ try{await db.collection('riders').add({name,phone,active:true,createdAt:TS});e.target.reset();toast('Rider added');loadRiders()}
+ catch(err){toast('Could not add rider.')}b.disabled=false};
+$('#rdlist').onclick=async e=>{
+ const t=e.target.closest('button[data-rt]'),d=e.target.closest('button[data-rd]');
+ if(t){const r=riders.find(x=>x.id===t.dataset.rt);t.disabled=true;
+  try{await db.doc('riders/'+r.id).update({active:r.active===false});toast('Rider updated');loadRiders()}
+  catch(err){t.disabled=false;toast('Could not update rider.')}}
+ if(d){if(!confirm('Delete this rider? Past orders keep their saved rider name and phone.'))return;d.disabled=true;
+  try{await db.doc('riders/'+d.dataset.rd).delete();toast('Rider deleted');loadRiders()}
+  catch(err){d.disabled=false;toast('Could not delete rider.')}}};
 
 // ===== Merchant-only charge lists =====
 const DEFAULT_CHARGES=`  <span class="section-kicker">DELIVERY CHARGE LIST</span><h2>Cholvo delivery charge list</h2>
