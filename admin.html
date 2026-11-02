@@ -63,7 +63,7 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
 </div>
 
 <div id="appView" hidden>
- <div class="top"><b>Cholvo admin</b><button class="btn g" id="out">Log out</button></div>
+ <div class="top"><b>Cholvo admin</b><span><button class="btn g" id="bk" title="Download all data as a JSON file">Backup (JSON)</button> <button class="btn g" id="out">Log out</button></span></div>
  <div class="wrap">
   <div class="tabs"><button class="on" data-t="orders">Orders</button><button data-t="requests">Requests</button><button data-t="merchants">Merchants</button><button data-t="riders">Riders</button><button data-t="charges">Charges</button></div>
   <div id="ordersV">
@@ -123,6 +123,25 @@ $('#lf').onsubmit=async e=>{e.preventDefault();$('#lerr').textContent='';
  try{await auth.signInWithEmailAndPassword($('#em').value.trim(),$('#pw').value)}
  catch(err){$('#lerr').textContent='Wrong email or password.'}};
 $('#out').onclick=()=>auth.signOut();
+
+// ===== Backup: download all collections as one JSON file (admin only) =====
+const BACKUP_COLS=['orders','tracking','merchants','merchantRequests','riders','private'];
+function plain(v){
+ if(v===null||v===undefined)return v;
+ if(typeof v.toDate==='function')return {__timestamp:v.toDate().toISOString()};
+ if(Array.isArray(v))return v.map(plain);
+ if(typeof v==='object'){const o={};for(const k of Object.keys(v))o[k]=plain(v[k]);return o}
+ return v}
+$('#bk').onclick=async()=>{const b=$('#bk'),old=b.textContent;b.disabled=true;b.textContent='Backing up…';
+ try{const out={project:CFG.projectId,exportedAt:new Date().toISOString(),exportedBy:auth.currentUser.email,collections:{}},counts=[];
+  for(const c of BACKUP_COLS){const s=await db.collection(c).get();out.collections[c]={};s.forEach(d=>{out.collections[c][d.id]=plain(d.data())});counts.push(c+': '+s.size)}
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='cholvo-backup-'+CFG.projectId+'-'+new Date().toISOString().replace(/[:T]/g,'-').slice(0,16)+'.json';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  toast('Backup downloaded ('+counts.join(', ')+')')}
+ catch(err){toast('Backup failed: '+(err&&err.code||'error'))}
+ b.disabled=false;b.textContent=old};
 
 $$('.tabs button').forEach(b=>b.onclick=()=>{
  $$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
