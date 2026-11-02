@@ -103,7 +103,6 @@ test('admin can read, list and update orders and tracking', async () => {
   await assertSucceeds(getDoc(doc(a, 'orders/CHV-AAAAAA')));
   await assertSucceeds(getDocs(collection(a, 'orders')));
   await assertSucceeds(updateDoc(doc(a, 'orders/CHV-AAAAAA'), { status: 'Picked Up' }));
-  await assertSucceeds(updateDoc(doc(a, 'orders/CHV-AAAAAA'), { riderName: 'Test Rider', riderPhone: '01700000009' }));
   await assertSucceeds(updateDoc(doc(a, 'tracking/CHV-AAAAAA'), { status: 'Picked Up' }));
 });
 
@@ -127,4 +126,41 @@ test('merchantRequests: valid ok; bad mobile, extra field, guest read denied', a
   await assertFails(setDoc(doc(g, 'merchantRequests/r2'), req({ mobile: '123' })));
   await assertFails(setDoc(doc(g, 'merchantRequests/r3'), req({ riderId: 'x' })));
   await assertFails(getDoc(doc(g, 'merchantRequests/r1')));
+});
+
+// ---- Phase 2: riders
+const snap = (extra = {}) => ({ riderId: 'r1', riderName: 'Test Rider', riderPhone: '01700000009',
+  riderAssignedAt: serverTimestamp(), riderAssignedBy: 'admin@cholvo.com', ...extra });
+test('riders collection: admin only', async () => {
+  await assertSucceeds(setDoc(doc(admin(), 'riders/r1'), { name: 'Test Rider', phone: '01700000009', active: true }));
+  await assertSucceeds(getDocs(collection(admin(), 'riders')));
+  await assertFails(getDocs(collection(user('m1'), 'riders')));
+  await assertFails(getDoc(doc(user('m1'), 'riders/r1')));
+  await assertFails(getDoc(doc(guest(), 'riders/r1')));
+  await assertFails(setDoc(doc(user('m1'), 'riders/r9'), { name: 'x', phone: '01700000009', active: true }));
+  await assertFails(setDoc(doc(guest(), 'riders/r9'), { name: 'x', phone: '01700000009', active: true }));
+});
+test('admin can assign a full rider snapshot', () =>
+  assertSucceeds(updateDoc(doc(admin(), 'orders/CHV-AAAAAA'), snap())));
+test('admin cannot write a partial rider snapshot', () =>
+  assertFails(updateDoc(doc(admin(), 'orders/CHV-AAAAAA'), { riderName: 'Only name' })));
+test('admin cannot forge riderAssignedBy or bad phone', async () => {
+  await assertFails(updateDoc(doc(admin(), 'orders/CHV-AAAAAA'), snap({ riderAssignedBy: 'someone@else.com' })));
+  await assertFails(updateDoc(doc(admin(), 'orders/CHV-AAAAAA'), snap({ riderPhone: '123' })));
+});
+test('merchant cannot assign or edit rider fields', async () => {
+  await assertFails(updateDoc(doc(user('m1'), 'orders/CHV-AAAAAA'), snap()));
+  await assertFails(updateDoc(doc(user('m1'), 'orders/CHV-AAAAAA'), { riderName: 'x' }));
+});
+test('merchant reads rider snapshot on own order only', async () => {
+  await env.withSecurityRulesDisabled(async c => {
+    await updateDoc(doc(c.firestore(), 'orders/CHV-AAAAAA'), { riderId: 'r1', riderName: 'Test Rider', riderPhone: '01700000009' });
+  });
+  const d = await assertSucceeds(getDoc(doc(user('m1'), 'orders/CHV-AAAAAA')));
+  if (d.data().riderName !== 'Test Rider') throw new Error('merchant should see own rider snapshot');
+  await assertFails(getDoc(doc(user('m3'), 'orders/CHV-AAAAAA')));
+});
+test('public tracking never accepts rider fields', async () => {
+  await assertFails(updateDoc(doc(guest(), 'tracking/CHV-AAAAAA'), { riderName: 'x' }));
+  await assertFails(book(guest(), 'CHV-RRRRRR', { riderId: 'r1' }));
 });
