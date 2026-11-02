@@ -4,34 +4,82 @@ service cloud.firestore {
     function admin() {
       return request.auth != null && request.auth.token.email == 'admin@cholvo.com';
     }
-    // A signed-in user who has an approved (not blocked) merchant record
     function approvedMerchant() {
       return request.auth != null
         && exists(/databases/$(database)/documents/merchants/$(request.auth.uid))
         && get(/databases/$(database)/documents/merchants/$(request.auth.uid)).data.blocked == false;
     }
-    // Public: customers see only status by tracking number
+    function okStr(d, k, max) {
+      return !(k in d) || (d[k] is string && d[k].size() <= max);
+    }
+    // Rider snapshot on an order: all five fields together, or none. Written by admin only.
+    function riderOk(d) {
+      return !d.keys().hasAny(['riderId', 'riderName', 'riderPhone', 'riderAssignedAt', 'riderAssignedBy'])
+        || (d.keys().hasAll(['riderId', 'riderName', 'riderPhone', 'riderAssignedAt', 'riderAssignedBy'])
+            && d.riderId is string && d.riderId.size() > 0 && d.riderId.size() <= 60
+            && d.riderName is string && d.riderName.size() > 0 && d.riderName.size() <= 120
+            && d.riderPhone is string && d.riderPhone.matches('^01[0-9]{9}$')
+            && d.riderAssignedAt is timestamp
+            && d.riderAssignedBy == request.auth.token.email);
+    }
+    function validTn(tn) {
+      return tn.matches('^CHV-[A-HJ-NP-Z2-9]{6}$');
+    }
+
+    // Public tracking: status only. Can be created only together with its order.
     match /tracking/{tn} {
       allow get: if true;
       allow list, update, delete: if admin();
-      allow create: if request.resource.data.status == 'Order Received'
-        && request.resource.data.keys().hasOnly(['status', 'updatedAt']);
+      allow create: if validTn(tn)
+        && request.resource.data.keys().hasOnly(['status', 'updatedAt'])
+        && request.resource.data.keys().hasAll(['status', 'updatedAt'])
+        && request.resource.data.status == 'Order Received'
+        && request.resource.data.updatedAt == request.time
+        && existsAfter(/databases/$(database)/documents/orders/$(tn));
     }
-    // Private: full order details, admin only. Guests (no login) can book too.
+
+    // Orders: guests and approved merchants create; admin manages; a merchant reads only own.
     match /orders/{tn} {
-      allow create: if request.resource.data.status == 'Order Received'
-        && request.resource.data.tn == tn
+      function validOrder(d) {
+        return d.keys().hasAll(['tn', 'type', 'status', 'merchantUid', 'createdAt'])
+          && d.keys().hasOnly(['tn', 'type', 'status', 'merchantUid', 'createdAt',
+               'vendor', 'phone', 'pickup', 'drop', 'customerName', 'customerPhone',
+               'ptype', 'cod', 'date', 'later', 'name', 'addr', 'product', 'from'])
+          && validTn(tn)
+          && d.tn == tn
+          && d.status == 'Order Received'
+          && d['type'] in ['book', 'order']
+          && d.createdAt == request.time
+          && okStr(d, 'vendor', 120) && okStr(d, 'phone', 30)
+          && okStr(d, 'pickup', 300) && okStr(d, 'drop', 300)
+          && okStr(d, 'customerName', 120) && okStr(d, 'customerPhone', 30)
+          && okStr(d, 'ptype', 30) && okStr(d, 'date', 40) && okStr(d, 'later', 40)
+          && okStr(d, 'name', 120) && okStr(d, 'addr', 300)
+          && okStr(d, 'product', 300) && okStr(d, 'from', 300)
+          && (!('cod' in d) || (d.cod is number && d.cod >= 0 && d.cod <= 10000000));
+      }
+      allow create: if validOrder(request.resource.data)
         && (request.resource.data.merchantUid == null
-            || request.resource.data.merchantUid == request.auth.uid);
-      allow read, update, delete: if admin();
+            || (request.auth != null
+                && request.resource.data.merchantUid == request.auth.uid
+                && approvedMerchant()));
+      allow read: if admin()
+        || (approvedMerchant() && resource.data.merchantUid == request.auth.uid);
+      allow update: if admin() && riderOk(request.resource.data);
+      allow delete: if admin();
     }
-    // Merchant records are created by the admin only, when a registration is approved
+
+    // Riders: admin only. Never readable by merchants or the public.
+    match /riders/{id} {
+      allow read, write: if admin();
+    }
+
     match /merchants/{uid} {
       allow create: if admin();
       allow get: if request.auth != null && (request.auth.uid == uid || admin());
       allow list, update, delete: if admin();
     }
-    // Registration requests: anyone can send one, only the admin can read or decide
+
     match /merchantRequests/{id} {
       allow create: if request.resource.data.status == 'pending'
         && request.resource.data.keys().hasOnly(['businessName', 'ownerFirst', 'ownerLast',
@@ -40,10 +88,16 @@ service cloud.firestore {
         && request.resource.data.businessType in ['Shop', 'Restaurant']
         && request.resource.data.mobile.matches('^01[0-9]{9}$')
         && request.resource.data.agreed == true
-        && request.resource.data.businessName.size() <= 120;
+        && request.resource.data.businessName.size() <= 120
+        && request.resource.data.createdAt == request.time
+        && okStr(request.resource.data, 'ownerFirst', 80)
+        && okStr(request.resource.data, 'ownerLast', 80)
+        && okStr(request.resource.data, 'email', 120)
+        && okStr(request.resource.data, 'businessPhone', 30)
+        && (!('branches' in request.resource.data) || request.resource.data.branches is number);
       allow read, update, delete: if admin();
     }
-    // Merchant-only content (cake, parcel and food charge lists)
+
     match /private/{doc} {
       allow read: if admin() || approvedMerchant();
       allow write: if admin();
