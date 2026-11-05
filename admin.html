@@ -165,7 +165,7 @@ function drawOrders(){
   const when=o.createdAt?o.createdAt.toDate().toLocaleString():'';
   const kv=Object.keys(LABEL).filter(k=>o[k]!==undefined&&o[k]!=='').map(k=>`<span>${LABEL[k]}</span><span>${esc(o[k])}</span>`).join('');
   return `<div class="card"><div class="head"><span class="tn">${esc(o.tn)}</span><span class="stat ${esc(o.status)}">${esc(o.status)}</span></div>
-  <small style="color:#6B7A94">${o.type==='order'?'Order anything':'Parcel booking'} · ${esc(when)}</small>
+  <small style="color:#6B7A94">${o.type==='order'?'Order anything':'Parcel booking'} · ${esc(when)}${(o.hasVoice||o.photoCount)?` · <b style="color:#F58220">${o.hasVoice?'🎤 voice':''}${o.hasVoice&&o.photoCount?' + ':''}${o.photoCount?'📷 '+esc(o.photoCount)+' photo'+(o.photoCount>1?'s':''):''} in Telegram</b>`:''}</small>
   <div class="kv">${kv}</div>
   <div class="acts">${STEPS.map(s=>`<button class="${s===o.status?'cur':''}" data-tn="${esc(o.tn)}" data-s="${s}">${s}</button>`).join('')}</div>
   ${riderBox(o)}</div>`}).join('')}
