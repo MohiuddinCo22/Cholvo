@@ -44,7 +44,8 @@ service cloud.firestore {
         return d.keys().hasAll(['tn', 'type', 'status', 'merchantUid', 'createdAt'])
           && d.keys().hasOnly(['tn', 'type', 'status', 'merchantUid', 'createdAt',
                'vendor', 'phone', 'pickup', 'drop', 'customerName', 'customerPhone',
-               'ptype', 'cod', 'date', 'later', 'name', 'addr', 'product', 'from'])
+               'ptype', 'cod', 'date', 'later', 'name', 'addr', 'product', 'from',
+               'hasVoice', 'photoCount'])
           && validTn(tn)
           && d.tn == tn
           && d.status == 'Order Received'
@@ -56,7 +57,10 @@ service cloud.firestore {
           && okStr(d, 'ptype', 30) && okStr(d, 'date', 40) && okStr(d, 'later', 40)
           && okStr(d, 'name', 120) && okStr(d, 'addr', 300)
           && okStr(d, 'product', 300) && okStr(d, 'from', 300)
-          && (!('cod' in d) || (d.cod is number && d.cod >= 0 && d.cod <= 10000000));
+          && (!('cod' in d) || (d.cod is number && d.cod >= 0 && d.cod <= 10000000))
+          // voice/photo orders: the files themselves go to Telegram, only these two flags are stored
+          && (!('hasVoice' in d) || d.hasVoice is bool)
+          && (!('photoCount' in d) || (d.photoCount is int && d.photoCount >= 0 && d.photoCount <= 3));
       }
       allow create: if validOrder(request.resource.data)
         && (request.resource.data.merchantUid == null

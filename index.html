@@ -107,6 +107,17 @@ footer img{height:44px;background:#fff;border-radius:10px;padding:4px;margin-bot
 .tabs button.on{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.12)}
 [hidden]{display:none!important}
 .hp{position:absolute;left:-9999px}
+.media{border:1px dashed var(--line);border-radius:14px;padding:12px;background:var(--mist)}
+.media .opt{font-weight:400;color:#6B7A94}
+.mrow{display:flex;flex-wrap:wrap;gap:8px}
+.mb{background:#fff;color:var(--navy);border:1px solid var(--line);padding:10px 14px;font-size:.9rem}
+.mb.rec{background:#d90429;color:#fff;border-color:#d90429}
+.mb:disabled{opacity:.5;cursor:not-allowed}
+.media audio{width:100%;margin-top:10px}
+.mthumbs{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.mthumb{position:relative;width:64px;height:64px}
+.mthumb img{width:100%;height:100%;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.mthumb button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--navy);color:#fff;font-size:14px;line-height:22px;cursor:pointer;padding:0}
 .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;z-index:60;display:none;max-width:90%}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 /* services */
@@ -474,6 +485,13 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
   <div><label>COD (৳)</label><input name="cod" type="number" min="0" value="0"></div></div>
   <div><label>Order date</label><input name="date" type="date" required></div>
   <div><label>Schedule for later (optional)</label><input name="later" type="datetime-local"><p class="hint">Leave empty for the next available pickup.</p></div>
+  <div class="media" data-media>
+   <label>Prefer to talk or show us? <span class="opt">(optional)</span></label>
+   <div class="mrow"><button type="button" class="btn mb" data-rec>🎤 Record voice</button><button type="button" class="btn mb" data-pick>📷 Add photos (0/3)</button><button type="button" class="btn mb" data-del hidden>Delete voice</button></div>
+   <audio controls hidden data-ap></audio><p class="hint" data-st></p><div class="mthumbs" data-thumbs></div>
+   <input type="file" accept="image/*" multiple hidden data-photos><div data-ts></div>
+   <p class="hint">Send a voice message (up to 1 minute) and/or up to 3 photos. Then you only need to enter your phone number.</p>
+  </div>
   <input class="hp" name="website" tabindex="-1" autocomplete="off">
   <button class="btn b-or">Book parcel</button>
  </form>
@@ -489,6 +507,13 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
   <div><label>Address</label><textarea name="addr" rows="2" required></textarea></div>
   <div><label>Product name</label><input name="product" required></div>
   <div><label>Where should we collect it from?</label><textarea name="from" rows="2" placeholder="Restaurant or shop name and area" required></textarea></div>
+  <div class="media" data-media>
+   <label>Prefer to talk or show us? <span class="opt">(optional)</span></label>
+   <div class="mrow"><button type="button" class="btn mb" data-rec>🎤 Record voice</button><button type="button" class="btn mb" data-pick>📷 Add photos (0/3)</button><button type="button" class="btn mb" data-del hidden>Delete voice</button></div>
+   <audio controls hidden data-ap></audio><p class="hint" data-st></p><div class="mthumbs" data-thumbs></div>
+   <input type="file" accept="image/*" multiple hidden data-photos><div data-ts></div>
+   <p class="hint">Send a voice message (up to 1 minute) and/or up to 3 photos. Then you only need to enter your phone number.</p>
+  </div>
   <input class="hp" name="website" tabindex="-1" autocomplete="off">
   <button class="btn b-or">Submit order</button>
  </form>
@@ -506,6 +531,7 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
+<script src="media-capture.js"></script>
 
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -538,18 +564,28 @@ const em=p=>p+'@cholvo.app',busy=(f,on)=>{const b=f.querySelector('button:not(.x
 const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(x=>x.toString(16).padStart(2,'0')).join('');
 const newTN=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';crypto.getRandomValues(new Uint8Array(6)).forEach(n=>r+=c[n%c.length]);return'CHV-'+r};
 const cool=()=>{try{const t=+localStorage.getItem('cvt')||0;if(Date.now()-t<30000)return true;localStorage.setItem('cvt',Date.now())}catch(_){}return false};
-const vals=f=>{const x=Object.fromEntries(new FormData(f));delete x.website;if('cod' in x)x.cod=+x.cod||0;return x};
+const vals=f=>{const x=Object.fromEntries(new FormData(f));delete x.website;delete x['cf-turnstile-response'];if('cod' in x)x.cod=+x.cod||0;return x};
+const TS_KEY='0x4AAAAAAF1UIWBKP_JCxYEa';
+const MEDIA_API='/api/media';
+['bookForm','orderForm'].forEach(id=>{const f=document.getElementById(id);if(f&&window.CholvoMedia)f._mc=CholvoMedia.attach(f.querySelector('[data-media]'),{formEl:f,endpoint:MEDIA_API,turnstileKey:TS_KEY,keep:['phone'],useTurnstile:()=>!IS_STAGING&&!merchant})});
 async function save(e,type){e.preventDefault();const f=e.target;if(f.website&&f.website.value)return;
  if(!LIVE){toast('Demo mode: add your Firebase config to save orders.');return}
  if(cool()){toast('Please wait a few seconds before sending again.');return}
  busy(f,true);
- try{const tn=newTN(),d=vals(f),bt=db.batch();
-  bt.set(db.doc('orders/'+tn),{...d,type,tn,status:'Order Received',merchantUid:merchant?merchant.uid:null,createdAt:TS});
+ try{const tn=newTN(),d=vals(f),bt=db.batch(),mc=f._mc,hasM=!!(mc&&mc.has());let extra={};
+  if(hasM){
+   if(!/^01[0-9]{9}$/.test(d.phone||'')){busy(f,false);toast('Please enter your phone number (01XXXXXXXXX).');return}
+   const c=mc.counts(),tok=(merchant&&auth.currentUser)?await auth.currentUser.getIdToken():'';
+   const text=Object.entries(d).filter(([k,v])=>v!==''&&v!==undefined&&k!=='phone').map(([k,v])=>k+': '+v).join('\n');
+   await mc.upload({tn,type,phone:d.phone,text,idToken:tok});
+   extra={hasVoice:c.voice,photoCount:c.photos};
+  }
+  bt.set(db.doc('orders/'+tn),{...d,...extra,type,tn,status:'Order Received',merchantUid:merchant?merchant.uid:null,createdAt:TS});
   bt.set(db.doc('tracking/'+tn),{status:'Order Received',updatedAt:TS});
   await bt.commit();
-  if(MAILON)emailjs.send(MAIL.service,MAIL.template,{type,tracking:tn,summary:Object.entries(d).map(([k,v])=>k+': '+v).join('\n')}).catch(()=>{});
-  close();f.reset();$('#doneTN').textContent=tn;open('done')
- }catch(err){toast('Could not send. Check your connection and try again.')}
+  if(MAILON)emailjs.send(MAIL.service,MAIL.template,{type,tracking:tn,summary:Object.entries(d).map(([k,v])=>k+': '+v).join('\n')+(hasM?'\n(voice/photos sent to Telegram)':'')}).catch(()=>{});
+  close();f.reset();if(mc)mc.reset();$('#doneTN').textContent=tn;open('done')
+ }catch(err){if(err&&err.media){try{localStorage.removeItem('cvt')}catch(_){}}toast(err&&err.media?err.message:'Could not send. Check your connection and try again.')}
  busy(f,false)}
 $('#bookForm').onsubmit=e=>save(e,'book');
 $('#orderForm').onsubmit=e=>save(e,'order');

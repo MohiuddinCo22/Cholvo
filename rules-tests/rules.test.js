@@ -164,3 +164,29 @@ test('public tracking never accepts rider fields', async () => {
   await assertFails(updateDoc(doc(guest(), 'tracking/CHV-AAAAAA'), { riderName: 'x' }));
   await assertFails(book(guest(), 'CHV-RRRRRR', { riderId: 'r1' }));
 });
+
+// ---- voice / photo orders (files go to Telegram; only two flags are stored)
+const mediaOrder = (tn, extra = {}) => ({ tn, type: 'book', status: 'Order Received', merchantUid: null,
+  createdAt: serverTimestamp(), phone: '01711111111', hasVoice: true, photoCount: 2, ...extra });
+const mediaBatch = (db, tn, extra = {}) => {
+  const b = writeBatch(db);
+  b.set(doc(db, 'orders/' + tn), mediaOrder(tn, extra));
+  b.set(doc(db, 'tracking/' + tn), trackDoc());
+  return b.commit();
+};
+test('guest voice+photo order with only a phone number works', () => assertSucceeds(mediaBatch(guest(), 'CHV-VZCEK2')));
+test('photoCount above 3 or negative is rejected', async () => {
+  await assertFails(mediaBatch(guest(), 'CHV-VZCEK3', { photoCount: 4 }));
+  await assertFails(mediaBatch(guest(), 'CHV-VZCEK4', { photoCount: -1 }));
+});
+test('hasVoice / photoCount must have the right types', async () => {
+  await assertFails(mediaBatch(guest(), 'CHV-VZCEK5', { hasVoice: 'yes' }));
+  await assertFails(mediaBatch(guest(), 'CHV-VZCEK6', { photoCount: '2' }));
+});
+test('approved merchant voice order works, blocked merchant does not', async () => {
+  await assertSucceeds(mediaBatch(user('m1'), 'CHV-VZCEK7', { merchantUid: 'm1' }));
+  await assertFails(mediaBatch(user('m2'), 'CHV-VZCEK8', { merchantUid: 'm2' }));
+});
+test('public tracking still never carries media or rider info', async () => {
+  await assertFails(updateDoc(doc(guest(), 'tracking/CHV-AAAAAA'), { hasVoice: true }));
+});
