@@ -120,12 +120,62 @@ test('private/charges: approved yes, blocked no, guest no', async () => {
 const req = (extra = {}) => ({ businessName: 'Test', ownerFirst: 'A', ownerLast: 'B', businessType: 'Shop', branches: 1,
   email: 'a@b.c', mobile: '01712345678', businessPhone: '01712345678', samePhone: true, agreed: true,
   status: 'pending', createdAt: serverTimestamp(), ...extra });
+// a registration is always request (id = mobile number) + phoneIndex entry in one batch
+const register = (db, mobile = '01712345678', extra = {}) => {
+  const b = writeBatch(db);
+  b.set(doc(db, 'merchantRequests/' + mobile), req({ mobile, ...extra }));
+  b.set(doc(db, 'phoneIndex/' + mobile), { createdAt: serverTimestamp() });
+  return b.commit();
+};
 test('merchantRequests: valid ok; bad mobile, extra field, guest read denied', async () => {
   const g = guest();
-  await assertSucceeds(setDoc(doc(g, 'merchantRequests/r1'), req()));
-  await assertFails(setDoc(doc(g, 'merchantRequests/r2'), req({ mobile: '123' })));
-  await assertFails(setDoc(doc(g, 'merchantRequests/r3'), req({ riderId: 'x' })));
-  await assertFails(getDoc(doc(g, 'merchantRequests/r1')));
+  await assertSucceeds(register(g));
+  await assertFails(register(g, '123'));
+  await assertFails(register(g, '01799999999', { riderId: 'x' }));
+  await assertFails(getDoc(doc(g, 'merchantRequests/01712345678')));
+});
+test('same mobile number cannot register twice', async () => {
+  await assertSucceeds(register(guest()));
+  await assertFails(register(guest()));
+  await assertSucceeds(register(guest(), '01733333333'));
+});
+test('a request without its phoneIndex entry, or with an id that is not the mobile, is rejected', async () => {
+  const g = guest();
+  await assertFails(setDoc(doc(g, 'merchantRequests/01744444444'), req({ mobile: '01744444444' })));
+  await assertFails(setDoc(doc(g, 'merchantRequests/r1'), req()));
+});
+test('a number registered before the check (locked by admin) cannot register again', async () => {
+  await assertSucceeds(setDoc(doc(admin(), 'phoneIndex/01755555555'), { createdAt: serverTimestamp() }));
+  await assertFails(register(guest(), '01755555555'));
+});
+test('phoneIndex: guest can check one number but not list; cannot squat a number without a request', async () => {
+  await assertSucceeds(register(guest()));
+  await assertSucceeds(getDoc(doc(guest(), 'phoneIndex/01712345678')));
+  await assertFails(getDocs(collection(guest(), 'phoneIndex')));
+  await assertSucceeds(getDocs(collection(admin(), 'phoneIndex')));
+  await assertFails(setDoc(doc(guest(), 'phoneIndex/01766666666'), { createdAt: serverTimestamp() }));
+  await assertFails(deleteDoc(doc(guest(), 'phoneIndex/01712345678')));
+});
+test('admin deleting a rejected request frees the number', async () => {
+  await assertSucceeds(register(guest()));
+  const b = writeBatch(admin());
+  b.delete(doc(admin(), 'merchantRequests/01712345678'));
+  b.delete(doc(admin(), 'phoneIndex/01712345678'));
+  await assertSucceeds(b.commit());
+  await assertSucceeds(register(guest()));
+});
+
+// ---- cancelling a delivery (admin sets status 'Cancelled' on order + public tracking)
+test('admin can cancel an order; merchant and guest cannot', async () => {
+  const cancel = db => { const b = writeBatch(db);
+    b.update(doc(db, 'orders/CHV-AAAAAA'), { status: 'Cancelled', updatedAt: serverTimestamp() });
+    b.update(doc(db, 'tracking/CHV-AAAAAA'), { status: 'Cancelled', updatedAt: serverTimestamp() });
+    return b.commit(); };
+  await assertFails(cancel(guest()));
+  await assertFails(cancel(user('m1')));
+  await assertSucceeds(cancel(admin()));
+  await assertSucceeds(getDoc(doc(guest(), 'tracking/CHV-AAAAAA')));
+  await assertSucceeds(getDoc(doc(user('m1'), 'orders/CHV-AAAAAA')));
 });
 
 // ---- Phase 2: riders

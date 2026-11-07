@@ -432,7 +432,8 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
   <div><label>Business type</label><select name="businessType" required><option value="" selected disabled>Select business type</option><option value="Shop">Shop</option><option value="Restaurant">Restaurant</option></select></div>
   <div><label>Number of branches to register</label><input name="branches" type="number" min="1" max="500" value="1" required></div>
   <div><label>Enter your business email</label><input name="email" type="email" maxlength="120" autocomplete="email" required></div>
-  <div><label>Mobile phone number</label><input name="mobile" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" autocomplete="tel" required></div>
+  <div><label>Mobile phone number</label><input name="mobile" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" autocomplete="tel" required>
+   <p id="regDup" role="alert" hidden style="color:#C62828;font-weight:700;font-size:.9rem;margin-top:6px">Already existing: this mobile number is already registered. Please login, or contact Cholvo support.</p></div>
   <label class="chk"><input type="checkbox" name="samePhone" id="samePhone" checked><span>My business phone is the same as my mobile number</span></label>
   <div id="bizPhoneWrap" hidden><label>Business phone number</label><input name="businessPhone" id="bizPhone" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX"></div>
   <label class="chk"><input type="checkbox" name="agreed" required><span>I am registering after agreeing to all Cholvo terms and conditions</span></label>
@@ -605,15 +606,22 @@ $('#openAgree').onclick=()=>{$('#agreeBody').innerHTML=$('#rulesBody').innerHTML
 const shutAgree=()=>$('#m-agree').classList.remove('open');
 $('#closeAgree').onclick=shutAgree;$('#closeAgree2').onclick=shutAgree;
 $('#m-agree').onclick=e=>{if(e.target.id==='m-agree')shutAgree()};
+const regDup=()=>{const p=$('#regDup');p.hidden=false;p.scrollIntoView({block:'center'})};
+$('#regForm').mobile.oninput=()=>{$('#regDup').hidden=true};
 $('#regForm').onsubmit=async e=>{e.preventDefault();const f=e.target;if(f.website.value)return;
  if(!LIVE){toast('Demo mode: add your Firebase config.');return}
  if(cool()){toast('Please wait a few seconds before sending again.');return}
  busy(f,true);
  try{const same=f.samePhone.checked,d={businessName:f.businessName.value.trim(),ownerFirst:f.ownerFirst.value.trim(),ownerLast:f.ownerLast.value.trim(),businessType:f.businessType.value,branches:Math.max(1,parseInt(f.branches.value,10)||1),email:f.email.value.trim(),mobile:f.mobile.value.trim(),businessPhone:same?f.mobile.value.trim():f.businessPhone.value.trim(),samePhone:same,agreed:true};
-  await db.collection('merchantRequests').add({...d,status:'pending',createdAt:TS});
+  const idx=db.doc('phoneIndex/'+d.mobile);
+  if((await idx.get()).exists){regDup();try{localStorage.removeItem('cvt')}catch(_){}busy(f,false);return}
+  const bt=db.batch();bt.set(db.doc('merchantRequests/'+d.mobile),{...d,status:'pending',createdAt:TS});bt.set(idx,{createdAt:TS});await bt.commit();
   if(MAILON)emailjs.send(MAIL.service,MAIL.template,{type:'merchant registration request',tracking:'-',summary:Object.entries(d).map(([k,v])=>k+': '+v).join('\n')}).catch(()=>{});
   f.reset();$('#bizPhoneWrap').hidden=true;close();open('reqdone')
- }catch(err){toast('Could not send your registration. Check your connection and try again.')}
+ }catch(err){
+  // a second registration with the same number is refused by the rules: confirm it really is a duplicate
+  try{if(err&&err.code==='permission-denied'&&(await db.doc('phoneIndex/'+f.mobile.value.trim()).get()).exists){regDup();try{localStorage.removeItem('cvt')}catch(_){}busy(f,false);return}}catch(_){}
+  toast('Could not send your registration. Check your connection and try again.')}
  busy(f,false)};
 // merchant-only content (charge lists) and login state in the menu
 let mdata={};
@@ -658,12 +666,14 @@ $('#heroTrack').onsubmit=e=>{e.preventDefault();$('#tn').value=$('#ht').value;lo
 $$('[data-book]').forEach(b=>b.onclick=()=>$('#bookBtn').click());
 $$('[data-order]').forEach(b=>b.onclick=()=>open('order'));
 const STEPS=['Order Received','Picked Up','On the Way','Dropped Off','Delivered'];
-function renderTrack(tn,status,times={}){const i=STEPS.indexOf(status);
+function renderTrack(tn,status,times={}){
+ if(status==='Cancelled'){$('#trackOut').innerHTML=`<div class="card"><span class="stat" style="background:#FDE3E1;color:#B3261E">Cancelled</span><p style="margin-top:8px">Tracking number: ${tn}</p><p style="margin-top:8px">This delivery has been cancelled.${times.Cancelled?` <small>${times.Cancelled}</small>`:''} If you have any questions, please contact Cholvo support.</p></div>`;return}
+ const i=STEPS.indexOf(status);
  $('#trackOut').innerHTML=`<div class="card"><span class="stat">${status}</span><p style="margin-top:8px">Tracking number: ${tn}</p><ul class="tl">${STEPS.map((s,k)=>`<li class="${k<=i?'ok':''} ${k===i?'now':''}">${s}${times[s]?`<small>${times[s]}</small>`:''}</li>`).join('')}</ul></div>`}
 $('#trackForm').onsubmit=async e=>{e.preventDefault();const t=$('#tn').value.trim().toUpperCase(),o=$('#trackOut');
  if(t==='CHV-DEMO'){renderTrack(t,'On the Way');return}
  if(!LIVE){o.textContent='Live tracking works once Firebase is connected. Type CHV-DEMO to preview.';return}
- try{const r=await db.doc('tracking/'+t).get();r.exists?renderTrack(t,r.data().status):o.textContent='No parcel found with this tracking number.'}catch(err){o.textContent='Could not load tracking. Try again.'}};
+ try{const r=await db.doc('tracking/'+t).get();r.exists?renderTrack(t,r.data().status,r.data().status==='Cancelled'?(r.data().times||{}):{}):o.textContent='No parcel found with this tracking number.'}catch(err){o.textContent='Could not load tracking. Try again.'}};
 </script>
   <script src="animations.js"></script>
   <script src="maps.js"></script>

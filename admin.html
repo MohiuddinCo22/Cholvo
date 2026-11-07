@@ -34,12 +34,15 @@ input,select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-
 .tn{font-weight:800;color:var(--navy);font-size:1.05rem}
 .stat{background:#FFE9D2;color:#B85A00;padding:3px 11px;border-radius:999px;font-size:.82rem;font-weight:700}
 .stat.Delivered{background:#DDF3E1;color:#1B6B2F}
+.stat.Cancelled{background:#FDE3E1;color:#B3261E}
 .kv{display:grid;grid-template-columns:110px 1fr;gap:3px 10px;margin:10px 0;font-size:.92rem}
 .kv span:nth-child(odd){color:#6B7A94}
 .kv span:nth-child(even){word-break:break-word}
 .acts{display:flex;gap:6px;flex-wrap:wrap}
 .acts button{flex:1;min-width:110px;padding:9px 6px;border-radius:9px;border:1.5px solid var(--line);background:#fff;font-weight:600;cursor:pointer;font-size:.85rem}
 .acts button.cur{background:var(--navy);color:#fff;border-color:var(--navy)}
+.acts button.cancel{color:#B3261E;border-color:#F3B8B3}
+.acts button.cancel.cur{background:#C62828;color:#fff;border-color:#C62828}
 .msg{text-align:center;color:#6B7A94;padding:30px 0}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 18px;border-radius:12px;display:none;z-index:9;max-width:90%}
 .err{color:#C62828;font-size:.9rem}
@@ -122,7 +125,9 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
    </div>
    <div id="olist"></div>
   </div>
-  <div id="reqV" hidden><div id="credBox" class="card cred" hidden></div><div id="rlist"></div></div>
+  <div id="reqV" hidden><div id="credBox" class="card cred" hidden></div>
+   <div class="card"><div class="acts"><button id="lockNums">Lock existing numbers (run once)</button></div><p class="hint">One mobile number can register only once. Press this once after publishing the new rules, so numbers that registered earlier are also blocked from registering again.</p></div>
+   <div id="rlist"></div></div>
   <div id="merchV" hidden><div id="mlist"></div></div>
   <div id="rdV" hidden>
    <div class="card"><b>Add rider</b>
@@ -173,6 +178,7 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
 // CFG now comes from env.js (staging vs production by hostname)
 const ADMIN='admin@cholvo.com';
 const STEPS=['Order Received','Picked Up','On the Way','Dropped Off','Delivered'];
+const ALL=[...STEPS,'Cancelled']; // Cancelled is set by the admin only, from any step
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 firebase.initializeApp(CFG);
 const auth=firebase.auth(),db=firebase.firestore(),TS=firebase.firestore.FieldValue.serverTimestamp();
@@ -181,7 +187,7 @@ const toast=t=>{const e=$('#toast');e.textContent=t;e.style.display='block';setT
 const LABEL={vendor:'Vendor',name:'Name',phone:'Phone',pickup:'Pickup',drop:'Deliver to',customerName:'Customer name',customerPhone:'Customer phone',addr:'Address',product:'Product',from:'Collect from',ptype:'Parcel type',cod:'COD (৳)',date:'Order date',later:'Scheduled',riderName:'Rider',riderPhone:'Rider phone'};
 let orders=[],riders=[];
 
-STEPS.forEach(s=>$('#fs').insertAdjacentHTML('beforeend',`<option>${s}</option>`));
+ALL.forEach(s=>$('#fs').insertAdjacentHTML('beforeend',`<option>${s}</option>`));
 
 auth.onAuthStateChanged(u=>{
  const ok=u&&u.email===ADMIN;
@@ -243,7 +249,7 @@ async function loadDash(){
  try{
   const [o,rq,m,r]=await Promise.all([db.collection('orders').orderBy('createdAt','desc').limit(200).get(),db.collection('merchantRequests').get(),db.collection('merchants').get(),db.collection('riders').get()]);
   const od=o.docs.map(d=>d.data()),today=new Date().toDateString(),n=f=>od.filter(f).length;
-  const stats=[['Orders today',n(x=>x.createdAt&&x.createdAt.toDate().toDateString()===today)],['In progress',n(x=>x.status&&x.status!=='Delivered')],['Delivered',n(x=>x.status==='Delivered')],['Pending requests',rq.docs.filter(d=>d.data().status==='pending').length],['Merchants',m.size],['Active riders',r.docs.filter(d=>d.data().active!==false).length]];
+  const stats=[['Orders today',n(x=>x.createdAt&&x.createdAt.toDate().toDateString()===today)],['In progress',n(x=>x.status&&x.status!=='Delivered'&&x.status!=='Cancelled')],['Delivered',n(x=>x.status==='Delivered')],['Pending requests',rq.docs.filter(d=>d.data().status==='pending').length],['Merchants',m.size],['Active riders',r.docs.filter(d=>d.data().active!==false).length]];
   el.innerHTML=`<div class="stats">${stats.map(([k,v])=>`<div class="card stat2"><b>${v}</b><small>${k}</small></div>`).join('')}</div><p class="hint" style="margin:-4px 0 14px">Order numbers are counted from the latest 200 orders.</p><b style="color:var(--navy)">Recent orders</b>${od.slice(0,5).map(x=>`<div class="card" style="margin-top:8px"><div class="head"><span class="tn">${esc(x.tn)}</span><span class="stat ${esc(x.status)}">${esc(x.status)}</span></div><small style="color:#6B7A94">${x.type==='order'?'Order anything':'Parcel booking'} · ${x.createdAt?esc(x.createdAt.toDate().toLocaleString()):''}</small></div>`).join('')||'<p class="msg">No orders yet.</p>'}`
  }catch(err){el.innerHTML='<p class="msg">Could not load the dashboard. Check that the rules are published.</p>'}}
 
@@ -311,7 +317,7 @@ function drawOrders(){
   return `<div class="card"><div class="head"><span class="tn">${esc(o.tn)}</span><span class="stat ${esc(o.status)}">${esc(o.status)}</span></div>
   <small style="color:#6B7A94">${o.type==='order'?'Order anything':'Parcel booking'} · ${esc(when)}${(o.hasVoice||o.photoCount)?` · <b style="color:#F58220">${o.hasVoice?'🎤 voice':''}${o.hasVoice&&o.photoCount?' + ':''}${o.photoCount?'📷 '+esc(o.photoCount)+' photo'+(o.photoCount>1?'s':''):''} in Telegram</b>`:''}</small>
   <div class="kv">${kv}</div>
-  <div class="acts">${STEPS.map(s=>`<button class="${s===o.status?'cur':''}" data-tn="${esc(o.tn)}" data-s="${s}">${s}</button>`).join('')}</div>
+  <div class="acts">${ALL.map(s=>`<button class="${s===o.status?'cur':''}${s==='Cancelled'?' cancel':''}" data-tn="${esc(o.tn)}" data-s="${s}">${s}</button>`).join('')}</div>
   ${riderBox(o)}</div>`}).join('')}
 function riderBox(o){
  const opts=riders.filter(r=>r.active!==false||r.id===o.riderId);
@@ -337,6 +343,7 @@ $('#olist').onclick=async e=>{
   }catch(err){btn.disabled=false;toast('Could not update rider.')}
   return}
  const b=e.target.closest('button[data-tn]');if(!b||b.classList.contains('cur'))return;
+ if(b.dataset.s==='Cancelled'&&!confirm('Cancel delivery '+b.dataset.tn+'? The merchant and the customer will see it as Cancelled.'))return;
  const tn=b.dataset.tn,s=b.dataset.s,time=new Date().toLocaleString([], {day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
  b.disabled=true;
  try{const bt=db.batch();
@@ -375,10 +382,13 @@ function drawRequests(){
  $('#rlist').innerHTML=list.map(r=>{
   const when=r.createdAt?r.createdAt.toDate().toLocaleString():'';
   const kv=Object.keys(RLABEL).filter(k=>r[k]!==undefined&&r[k]!=='').map(k=>`<span>${RLABEL[k]}</span><span>${esc(r[k])}</span>`).join('');
-  const acts=r.status==='pending'?`<div class="pw"><input id="pw-${r.id}" value="${randPass()}" minlength="6" aria-label="Password for this merchant"><button class="btn" data-ap="${r.id}">Approve</button></div><div class="acts" style="margin-top:8px"><button data-rj="${r.id}">Reject</button></div><p class="hint">Login phone = mobile number above. Edit the password if you like (min 6 characters), then press Approve.</p>`:'';
+  const acts=r.status==='pending'?`<div class="pw"><input id="pw-${r.id}" value="${randPass()}" minlength="6" aria-label="Password for this merchant"><button class="btn" data-ap="${r.id}">Approve</button></div><div class="acts" style="margin-top:8px"><button data-rj="${r.id}">Reject</button></div><p class="hint">Login phone = mobile number above. Edit the password if you like (min 6 characters), then press Approve.</p>`:(r.status==='rejected'?`<div class="acts" style="margin-top:8px"><button data-rd="${r.id}">Delete (frees this number to register again)</button></div>`:'');
   return `<div class="card"><div class="head"><span class="tn">${esc(r.businessName)}</span><span class="stat ${r.status==='approved'?'Delivered':''}">${esc(r.status)}</span></div><small style="color:#6B7A94">${esc(when)}</small><div class="kv">${kv}</div>${acts}</div>`}).join('')}
 $('#rlist').onclick=async e=>{
- const ap=e.target.closest('button[data-ap]'),rj=e.target.closest('button[data-rj]');
+ const ap=e.target.closest('button[data-ap]'),rj=e.target.closest('button[data-rj]'),rd=e.target.closest('button[data-rd]');
+ if(rd){const r=reqs.find(x=>x.id===rd.dataset.rd);if(!r||!confirm('Delete this rejected request? '+r.mobile+' will be able to register again.'))return;rd.disabled=true;
+  try{const bt=db.batch();bt.delete(db.doc('merchantRequests/'+r.id));bt.delete(db.doc('phoneIndex/'+r.mobile));await bt.commit();reqs=reqs.filter(x=>x.id!==r.id);drawRequests();toast('Deleted. Number is free again.')}
+  catch(err){rd.disabled=false;toast('Could not delete.')}return}
  if(rj){if(!confirm('Reject this registration?'))return;rj.disabled=true;
   try{await db.doc('merchantRequests/'+rj.dataset.rj).update({status:'rejected'});const r=reqs.find(x=>x.id===rj.dataset.rj);if(r)r.status='rejected';drawRequests();toast('Rejected')}
   catch(err){rj.disabled=false;toast('Could not update.')}return}
@@ -400,6 +410,16 @@ $('#rlist').onclick=async e=>{
   cp.onclick=()=>{navigator.clipboard.writeText('Cholvo merchant login\nPhone: '+r.mobile+'\nPassword: '+pass+'\nLogin: '+location.origin).then(()=>toast('Copied'),()=>toast('Copy failed'))};
   box.appendChild(document.createElement('br'));box.appendChild(cp);window.scrollTo(0,0);
  }catch(err){ap.disabled=false;toast(err.code==='auth/email-already-in-use'?'This mobile number already has a login.':err.code==='auth/weak-password'?'Password is too weak.':'Could not approve. Try again.')}};
+
+// One-time: block numbers that registered before the duplicate check existed
+$('#lockNums').onclick=async e=>{const b=e.currentTarget;if(!confirm('Lock every mobile number that already has a registration request or a merchant account?'))return;b.disabled=true;
+ try{const [rq,ms]=await Promise.all([db.collection('merchantRequests').get(),db.collection('merchants').get()]);
+  const nums=new Set();rq.docs.forEach(d=>{const m=d.data().mobile;if(m)nums.add(m)});ms.docs.forEach(d=>{const m=d.data().phone;if(m)nums.add(m)});
+  const list=[...nums].filter(p=>/^01[0-9]{9}$/.test(p));
+  for(let i=0;i<list.length;i+=400){const bt=db.batch();list.slice(i,i+400).forEach(p=>bt.set(db.doc('phoneIndex/'+p),{createdAt:TS},{merge:true}));await bt.commit()}
+  toast(list.length+' numbers locked')}
+ catch(err){toast('Could not lock numbers. Publish the latest Firestore rules first.')}
+ b.disabled=false};
 
 // ===== Riders (admin only) =====
 async function loadRiders(){
