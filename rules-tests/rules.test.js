@@ -165,6 +165,39 @@ test('admin deleting a rejected request frees the number', async () => {
   await assertSucceeds(register(guest()));
 });
 
+// ---- merchant cancels own delivery, only before 'On the Way'
+const mCancel = (db, tn = 'CHV-AAAAAA', o = {}, t = {}) => {
+  const b = writeBatch(db);
+  b.update(doc(db, 'orders/' + tn), { status: 'Cancelled', cancelledBy: 'merchant', updatedAt: serverTimestamp(), ...o });
+  b.update(doc(db, 'tracking/' + tn), { status: 'Cancelled', updatedAt: serverTimestamp(), ...t });
+  return b.commit();
+};
+const setStatus = (s) => env.withSecurityRulesDisabled(c =>
+  setDoc(doc(c.firestore(), 'orders/CHV-AAAAAA'), { tn: 'CHV-AAAAAA', status: s, merchantUid: 'm1' }));
+test('merchant cancels own order while Order Received or Picked Up', async () => {
+  await assertSucceeds(mCancel(user('m1')));
+  await setStatus('Picked Up');
+  await assertSucceeds(mCancel(user('m1')));
+});
+test('merchant cannot cancel once On the Way / Dropped Off / Delivered', async () => {
+  for (const s of ['On the Way', 'Dropped Off', 'Delivered']) {
+    await setStatus(s);
+    await assertFails(mCancel(user('m1')));
+  }
+});
+test('merchant cannot cancel someone else\'s order, nor can a blocked merchant or a guest', async () => {
+  await assertFails(mCancel(user('m3')));
+  await assertFails(mCancel(user('m2')));
+  await assertFails(mCancel(guest()));
+});
+test('merchant can only set Cancelled, only status/updatedAt/cancelledBy, and only with tracking in the same batch', async () => {
+  await assertFails(mCancel(user('m1'), 'CHV-AAAAAA', { status: 'Delivered' }, { status: 'Delivered' }));
+  await assertFails(mCancel(user('m1'), 'CHV-AAAAAA', { riderName: 'x' }));
+  await assertFails(mCancel(user('m1'), 'CHV-AAAAAA', { cancelledBy: 'admin' }));
+  await assertFails(updateDoc(doc(user('m1'), 'orders/CHV-AAAAAA'), { status: 'Cancelled', cancelledBy: 'merchant', updatedAt: serverTimestamp() }));
+  await assertFails(updateDoc(doc(user('m1'), 'tracking/CHV-AAAAAA'), { status: 'Cancelled', updatedAt: serverTimestamp() }));
+});
+
 // ---- cancelling a delivery (admin sets status 'Cancelled' on order + public tracking)
 test('admin can cancel an order; merchant and guest cannot', async () => {
   const cancel = db => { const b = writeBatch(db);
