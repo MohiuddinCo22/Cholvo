@@ -39,12 +39,10 @@ export async function onRequestPost({ request, env }) {
   let token = null;
   try {
     const test = isTestHost(new URL(request.url).hostname);
-    const saJson = test ? env.FIREBASE_SA_TEST : env.FIREBASE_SA_LIVE;
-    if (!saJson) return fail('not_configured', 503);
-    let sa;
-    try { sa = JSON.parse(saJson); } catch (_) { return fail('not_configured', 503); }
+    const loaded = loadSa(env, test);
+    if (loaded.code) return fail(loaded.code, 503);
+    const sa = loaded.sa;
     const project = sa.project_id;
-    if (!project || !sa.client_email || !sa.private_key) return fail('not_configured', 503);
 
     let body;
     try { body = await request.json(); } catch (_) { return fail('bad_request', 400); }
@@ -113,6 +111,30 @@ export async function onRequestPost({ request, env }) {
     if (claimed && token) await undoClaim(claimed, token).catch(() => {});
     return fail('server', 502); // never include secrets or raw errors in the reply
   }
+}
+
+
+// Reads the service-account secret and says exactly what is wrong with it (never returns the secret itself).
+function loadSa(env, test) {
+  const raw = test ? env.FIREBASE_SA_TEST : env.FIREBASE_SA_LIVE;
+  if (!raw) return { code: test ? 'no_secret_test' : 'no_secret_live' };
+  let sa;
+  try { sa = JSON.parse(raw); } catch (_) { return { code: 'secret_not_json' }; }
+  if (!sa || typeof sa !== 'object') return { code: 'secret_not_json' };
+  if (!sa.project_id || !sa.client_email || !sa.private_key) return { code: 'secret_missing_fields' };
+  return { sa };
+}
+
+// Open /api/reset-password in a browser to see whether this site is set up (no secrets are shown).
+export async function onRequestGet({ request, env }) {
+  const host = new URL(request.url).hostname, test = isTestHost(host);
+  const out = { host, uses: test ? 'FIREBASE_SA_TEST (staging)' : 'FIREBASE_SA_LIVE (live)' };
+  const loaded = loadSa(env, test);
+  if (loaded.code) { out.ok = false; out.problem = loaded.code; return json(out); }
+  out.project_id = loaded.sa.project_id;
+  try { await accessToken(loaded.sa); out.ok = true; out.problem = null; }
+  catch (_) { out.ok = false; out.problem = 'google_login_failed (key is wrong, deleted, or the project has no service account)'; }
+  return json(out);
 }
 
 async function undoClaim(claimed, token) {
