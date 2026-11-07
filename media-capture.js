@@ -53,13 +53,18 @@ window.CholvoMedia = (function () {
 
     function say(t) { status.textContent = t || ''; }
     function has() { return !!voice || photos.length > 0; }
-    function changed() {
-      // With a voice message or photos, only the phone number is required.
-      form.querySelectorAll('[required],[data-wasreq]').forEach(function (el) {
-        if (keep.indexOf(el.name) >= 0) return;
-        if (has()) { if (el.required) { el.dataset.wasreq = '1'; el.required = false; } }
-        else if (el.dataset.wasreq) { el.required = true; delete el.dataset.wasreq; }
+    // With a voice message or photos attached, every other field in the form is switched off (greyed out, not clickable)
+    // and is not sent. Only the fields listed in opts.keep (the phone number) stay active.
+    function lock(on) {
+      Array.prototype.forEach.call(form.querySelectorAll('input,textarea,select'), function (el) {
+        if (root.contains(el) || keep.indexOf(el.name) >= 0 || el.classList.contains('hp') || el.type === 'hidden') return;
+        if (on) { if (!el.disabled) { el.dataset.mlock = '1'; el.disabled = true; } }
+        else if (el.dataset.mlock) { el.disabled = false; delete el.dataset.mlock; }
       });
+      form.classList.toggle('media-on', on);
+    }
+    function changed() {
+      lock(has());
       delBtn.hidden = !voice; player.hidden = !voice;
       pickBtn.textContent = '📷 Add photos (' + photos.length + '/' + MAX_PHOTOS + ')';
       pickBtn.disabled = photos.length >= MAX_PHOTOS;

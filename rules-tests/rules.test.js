@@ -190,3 +190,45 @@ test('approved merchant voice order works, blocked merchant does not', async () 
 test('public tracking still never carries media or rider info', async () => {
   await assertFails(updateDoc(doc(guest(), 'tracking/CHV-AAAAAA'), { hasVoice: true }));
 });
+
+// ---- Merchant App banners and notifications
+const bn = (o = {}) => ({ file: 'banner-abcd1234.jpg', title: 'Eid offer', order: 1, active: true, createdAt: serverTimestamp(), ...o });
+test('admin can create, update and delete a banner', async () => {
+  await assertSucceeds(setDoc(doc(admin(), 'banners/abcd1234'), bn()));
+  await assertSucceeds(updateDoc(doc(admin(), 'banners/abcd1234'), { active: false, order: 3 }));
+  await assertSucceeds(deleteDoc(doc(admin(), 'banners/abcd1234')));
+});
+test('banner shape is validated', async () => {
+  await assertFails(setDoc(doc(admin(), 'banners/bad1'), bn({ file: '../evil.jpg' })));
+  await assertFails(setDoc(doc(admin(), 'banners/bad2'), bn({ file: 'banner-abcd1234.png' })));
+  await assertFails(setDoc(doc(admin(), 'banners/bad3'), bn({ order: 1000 })));
+  await assertFails(setDoc(doc(admin(), 'banners/bad4'), bn({ active: 'yes' })));
+  await assertFails(setDoc(doc(admin(), 'banners/bad5'), bn({ extra: 1 })));
+});
+test('banners: approved merchant reads, others cannot read or write', async () => {
+  await assertSucceeds(setDoc(doc(admin(), 'banners/abcd1234'), bn()));
+  await assertSucceeds(getDoc(doc(user('m1'), 'banners/abcd1234')));
+  await assertFails(getDoc(doc(user('m2'), 'banners/abcd1234')));   // blocked merchant
+  await assertFails(getDoc(doc(guest(), 'banners/abcd1234')));
+  await assertFails(setDoc(doc(user('m1'), 'banners/zzzz9999'), bn({ file: 'banner-zzzz9999.jpg' })));
+  await assertFails(deleteDoc(doc(user('m1'), 'banners/abcd1234')));
+});
+const nt = (o = {}) => ({ title: 'Holiday notice', body: 'We are closed on Friday.', createdAt: serverTimestamp(), ...o });
+test('admin sends and deletes notifications', async () => {
+  await assertSucceeds(setDoc(doc(admin(), 'notifications/n1'), nt()));
+  await assertSucceeds(deleteDoc(doc(admin(), 'notifications/n1')));
+});
+test('notification shape is validated', async () => {
+  await assertFails(setDoc(doc(admin(), 'notifications/n2'), nt({ title: '' })));
+  await assertFails(setDoc(doc(admin(), 'notifications/n3'), nt({ body: 'x'.repeat(501) })));
+  await assertFails(setDoc(doc(admin(), 'notifications/n4'), nt({ extra: 1 })));
+  await assertFails(setDoc(doc(admin(), 'notifications/n5'), nt({ createdAt: Timestamp.fromMillis(1000) })));
+});
+test('notifications: approved merchant reads only; guests and blocked merchants cannot', async () => {
+  await assertSucceeds(setDoc(doc(admin(), 'notifications/n1'), nt()));
+  await assertSucceeds(getDoc(doc(user('m1'), 'notifications/n1')));
+  await assertFails(getDoc(doc(user('m2'), 'notifications/n1')));
+  await assertFails(getDoc(doc(guest(), 'notifications/n1')));
+  await assertFails(setDoc(doc(user('m1'), 'notifications/n9'), nt()));
+  await assertFails(deleteDoc(doc(user('m1'), 'notifications/n1')));
+});
