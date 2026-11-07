@@ -84,8 +84,12 @@ service cloud.firestore {
       allow list, update, delete: if admin();
     }
 
+    // One registration per mobile number: the request's document id IS the number, so a second request
+    // with the same number cannot be created. It is always written together with its phoneIndex entry.
     match /merchantRequests/{id} {
       allow create: if request.resource.data.status == 'pending'
+        && id == request.resource.data.mobile
+        && existsAfter(/databases/$(database)/documents/phoneIndex/$(id))
         && request.resource.data.keys().hasOnly(['businessName', 'ownerFirst', 'ownerLast',
              'businessType', 'branches', 'email', 'mobile', 'businessPhone', 'samePhone',
              'agreed', 'status', 'createdAt'])
@@ -100,6 +104,18 @@ service cloud.firestore {
         && okStr(request.resource.data, 'businessPhone', 30)
         && (!('branches' in request.resource.data) || request.resource.data.branches is number);
       allow read, update, delete: if admin();
+    }
+
+    // Lets the registration form say "already existing". Guests can only check one number (get), never list them.
+    match /phoneIndex/{phone} {
+      allow get: if true;
+      allow list: if admin();
+      allow create: if admin()
+        || (phone.matches('^01[0-9]{9}$')
+            && request.resource.data.keys().hasOnly(['createdAt'])
+            && request.resource.data.createdAt == request.time
+            && existsAfter(/databases/$(database)/documents/merchantRequests/$(phone)));
+      allow update, delete: if admin();
     }
 
     // Merchant App banners: only the list lives here (the pictures are files in the website repo's banners/ folder)
