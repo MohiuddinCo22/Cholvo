@@ -164,6 +164,27 @@ service cloud.firestore {
       allow delete: if admin();
     }
 
+    // Forgot password: the merchant app creates a request (random unguessable id, kept on the merchant's phone).
+    // The admin approves or rejects it. The new password itself is set by the /api/reset-password function
+    // (server side), which only accepts an approved, unused, not-expired request.
+    match /passwordResets/{rid} {
+      allow create: if rid.matches('^[A-Za-z0-9]{32}$')
+        && request.resource.data.keys().hasOnly(['phone', 'status', 'createdAt'])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.phone is string
+        && request.resource.data.phone.matches('^01[0-9]{9}$')
+        && request.resource.data.createdAt == request.time
+        && exists(/databases/$(database)/documents/phoneIndex/$(request.resource.data.phone));
+      // get only (never list): the id is a secret, so only the device that made the request can follow it
+      allow get: if true;
+      allow list, delete: if admin();
+      allow update: if admin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt'])
+        && request.resource.data.status in ['approved', 'rejected']
+        && request.resource.data.decidedAt == request.time
+        && resource.data.status == 'pending';
+    }
+
     match /private/{doc} {
       allow read: if admin() || approvedMerchant();
       allow write: if admin();

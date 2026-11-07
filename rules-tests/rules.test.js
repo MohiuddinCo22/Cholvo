@@ -315,3 +315,36 @@ test('notifications: approved merchant reads only; guests and blocked merchants 
   await assertFails(setDoc(doc(user('m1'), 'notifications/n9'), nt()));
   await assertFails(deleteDoc(doc(user('m1'), 'notifications/n1')));
 });
+
+// ---- merchant forgot password (passwordResets)
+const RID = 'a1B2c3D4e5F6g7H8i9J0k1L2m3N4o5P6';
+const resetDoc = (phone = '01711111111') => ({ phone, status: 'pending', createdAt: serverTimestamp() });
+const seedPhone = () => env.withSecurityRulesDisabled(c => setDoc(doc(c.firestore(), 'phoneIndex/01711111111'), { x: 1 }));
+test('guest can request a password reset for a registered number', async () => {
+  await seedPhone();
+  await assertSucceeds(setDoc(doc(guest(), 'passwordResets/' + RID), resetDoc()));
+});
+test('reset request for an unknown number is rejected', () =>
+  assertFails(setDoc(doc(guest(), 'passwordResets/' + RID), resetDoc('01799999999'))));
+test('reset request must start as pending and have a 32-char id', async () => {
+  await seedPhone();
+  await assertFails(setDoc(doc(guest(), 'passwordResets/' + RID), { ...resetDoc(), status: 'approved' }));
+  await assertFails(setDoc(doc(guest(), 'passwordResets/short'), resetDoc()));
+});
+test('guest cannot approve, list or delete resets; admin can', async () => {
+  await seedPhone();
+  await assertSucceeds(setDoc(doc(guest(), 'passwordResets/' + RID), resetDoc()));
+  await assertFails(updateDoc(doc(guest(), 'passwordResets/' + RID), { status: 'approved', decidedAt: serverTimestamp() }));
+  await assertFails(getDocs(collection(guest(), 'passwordResets')));
+  await assertSucceeds(getDoc(doc(guest(), 'passwordResets/' + RID)));
+  await assertSucceeds(getDocs(collection(admin(), 'passwordResets')));
+  await assertSucceeds(updateDoc(doc(admin(), 'passwordResets/' + RID), { status: 'approved', decidedAt: serverTimestamp() }));
+  await assertSucceeds(deleteDoc(doc(admin(), 'passwordResets/' + RID)));
+});
+test('admin cannot change anything but status/decidedAt, nor re-decide', async () => {
+  await seedPhone();
+  await assertSucceeds(setDoc(doc(guest(), 'passwordResets/' + RID), resetDoc()));
+  await assertFails(updateDoc(doc(admin(), 'passwordResets/' + RID), { phone: '01700000000', status: 'approved', decidedAt: serverTimestamp() }));
+  await assertSucceeds(updateDoc(doc(admin(), 'passwordResets/' + RID), { status: 'rejected', decidedAt: serverTimestamp() }));
+  await assertFails(updateDoc(doc(admin(), 'passwordResets/' + RID), { status: 'approved', decidedAt: serverTimestamp() }));
+});
