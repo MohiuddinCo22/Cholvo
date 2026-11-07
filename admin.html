@@ -107,6 +107,7 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
    <button data-t="orders">📦 Orders</button>
    <button data-t="requests">📝 Requests</button>
    <button data-t="merchants">🏪 Merchants</button>
+   <button data-t="resets">🔑 Password Resets</button>
    <button data-t="riders">🏍 Riders</button>
    <button data-t="charges">৳ Charges</button>
    <div class="sep">MERCHANT APP</div>
@@ -129,6 +130,7 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
    <div class="card"><div class="acts"><button id="lockNums">Lock existing numbers (run once)</button></div><p class="hint">One mobile number can register only once. Press this once after publishing the new rules, so numbers that registered earlier are also blocked from registering again.</p></div>
    <div id="rlist"></div></div>
   <div id="merchV" hidden><div id="mlist"></div></div>
+  <div id="resV" hidden><p class="hint" style="margin:0 0 10px">A merchant who forgot the password asks here. Call or message the merchant to confirm it is really them, then press Approve. After approval the merchant sets a new password in the app (valid for 24 hours).</p><div id="resList"></div></div>
   <div id="rdV" hidden>
    <div class="card"><b>Add rider</b>
     <form id="rf" style="display:grid;gap:10px;margin-top:10px">
@@ -220,7 +222,7 @@ $('#bk').onclick=async()=>{const b=$('#bk'),old=b.textContent;b.disabled=true;b.
  b.disabled=false;b.textContent=old};
 
 // ===== side menu =====
-const VIEWS={dashboard:['#dashV',()=>loadDash(),'Dashboard'],orders:['#ordersV',()=>loadOrders(),'Orders'],requests:['#reqV',()=>loadRequests(),'Requests'],merchants:['#merchV',()=>loadMerchants(),'Merchants'],riders:['#rdV',()=>loadRiders(),'Riders'],charges:['#chV',()=>loadCharges(),'Charges'],notifications:['#ntV',()=>loadNotifs(),'Notifications'],banners:['#bnV',()=>loadBanners(),'Banners']};
+const VIEWS={dashboard:['#dashV',()=>loadDash(),'Dashboard'],orders:['#ordersV',()=>loadOrders(),'Orders'],requests:['#reqV',()=>loadRequests(),'Requests'],merchants:['#merchV',()=>loadMerchants(),'Merchants'],resets:['#resV',()=>loadResets(),'Password Resets'],riders:['#rdV',()=>loadRiders(),'Riders'],charges:['#chV',()=>loadCharges(),'Charges'],notifications:['#ntV',()=>loadNotifs(),'Notifications'],banners:['#bnV',()=>loadBanners(),'Banners']};
 function openSide(){$('#side').classList.add('open');$('#scrim').hidden=false}
 function closeSide(){$('#side').classList.remove('open');$('#scrim').hidden=true}
 $('#menuBtn').onclick=openSide;$('#scrim').onclick=closeSide;
@@ -365,6 +367,39 @@ $('#mlist').onclick=async e=>{const b=e.target.closest('button[data-uid]');if(!b
  b.disabled=true;
  try{await db.doc('merchants/'+b.dataset.uid).update({blocked:b.dataset.b==='1'});toast('Merchant updated');loadMerchants()}
  catch(err){b.disabled=false;toast('Could not update merchant.')}};
+
+// ===== Merchant password reset requests =====
+let resets=[];
+async function loadResets(){
+ $('#resList').innerHTML='<p class="msg">Loading…</p>';
+ try{const [rs,ms]=await Promise.all([db.collection('passwordResets').orderBy('createdAt','desc').limit(100).get(),db.collection('merchants').get()]);
+  const byPhone={};ms.docs.forEach(d=>{const m=d.data();if(m.phone)byPhone[m.phone]={uid:d.id,...m}});
+  resets=rs.docs.map(d=>({id:d.id,...d.data(),merchant:byPhone[d.data().phone]||null}));drawResets()}
+ catch(err){$('#resList').innerHTML='<p class="msg">Could not load. Publish the latest Firestore rules first.</p>'}}
+function drawResets(){
+ if(!resets.length){$('#resList').innerHTML='<p class="msg">No password reset requests.</p>';return}
+ const order={pending:0,approved:1,used:2,rejected:3};
+ const list=[...resets].sort((x,y)=>(order[x.status]??4)-(order[y.status]??4));
+ $('#resList').innerHTML=list.map(r=>{
+  const when=r.createdAt?r.createdAt.toDate().toLocaleString():'';
+  const m=r.merchant;
+  const acts=r.status==='pending'
+   ?(m&&!m.blocked?`<div class="acts" style="margin-top:10px"><button class="btn" data-rsa="${r.id}">Approve</button><button data-rsr="${r.id}">Reject</button></div>`
+     :`<p class="hint">${m?'This merchant is blocked.':'No merchant account has this number (maybe the registration is not approved yet).'}</p><div class="acts" style="margin-top:10px"><button data-rsr="${r.id}">Reject</button></div>`)
+   :`<div class="acts" style="margin-top:10px"><button data-rsd="${r.id}">Delete</button></div>`;
+  const st={pending:'Waiting for approval',approved:'Approved - merchant can set password',used:'Password changed',rejected:'Rejected'}[r.status]||r.status;
+  return `<div class="card"><div class="head"><span class="tn">${esc(r.phone)}</span><span class="stat ${r.status==='used'?'Delivered':''}">${esc(st)}</span></div>${m&&m.businessName?`<small style="color:#6B7A94">${esc(m.businessName)}</small><br>`:''}<small style="color:#6B7A94">${esc(when)}</small>${acts}</div>`}).join('')}
+$('#resList').onclick=async e=>{
+ const a=e.target.closest('button[data-rsa]'),j=e.target.closest('button[data-rsr]'),d=e.target.closest('button[data-rsd]');
+ const b=a||j||d;if(!b)return;
+ const id=(a&&a.dataset.rsa)||(j&&j.dataset.rsr)||(d&&d.dataset.rsd),r=resets.find(x=>x.id===id);if(!r)return;
+ if(d){if(!confirm('Delete this request?'))return;b.disabled=true;
+  try{await db.doc('passwordResets/'+id).delete();resets=resets.filter(x=>x.id!==id);drawResets();toast('Deleted')}catch(err){b.disabled=false;toast('Could not delete.')}return}
+ if(a&&!confirm('Approve password reset for '+r.phone+(r.merchant&&r.merchant.businessName?' ('+r.merchant.businessName+')':'')+'?\n\nOnly approve if you are sure it is the real merchant.'))return;
+ if(j&&!confirm('Reject this request?'))return;
+ b.disabled=true;
+ try{await db.doc('passwordResets/'+id).update({status:a?'approved':'rejected',decidedAt:TS});toast(a?'Approved. The merchant can now set a new password.':'Rejected');loadResets()}
+ catch(err){b.disabled=false;toast('Could not update.')}};
 
 // ===== Merchant registration requests =====
 const RLABEL={businessName:'Business',ownerFirst:'Owner first name',ownerLast:'Owner last name',businessType:'Type',branches:'Branches',email:'Email',mobile:'Mobile',businessPhone:'Business phone'};
