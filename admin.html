@@ -49,6 +49,31 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
 .pw{display:flex;gap:6px;margin-top:10px}
 .pw input{flex:1}
 .hint{font-size:.8rem;color:#6B7A94;margin-top:6px}
+/* side menu */
+.menuBtn{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:10px;width:40px;height:38px;font-size:1.3rem;cursor:pointer}
+.top{justify-content:flex-start}.top b{flex:1}
+.side{position:fixed;left:0;top:0;bottom:0;width:272px;max-width:86vw;background:#fff;border-right:1px solid var(--line);z-index:30;transform:translateX(-102%);transition:transform .2s;display:flex;flex-direction:column;overflow-y:auto}
+.side.open{transform:none;box-shadow:0 0 40px rgba(7,26,58,.25)}
+.scrim{position:fixed;inset:0;background:rgba(7,26,58,.45);z-index:25}
+.prof{display:flex;align-items:center;gap:12px;padding:18px 16px 10px}
+.av{width:46px;height:46px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.2rem;flex:0 0 auto}
+.prof b{display:block;color:var(--navy);font-size:1.05rem}.prof small{color:#6B7A94;word-break:break-all}
+.sbtn{margin:0 16px 8px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-weight:600;cursor:pointer;color:var(--navy);text-align:left}
+#pwf{margin:0 16px 10px;display:grid;gap:8px;padding:12px;background:var(--mist);border-radius:12px}
+#nav{padding:6px 10px;display:grid;gap:4px;border-top:1px solid var(--line);margin-top:6px}
+#nav button{border:0;background:none;text-align:left;padding:12px 12px;border-radius:10px;font-weight:600;color:#4B5B77;cursor:pointer;font-size:.98rem}
+#nav button.on{background:var(--navy);color:#fff}
+#nav .sep{margin:8px 12px 2px;font-size:.72rem;letter-spacing:.08em;color:#8A94A6;font-weight:700}
+.sfoot{margin-top:auto;padding:14px 16px 40px;display:grid;gap:8px;border-top:1px solid var(--line)}
+@media(min-width:900px){.menuBtn{display:none}.scrim{display:none!important}.side{transform:none;top:58px;box-shadow:none}.wrap{margin:0 0 0 272px;max-width:none;padding:22px 30px}}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+@media(min-width:600px){.stats{grid-template-columns:repeat(3,1fr)}}
+.stat2{text-align:center;margin:0}.stat2 b{display:block;font-size:1.9rem;color:var(--navy)}.stat2 small{color:#6B7A94}
+.bnrow{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:start}
+.bnrow img{width:150px;height:62px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--mist)}
+.bnmiss{width:150px;height:62px;border-radius:8px;border:1px dashed #C62828;color:#C62828;font-size:.72rem;display:grid;place-items:center;text-align:center;padding:4px}
+.bnprev{width:100%;max-width:420px;border-radius:10px;border:1px solid var(--line);margin-top:8px}
+.note{background:#FFF4E5;border:1px solid #F2C27B;border-radius:12px;padding:12px;font-size:.9rem;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -63,10 +88,33 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
 </div>
 
 <div id="appView" hidden>
- <div class="top"><b>Cholvo admin</b><span><button class="btn g" id="bk" title="Download all data as a JSON file">Backup (JSON)</button> <button class="btn g" id="out">Log out</button></span></div>
+ <div class="top"><button class="menuBtn" id="menuBtn" aria-label="Open menu">☰</button><b id="pageTitle">Dashboard</b></div>
+ <div id="scrim" class="scrim" hidden></div>
+ <aside id="side" class="side">
+  <div class="prof"><div class="av">A</div><div><b>Admin</b><small id="admEmail"></small></div></div>
+  <button class="sbtn" id="pwOpen" type="button">🔑 Change password</button>
+  <form id="pwf" hidden>
+   <input name="cur" type="password" placeholder="Current password" autocomplete="current-password" required>
+   <input name="n1" type="password" placeholder="New password (min 8)" autocomplete="new-password" minlength="8" required>
+   <input name="n2" type="password" placeholder="Repeat new password" autocomplete="new-password" minlength="8" required>
+   <button class="btn">Save new password</button>
+  </form>
+  <nav id="nav">
+   <button class="on" data-t="dashboard">▦ Dashboard</button>
+   <button data-t="orders">📦 Orders</button>
+   <button data-t="requests">📝 Requests</button>
+   <button data-t="merchants">🏪 Merchants</button>
+   <button data-t="riders">🏍 Riders</button>
+   <button data-t="charges">৳ Charges</button>
+   <div class="sep">MERCHANT APP</div>
+   <button data-t="notifications">🔔 Notifications</button>
+   <button data-t="banners">🖼 Banners</button>
+  </nav>
+  <div class="sfoot"><button class="btn g" id="bk" title="Download all data as a JSON file">Backup (JSON)</button><button class="btn g" id="out">Log out</button></div>
+ </aside>
  <div class="wrap">
-  <div class="tabs"><button class="on" data-t="orders">Orders</button><button data-t="requests">Requests</button><button data-t="merchants">Merchants</button><button data-t="riders">Riders</button><button data-t="charges">Charges</button></div>
-  <div id="ordersV">
+  <div id="dashV"></div>
+  <div id="ordersV" hidden>
    <div class="tools">
     <input id="q" placeholder="Search tracking number, name or phone" aria-label="Search">
     <select id="fs" aria-label="Filter by status"><option value="">All statuses</option></select>
@@ -90,6 +138,28 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
    <textarea id="chText" rows="16" spellcheck="false"></textarea>
    <div class="acts" style="margin-top:10px"><button id="chSave" class="btn">Save charge lists</button><button id="chDef" class="btn g">Load default</button></div>
    <p class="hint" id="chInfo"></p>
+  </div>
+  <div id="ntV" hidden>
+   <div class="card"><b>New notification</b>
+    <p class="hint">Sent to every approved merchant. They see it under the 🔔 bell in the Merchant App.</p>
+    <form id="ntf" style="display:grid;gap:10px;margin-top:10px">
+     <input id="ntT" placeholder="Title" maxlength="80" required aria-label="Title">
+     <textarea id="ntB" rows="4" maxlength="500" placeholder="Message" required aria-label="Message" style="font-family:inherit;font-size:.95rem"></textarea>
+     <button class="btn">Send to all merchants</button>
+    </form></div>
+   <div id="ntlist"></div>
+  </div>
+  <div id="bnV" hidden>
+   <div class="note"><b>How banners work:</b> the image files live in the <code>banners</code> folder of your website repo on GitHub (no Firebase storage used).<br>1) Choose an image here and press <b>Add banner</b>. A ready-to-upload <code>banner-xxxxxxxx.jpg</code> is downloaded.<br>2) Upload that file to the <code>banners</code> folder on GitHub (branch <code>dev/rider-management</code> for staging, <code>main</code> for live).<br>The Merchant App shows active banners in order, sliding at the top of Home. A red box below means the file is not on GitHub yet.</div>
+   <div class="card"><b>Add banner</b>
+    <form id="bnf" style="display:grid;gap:10px;margin-top:10px">
+     <input id="bnFile" type="file" accept="image/*" required aria-label="Banner image">
+     <input id="bnTitle" placeholder="Title (optional, only for your reference)" maxlength="80" aria-label="Banner title">
+     <input id="bnOrder" type="number" min="0" max="999" value="1" aria-label="Order (1 shows first)">
+     <img id="bnPrev" class="bnprev" alt="" hidden><p class="hint" id="bnInfo"></p>
+     <button class="btn">Add banner</button>
+    </form></div>
+   <div id="bnlist"></div>
   </div>
  </div>
 </div>
@@ -117,7 +187,7 @@ auth.onAuthStateChanged(u=>{
  const ok=u&&u.email===ADMIN;
  if(u&&!ok){auth.signOut();$('#lerr').textContent='This account is not an admin.';return}
  $('#loginView').hidden=!!ok;$('#appView').hidden=!ok;
- if(ok)loadOrders();
+ if(ok){$('#admEmail').textContent=u.email;go('dashboard')}
 });
 $('#lf').onsubmit=async e=>{e.preventDefault();$('#lerr').textContent='';
  try{await auth.signInWithEmailAndPassword($('#em').value.trim(),$('#pw').value)}
@@ -125,7 +195,7 @@ $('#lf').onsubmit=async e=>{e.preventDefault();$('#lerr').textContent='';
 $('#out').onclick=()=>auth.signOut();
 
 // ===== Backup: download all collections as one JSON file (admin only) =====
-const BACKUP_COLS=['orders','tracking','merchants','merchantRequests','riders','private'];
+const BACKUP_COLS=['orders','tracking','merchants','merchantRequests','riders','private','banners','notifications'];
 function plain(v){
  if(v===null||v===undefined)return v;
  if(typeof v.toDate==='function')return {__timestamp:v.toDate().toISOString()};
@@ -143,11 +213,85 @@ $('#bk').onclick=async()=>{const b=$('#bk'),old=b.textContent;b.disabled=true;b.
  catch(err){toast('Backup failed: '+(err&&err.code||'error'))}
  b.disabled=false;b.textContent=old};
 
-$$('.tabs button').forEach(b=>b.onclick=()=>{
- $$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
- const t=b.dataset.t;
- $('#ordersV').hidden=t!=='orders';$('#reqV').hidden=t!=='requests';$('#merchV').hidden=t!=='merchants';$('#chV').hidden=t!=='charges';$('#rdV').hidden=t!=='riders';
- ({orders:loadOrders,requests:loadRequests,merchants:loadMerchants,riders:loadRiders,charges:loadCharges})[t]()});
+// ===== side menu =====
+const VIEWS={dashboard:['#dashV',()=>loadDash(),'Dashboard'],orders:['#ordersV',()=>loadOrders(),'Orders'],requests:['#reqV',()=>loadRequests(),'Requests'],merchants:['#merchV',()=>loadMerchants(),'Merchants'],riders:['#rdV',()=>loadRiders(),'Riders'],charges:['#chV',()=>loadCharges(),'Charges'],notifications:['#ntV',()=>loadNotifs(),'Notifications'],banners:['#bnV',()=>loadBanners(),'Banners']};
+function openSide(){$('#side').classList.add('open');$('#scrim').hidden=false}
+function closeSide(){$('#side').classList.remove('open');$('#scrim').hidden=true}
+$('#menuBtn').onclick=openSide;$('#scrim').onclick=closeSide;
+function go(t){const v=VIEWS[t];if(!v)return;
+ Object.values(VIEWS).forEach(x=>$(x[0]).hidden=true);$(v[0]).hidden=false;
+ $$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+ $('#pageTitle').textContent=v[2];closeSide();v[1]()}
+$$('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
+
+// ===== change admin password =====
+$('#pwOpen').onclick=()=>{$('#pwf').hidden=!$('#pwf').hidden};
+$('#pwf').onsubmit=async e=>{e.preventDefault();const f=e.target,b=f.querySelector('button');
+ if(f.n1.value!==f.n2.value){toast('The new passwords do not match');return}
+ if(f.n1.value.length<8){toast('Use at least 8 characters');return}
+ b.disabled=true;
+ try{const u=auth.currentUser;
+  await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,f.cur.value));
+  await u.updatePassword(f.n1.value);f.reset();f.hidden=true;toast('Password changed')}
+ catch(err){const c=err&&err.code||'';
+  toast(c==='auth/wrong-password'||c==='auth/invalid-credential'?'Current password is wrong':c==='auth/weak-password'?'The new password is too weak':c==='auth/too-many-requests'?'Too many attempts. Try again later.':'Could not change the password ('+(c||'error')+')')}
+ b.disabled=false};
+
+// ===== dashboard =====
+async function loadDash(){
+ const el=$('#dashV');el.innerHTML='<p class="msg">Loading…</p>';
+ try{
+  const [o,rq,m,r]=await Promise.all([db.collection('orders').orderBy('createdAt','desc').limit(200).get(),db.collection('merchantRequests').get(),db.collection('merchants').get(),db.collection('riders').get()]);
+  const od=o.docs.map(d=>d.data()),today=new Date().toDateString(),n=f=>od.filter(f).length;
+  const stats=[['Orders today',n(x=>x.createdAt&&x.createdAt.toDate().toDateString()===today)],['In progress',n(x=>x.status&&x.status!=='Delivered')],['Delivered',n(x=>x.status==='Delivered')],['Pending requests',rq.docs.filter(d=>d.data().status==='pending').length],['Merchants',m.size],['Active riders',r.docs.filter(d=>d.data().active!==false).length]];
+  el.innerHTML=`<div class="stats">${stats.map(([k,v])=>`<div class="card stat2"><b>${v}</b><small>${k}</small></div>`).join('')}</div><p class="hint" style="margin:-4px 0 14px">Order numbers are counted from the latest 200 orders.</p><b style="color:var(--navy)">Recent orders</b>${od.slice(0,5).map(x=>`<div class="card" style="margin-top:8px"><div class="head"><span class="tn">${esc(x.tn)}</span><span class="stat ${esc(x.status)}">${esc(x.status)}</span></div><small style="color:#6B7A94">${x.type==='order'?'Order anything':'Parcel booking'} · ${x.createdAt?esc(x.createdAt.toDate().toLocaleString()):''}</small></div>`).join('')||'<p class="msg">No orders yet.</p>'}`
+ }catch(err){el.innerHTML='<p class="msg">Could not load the dashboard. Check that the rules are published.</p>'}}
+
+// ===== notifications (to the Merchant App) =====
+async function loadNotifs(){
+ const L=$('#ntlist');L.innerHTML='<p class="msg">Loading…</p>';
+ try{const s=await db.collection('notifications').orderBy('createdAt','desc').limit(50).get();
+  L.innerHTML=s.docs.map(d=>{const x=d.data();return `<div class="card"><div class="head"><span class="tn">${esc(x.title)}</span><small style="color:#6B7A94">${x.createdAt?esc(x.createdAt.toDate().toLocaleString()):'sending…'}</small></div><p style="margin:8px 0;white-space:pre-wrap;word-break:break-word">${esc(x.body)}</p><div class="acts"><button data-ntdel="${esc(d.id)}">Delete</button></div></div>`}).join('')||'<p class="msg">No notifications sent yet.</p>';
+  $$('[data-ntdel]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this notification? Merchants will no longer see it.'))return;try{await db.doc('notifications/'+b.dataset.ntdel).delete();toast('Deleted');loadNotifs()}catch(_){toast('Could not delete')}})
+ }catch(err){L.innerHTML='<p class="msg">Could not load notifications. Check that the rules are published.</p>'}}
+$('#ntf').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;
+ try{await db.collection('notifications').add({title:$('#ntT').value.trim(),body:$('#ntB').value.trim(),createdAt:TS});e.target.reset();toast('Sent to all merchants');loadNotifs()}
+ catch(err){toast('Could not send ('+(err&&err.code||'error')+')')}
+ b.disabled=false};
+
+// ===== banners (images live in the repo's banners/ folder, only the list is in Firestore) =====
+let bnBlob=null;
+async function makeBanner(file){
+ const url=URL.createObjectURL(file);
+ try{const img=await new Promise((ok,bad)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=bad;i.src=url});
+  const W=1200,H=500,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,W,H);
+  const k=Math.max(W/img.width,H/img.height),w=img.width*k,h=img.height*k;x.drawImage(img,(W-w)/2,(H-h)/2,w,h);
+  let b;for(let q=.85;q>=.4;q-=.1){b=await new Promise(r=>c.toBlob(r,'image/jpeg',q));if(b.size<=150*1024)break}
+  return b}
+ finally{URL.revokeObjectURL(url)}}
+$('#bnFile').onchange=async e=>{const f=e.target.files[0];bnBlob=null;$('#bnPrev').hidden=true;$('#bnInfo').textContent='';if(!f)return;
+ try{bnBlob=await makeBanner(f);$('#bnPrev').src=URL.createObjectURL(bnBlob);$('#bnPrev').hidden=false;$('#bnInfo').textContent='Ready: 1200×500 JPEG, '+Math.round(bnBlob.size/1024)+' KB (the picture is centre-cropped to fit).'}
+ catch(_){toast('Could not read this image');e.target.value=''}};
+$('#bnf').onsubmit=async e=>{e.preventDefault();if(!bnBlob){toast('Choose an image first');return}
+ const b=e.target.querySelector('button');b.disabled=true;
+ const id=Array.from(crypto.getRandomValues(new Uint8Array(8)),n=>'abcdefghijklmnopqrstuvwxyz0123456789'[n%36]).join(''),file='banner-'+id+'.jpg';
+ try{await db.doc('banners/'+id).set({file,title:$('#bnTitle').value.trim(),order:Math.max(0,Math.min(999,parseInt($('#bnOrder').value,10)||0)),active:true,createdAt:TS});
+  const a=document.createElement('a');a.href=URL.createObjectURL(bnBlob);a.download=file;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  e.target.reset();bnBlob=null;$('#bnPrev').hidden=true;$('#bnInfo').innerHTML='<b style="color:#1B6B2F">Saved.</b> Now upload the downloaded file <code>'+esc(file)+'</code> to the <code>banners</code> folder on GitHub.';
+  toast('Banner added. Upload '+file+' to GitHub');loadBanners()}
+ catch(err){toast('Could not add banner ('+(err&&err.code||'error')+')')}
+ b.disabled=false};
+async function loadBanners(){
+ const L=$('#bnlist');L.innerHTML='<p class="msg">Loading…</p>';
+ try{const s=await db.collection('banners').get();
+  const list=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+  L.innerHTML=list.map(x=>`<div class="card"><div class="bnrow"><div><img src="banners/${esc(x.file)}" alt="" data-bnimg="${esc(x.id)}"><div class="bnmiss" id="miss-${esc(x.id)}" hidden>Not on GitHub yet:<br>${esc(x.file)}</div></div><div style="display:grid;gap:8px"><div><b>${esc(x.title||x.file)}</b> <span class="stat ${x.active?'Delivered':''}">${x.active?'Active':'Hidden'}</span><div class="hint">${esc(x.file)}</div></div><div style="display:flex;gap:8px;align-items:center"><label style="margin:0">Order</label><input type="number" min="0" max="999" value="${esc(x.order||0)}" data-bnord="${esc(x.id)}" style="width:90px"></div><div class="acts"><button data-bnact="${esc(x.id)}" data-a="${x.active?'0':'1'}">${x.active?'Hide':'Show'}</button><button data-bndel="${esc(x.id)}">Delete</button></div></div></div></div>`).join('')||'<p class="msg">No banners yet.</p>';
+  $$('[data-bnimg]').forEach(im=>{im.onerror=()=>{im.hidden=true;$('#miss-'+im.dataset.bnimg).hidden=false}});
+  $$('[data-bnord]').forEach(i=>i.onchange=async()=>{try{await db.doc('banners/'+i.dataset.bnord).update({order:Math.max(0,Math.min(999,parseInt(i.value,10)||0))});toast('Order saved');loadBanners()}catch(_){toast('Could not save')}});
+  $$('[data-bnact]').forEach(b=>b.onclick=async()=>{try{await db.doc('banners/'+b.dataset.bnact).update({active:b.dataset.a==='1'});loadBanners()}catch(_){toast('Could not save')}});
+  $$('[data-bndel]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this banner from the app? (You can also delete the file from GitHub to save space.)'))return;try{await db.doc('banners/'+b.dataset.bndel).delete();toast('Deleted');loadBanners()}catch(_){toast('Could not delete')}});
+ }catch(err){L.innerHTML='<p class="msg">Could not load banners. Check that the rules are published.</p>'}}
 
 async function loadOrders(){
  $('#olist').innerHTML='<p class="msg">Loading orders…</p>';

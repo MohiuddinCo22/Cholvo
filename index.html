@@ -107,6 +107,8 @@ footer img{height:44px;background:#fff;border-radius:10px;padding:4px;margin-bot
 .tabs button.on{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.12)}
 [hidden]{display:none!important}
 .hp{position:absolute;left:-9999px}
+input:disabled,textarea:disabled,select:disabled{background:#E9EDF4;color:#8A94A6;opacity:.6;cursor:not-allowed}
+form.media-on div:has(>:disabled)>label{opacity:.5}
 .media{border:1px dashed var(--line);border-radius:14px;padding:12px;background:var(--mist)}
 .media .opt{font-weight:400;color:#6B7A94}
 .mrow{display:flex;flex-wrap:wrap;gap:8px}
@@ -490,7 +492,7 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
    <div class="mrow"><button type="button" class="btn mb" data-rec>🎤 Record voice</button><button type="button" class="btn mb" data-pick>📷 Add photos (0/3)</button><button type="button" class="btn mb" data-del hidden>Delete voice</button></div>
    <audio controls hidden data-ap></audio><p class="hint" data-st></p><div class="mthumbs" data-thumbs></div>
    <input type="file" accept="image/*" multiple hidden data-photos><div data-ts></div>
-   <p class="hint">Send a voice message (up to 1 minute) and/or up to 3 photos. Then you only need to enter your phone number.</p>
+   <p class="hint">Send a voice message (up to 1 minute) and/or up to 3 photos. The other fields above are then switched off and only your phone number is needed. Remove the voice/photos to type the details instead.</p>
   </div>
   <input class="hp" name="website" tabindex="-1" autocomplete="off">
   <button class="btn b-or">Book parcel</button>
@@ -512,7 +514,7 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
    <div class="mrow"><button type="button" class="btn mb" data-rec>🎤 Record voice</button><button type="button" class="btn mb" data-pick>📷 Add photos (0/3)</button><button type="button" class="btn mb" data-del hidden>Delete voice</button></div>
    <audio controls hidden data-ap></audio><p class="hint" data-st></p><div class="mthumbs" data-thumbs></div>
    <input type="file" accept="image/*" multiple hidden data-photos><div data-ts></div>
-   <p class="hint">Send a voice message (up to 1 minute) and/or up to 3 photos. Then you only need to enter your phone number.</p>
+   <p class="hint">Send a voice message (up to 1 minute) and/or up to 3 photos. The other fields above are then switched off and only your phone number is needed. Remove the voice/photos to type the details instead.</p>
   </div>
   <input class="hp" name="website" tabindex="-1" autocomplete="off">
   <button class="btn b-or">Submit order</button>

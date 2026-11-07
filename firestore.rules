@@ -102,6 +102,33 @@ service cloud.firestore {
       allow read, update, delete: if admin();
     }
 
+    // Merchant App banners: only the list lives here (the pictures are files in the website repo's banners/ folder)
+    match /banners/{id} {
+      function validBanner(d) {
+        return d.keys().hasOnly(['file', 'title', 'order', 'active', 'createdAt'])
+          && d.keys().hasAll(['file', 'order', 'active', 'createdAt'])
+          && d.file is string && d.file.matches('^banner-[a-z0-9]{8}[.]jpg$')
+          && (!('title' in d) || (d.title is string && d.title.size() <= 80))
+          && d.order is int && d.order >= 0 && d.order <= 999
+          && d.active is bool
+          && d.createdAt is timestamp;
+      }
+      allow read: if admin() || approvedMerchant();
+      allow create, update: if admin() && validBanner(request.resource.data);
+      allow delete: if admin();
+    }
+
+    // Notifications sent by the admin to all merchants (shown under the bell in the Merchant App)
+    match /notifications/{id} {
+      allow read: if admin() || approvedMerchant();
+      allow create: if admin()
+        && request.resource.data.keys().hasOnly(['title', 'body', 'createdAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 80
+        && request.resource.data.body is string && request.resource.data.body.size() > 0 && request.resource.data.body.size() <= 500
+        && request.resource.data.createdAt == request.time;
+      allow delete: if admin();
+    }
+
     match /private/{doc} {
       allow read: if admin() || approvedMerchant();
       allow write: if admin();
