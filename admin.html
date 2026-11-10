@@ -110,6 +110,7 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
    <button data-t="merchants">🏪 Merchants</button>
    <button data-t="resets">🔑 Password Resets</button>
    <button data-t="riders">🏍 Riders</button>
+   <button data-t="riderCash">💵 Rider Cash</button>
    <button data-t="charges">৳ Charges</button>
    <div class="sep">MERCHANT APP</div>
    <button data-t="notifications">🔔 Notifications</button>
@@ -137,9 +138,18 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
     <form id="rf" style="display:grid;gap:10px;margin-top:10px">
      <input id="rn" placeholder="Rider name" maxlength="120" required aria-label="Rider name">
      <input id="rp" placeholder="Rider mobile (01XXXXXXXXX)" inputmode="numeric" maxlength="11" required aria-label="Rider mobile">
+     <input id="rpw" type="text" placeholder="Rider App password (min 6). Leave empty for a rider without app login" minlength="6" maxlength="128" autocomplete="off" aria-label="Rider app password">
+     <input id="rvt" placeholder="Vehicle type (optional, e.g. Bike)" maxlength="30" aria-label="Vehicle type">
+     <input id="rvn" placeholder="Vehicle number (optional)" maxlength="30" aria-label="Vehicle number">
      <button class="btn">Add rider</button>
     </form></div>
    <div id="rdlist"></div>
+  </div>
+  <div id="rcV" hidden>
+   <div class="card"><b>Rider earning per delivery (৳)</b>
+    <form id="rcF" style="display:flex;gap:10px;margin-top:10px"><input id="rcFee" type="number" min="0" step="1" placeholder="e.g. 40" style="flex:1" aria-label="Earning per delivery"><button class="btn">Save</button></form>
+    <p class="hint">Written on each order when the rider marks it Delivered. Changing it affects only later deliveries.</p></div>
+   <div id="rcBox"></div>
   </div>
   <div id="chV" hidden>
    <p class="msg" style="padding:0 0 10px;text-align:left">These charge lists (cake, parcel, food) are shown only to logged-in, approved merchants. Edit the HTML below and press Save.</p>
@@ -223,7 +233,7 @@ $('#bk').onclick=async()=>{const b=$('#bk'),old=b.textContent;b.disabled=true;b.
  b.disabled=false;b.textContent=old};
 
 // ===== side menu =====
-const VIEWS={dashboard:['#dashV',()=>loadDash(),'Dashboard'],orders:['#ordersV',()=>loadOrders(),'Orders'],requests:['#reqV',()=>loadRequests(),'Requests'],merchants:['#merchV',()=>loadMerchants(),'Merchants'],resets:['#resV',()=>loadResets(),'Password Resets'],riders:['#rdV',()=>loadRiders(),'Riders'],charges:['#chV',()=>loadCharges(),'Charges'],notifications:['#ntV',()=>loadNotifs(),'Notifications'],banners:['#bnV',()=>loadBanners(),'Banners']};
+const VIEWS={dashboard:['#dashV',()=>loadDash(),'Dashboard'],orders:['#ordersV',()=>loadOrders(),'Orders'],requests:['#reqV',()=>loadRequests(),'Requests'],merchants:['#merchV',()=>loadMerchants(),'Merchants'],resets:['#resV',()=>loadResets(),'Password Resets'],riders:['#rdV',()=>loadRiders(),'Riders'],riderCash:['#rcV',()=>loadRiderCash(),'Rider Cash'],charges:['#chV',()=>loadCharges(),'Charges'],notifications:['#ntV',()=>loadNotifs(),'Notifications'],banners:['#bnV',()=>loadBanners(),'Banners']};
 function openSide(){$('#side').classList.add('open');$('#scrim').hidden=false}
 function closeSide(){$('#side').classList.remove('open');$('#scrim').hidden=true}
 $('#menuBtn').onclick=openSide;$('#scrim').onclick=closeSide;
@@ -463,26 +473,92 @@ async function loadRiders(){
  try{const s=await db.collection('riders').orderBy('name').get();
   riders=s.docs.map(d=>({id:d.id,...d.data()}));drawRiders()}
  catch(err){$('#rdlist').innerHTML='<p class="msg">Could not load riders. Publish the latest Firestore rules first.</p>'}}
+const RLAB={firstName:'First name',lastName:'Last name',gender:'Gender',email:'Email',dob:'Date of birth',docType:'Document',docNumber:'Document no.',presentAddress:'Present address',permanentAddress:'Permanent address',city:'City',zone:'Zone',vehicleType:'Vehicle',vehicleNumber:'Vehicle no.',licenseNo:'Licence no.',nomineeName:'Nominee',nomineePhone:'Nominee mobile',nomineeNid:'Nominee NID',nomineeRelation:'Relationship',referralCode:'Referral code'};
+const RDOC={nidFront:'Document front',nidBack:'Document back',utility:'Utility bill',nomFront:'Nominee NID front',nomBack:'Nominee NID back'};
 function drawRiders(){
  if(!riders.length){$('#rdlist').innerHTML='<p class="msg">No riders yet. Add one above.</p>';return}
- $('#rdlist').innerHTML=riders.map(r=>`<div class="card"><div class="head"><span class="tn">${esc(r.name)}</span><span class="stat ${r.active===false?'':'Delivered'}">${r.active===false?'Inactive':'Active'}</span></div>
-  <small style="color:#6B7A94">${esc(r.phone)}</small>
-  <div class="acts" style="margin-top:10px"><button data-rt="${esc(r.id)}">${r.active===false?'Activate':'Deactivate'}</button><button data-rd="${esc(r.id)}">Delete</button></div></div>`).join('')}
+ const rank=r=>(r.approvalStatus||'PENDING')==='PENDING'&&r.authUid&&r.privacyAccepted?0:1;
+ const list=riders.slice().sort((a,b)=>rank(a)-rank(b));
+ const LBL={APPROVED:'Approve',PENDING:'Set pending',BLOCKED:'Block',REJECTED:'Reject'};
+ $('#rdlist').innerHTML=list.map(r=>{const st=r.approvalStatus||'PENDING';return `<div class="card"><div class="head"><span class="tn">${r.riderCode?'#'+esc(r.riderCode)+' · ':''}${esc(r.name)}</span><span class="stat ${r.active===false?'':'Delivered'}">${r.active===false?'Inactive':'Active'}</span></div>
+  <small style="color:#6B7A94">${esc(r.phone)}${r.authUid?' · App login · '+esc(st)+(r.isOnline?' · ONLINE':' · offline'):' · no app login'}${r.zone?' · '+esc(r.zone):''}</small>
+  <div class="acts" style="margin-top:10px">${r.privacyAccepted?`<button data-rv="${esc(r.id)}">Review details</button>`:''}${r.authUid?['APPROVED','PENDING','BLOCKED','REJECTED'].filter(x=>x!==st).map(x=>`<button data-ra="${esc(r.id)}|${x}">${LBL[x]}</button>`).join(''):''}<button data-rt="${esc(r.id)}">${r.active===false?'Activate':'Deactivate'}</button><button data-rd="${esc(r.id)}">Delete</button></div>
+  <div id="rvd-${esc(r.id)}" hidden style="margin-top:10px"></div></div>`}).join('')}
+async function reviewRider(id,box){
+ if(!box.hidden){box.hidden=true;return}
+ const r=riders.find(x=>x.id===id);if(!r)return;
+ box.hidden=false;box.innerHTML='<p class="msg">Loading papers…</p>';
+ let docs={};
+ try{const s=await db.collection('riders/'+id+'/docs').get();s.docs.forEach(d=>docs[d.id]=d.data().data)}catch(_){}
+ const img=(src,l)=>typeof src==='string'&&src.startsWith('data:image/')?`<figure style="margin:0"><img src="${esc(src)}" alt="${esc(l)}" class="rvImg" style="width:100%;max-width:150px;border-radius:8px;border:1px solid #dde3ec;cursor:zoom-in"><figcaption style="font-size:11px;color:#6B7A94">${esc(l)}</figcaption></figure>`:`<small style="color:#a52f2b">${esc(l)}: missing</small>`;
+ const rows=Object.keys(RLAB).filter(k=>r[k]).map(k=>`<div style="display:flex;justify-content:space-between;gap:12px;font-size:12px;padding:3px 0;border-bottom:1px solid #f0f2f6"><span style="color:#6B7A94">${RLAB[k]}</span><b style="text-align:right;overflow-wrap:anywhere">${esc(r[k])}</b></div>`).join('');
+ box.innerHTML=`<div style="display:grid;gap:10px">${rows}<div style="display:flex;flex-wrap:wrap;gap:10px">${img(r.photo,'Profile photo')}${Object.keys(RDOC).map(k=>img(docs[k],RDOC[k])).join('')}</div></div>`;
+ box.querySelectorAll('.rvImg').forEach(i=>i.onclick=()=>{i.style.maxWidth=i.style.maxWidth==='100%'?'150px':'100%'})}
+async function approveRider(id){
+ const ref=db.doc('riders/'+id),cref=db.doc('config/riderCounter');
+ await db.runTransaction(async tx=>{
+  const [r,c]=await Promise.all([tx.get(ref),tx.get(cref)]);
+  const upd={approvalStatus:'APPROVED',approvedAt:TS};
+  if(!(r.data()||{}).riderCode){const n=c.exists&&c.data().next?c.data().next:10001;upd.riderCode=String(n);tx.set(cref,{next:n+1})}
+  tx.update(ref,upd)})}
 $('#rf').onsubmit=async e=>{e.preventDefault();
  const name=$('#rn').value.trim(),phone=$('#rp').value.trim();
  if(!name){toast('Enter rider name.');return}
  if(!/^01[0-9]{9}$/.test(phone)){toast('Mobile must be 11 digits, like 01712345678.');return}
- const b=e.target.querySelector('button');b.disabled=true;
- try{await db.collection('riders').add({name,phone,active:true,createdAt:TS});e.target.reset();toast('Rider added');loadRiders()}
+ const pw=$('#rpw').value,b=e.target.querySelector('button');b.disabled=true;
+ try{
+  if(pw){
+   if(pw.length<6){toast('Password must be at least 6 characters.');b.disabled=false;return}
+   const r=await fetch('/api/create-rider',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken:await auth.currentUser.getIdToken(),name,phone,password:pw,vehicleType:$('#rvt').value.trim(),vehicleNumber:$('#rvn').value.trim()})});
+   const j=await r.json().catch(()=>({}));
+   if(!r.ok||!j.ok){const m={exists:'This mobile number already has a Rider App login.',weak_password:'Password is too weak.',not_admin:'Please log in again.',no_secret_live:'Server key is not set up (FIREBASE_SA_LIVE).',no_secret_test:'Server key is not set up (FIREBASE_SA_TEST).'};toast(m[j.code]||'Could not create the rider login ('+(j.code||r.status)+').');b.disabled=false;return}
+   e.target.reset();toast('Rider added with app login');loadRiders();b.disabled=false;return}
+  await db.collection('riders').add({name,phone,active:true,createdAt:TS});e.target.reset();toast('Rider added');loadRiders()}
  catch(err){toast('Could not add rider.')}b.disabled=false};
 $('#rdlist').onclick=async e=>{
- const t=e.target.closest('button[data-rt]'),d=e.target.closest('button[data-rd]');
+ const t=e.target.closest('button[data-rt]'),d=e.target.closest('button[data-rd]'),ra=e.target.closest('button[data-ra]'),rv=e.target.closest('button[data-rv]');
+ if(rv){reviewRider(rv.dataset.rv,$('#rvd-'+rv.dataset.rv));return}
+ if(ra){const [id,st]=ra.dataset.ra.split('|');ra.disabled=true;
+  try{if(st==='APPROVED')await approveRider(id);else await db.doc('riders/'+id).update({approvalStatus:st});toast('Rider '+st.toLowerCase());loadRiders()}
+  catch(err){ra.disabled=false;toast('Could not update rider.')}return}
  if(t){const r=riders.find(x=>x.id===t.dataset.rt);t.disabled=true;
   try{await db.doc('riders/'+r.id).update({active:r.active===false});toast('Rider updated');loadRiders()}
   catch(err){t.disabled=false;toast('Could not update rider.')}}
- if(d){if(!confirm('Delete this rider? Past orders keep their saved rider name and phone.'))return;d.disabled=true;
-  try{await db.doc('riders/'+d.dataset.rd).delete();toast('Rider deleted');loadRiders()}
+ if(d){if(!confirm('Delete this rider? Past orders keep their saved rider name and phone. The rider\'s login (if any) must be removed in Firebase Authentication.'))return;d.disabled=true;
+  try{await Promise.all(Object.keys(RDOC).map(k=>db.doc('riders/'+d.dataset.rd+'/docs/'+k).delete().catch(()=>{})));
+   await db.doc('riders/'+d.dataset.rd).delete();toast('Rider deleted');loadRiders()}
   catch(err){d.disabled=false;toast('Could not delete rider.')}}};
+
+// ===== Rider cash (admin) =====
+$('#rcF').onsubmit=async e=>{e.preventDefault();const v=Number($('#rcFee').value),b=e.target.querySelector('button');
+ if(!(v>=0)){toast('Enter a number.');return}b.disabled=true;
+ try{await db.doc('config/riderSystem').set({perDelivery:v},{merge:true});toast('Saved')}catch(err){toast('Could not save.')}b.disabled=false};
+async function loadRiderCash(){
+ $('#rcBox').innerHTML='<p class="msg">Loading…</p>';
+ try{
+  const [cfgS,payS,delS,rS]=await Promise.all([db.doc('config/riderSystem').get(),db.collection('riderPayments').get(),db.collection('orders').where('status','==','Delivered').get(),db.collection('riders').get()]);
+  $('#rcFee').value=cfgS.exists&&cfgS.data().perDelivery?cfgS.data().perDelivery:'';
+  const pays=payS.docs.map(d=>({id:d.id,...d.data()})),by={},names={};
+  rS.docs.forEach(d=>names[d.id]=d.data());
+  const row=id=>by[id]||(by[id]={cod:0,fee:0,paid:0,n:0});
+  delS.docs.forEach(d=>{const o=d.data();if(!o.riderId)return;const r=row(o.riderId);r.cod+=Number(o.cod)||0;r.fee+=Number(o.riderFee)||0;r.n++});
+  pays.filter(p=>p.status==='approved').forEach(p=>{row(p.riderId).paid+=Number(p.amount)||0});
+  const nm=id=>names[id]?esc(names[id].name)+' · '+esc(names[id].phone):esc(id);
+  const when=p=>p.createdAt&&p.createdAt.toDate?p.createdAt.toDate().toLocaleString():'';
+  const pend=pays.filter(p=>p.status==='pending').sort((a,b)=>(a.createdAt?a.createdAt.seconds:0)-(b.createdAt?b.createdAt.seconds:0));
+  const pendHtml=pend.length?pend.map(p=>`<div class="card"><div class="head"><span class="tn">৳${esc(p.amount)} · ${esc(p.method)}</span><span class="stat">Pending</span></div><small style="color:#6B7A94">${nm(p.riderId)}${p.ref?' · Ref '+esc(p.ref):''} · ${esc(when(p))}</small><div class="acts" style="margin-top:10px"><button data-pa="${esc(p.id)}|approved">Approve (money received)</button><button data-pa="${esc(p.id)}|rejected">Reject</button></div></div>`).join(''):'<p class="msg">No payment requests waiting.</p>';
+  const ids=Object.keys(by).sort((a,b)=>(by[b].cod-by[b].paid)-(by[a].cod-by[a].paid));
+  const balHtml=ids.length?ids.map(id=>{const r=by[id],due=r.cod-r.paid;return `<div class="card"><div class="head"><span class="tn">${nm(id)}</span><span class="stat ${due>0?'':'Delivered'}">Due ৳${due}</span></div><small style="color:#6B7A94">${r.n} deliveries · COD collected ৳${r.cod} · paid to Cholvo ৳${r.paid} · rider earnings ৳${r.fee}</small><div class="acts" style="margin-top:10px"><button data-rp="${esc(id)}">Record payment received</button></div></div>`}).join(''):'<p class="msg">No delivered orders with a rider yet.</p>';
+  $('#rcBox').innerHTML='<div class="sectionTitle" style="margin:14px 2px 8px"><b>Payment requests</b></div>'+pendHtml+'<div class="sectionTitle" style="margin:18px 2px 8px"><b>Rider balances (COD collected minus approved payments)</b></div>'+balHtml;
+ }catch(err){$('#rcBox').innerHTML='<p class="msg">Could not load. Publish the latest Firestore rules first.</p>'}}
+$('#rcBox').onclick=async e=>{
+ const pa=e.target.closest('button[data-pa]'),rp=e.target.closest('button[data-rp]');
+ if(pa){const [id,st]=pa.dataset.pa.split('|');pa.disabled=true;
+  try{await db.doc('riderPayments/'+id).update({status:st,decidedAt:TS,decidedBy:auth.currentUser.email});toast('Payment '+st);loadRiderCash()}
+  catch(err){pa.disabled=false;toast('Could not update.')}return}
+ if(rp){const v=Number(prompt('Amount received from this rider (৳):'));if(!(v>0))return;rp.disabled=true;
+  try{await db.collection('riderPayments').add({riderId:rp.dataset.rp,amount:v,method:'cash',ref:'recorded by admin',status:'approved',createdAt:TS,decidedAt:TS,decidedBy:auth.currentUser.email});toast('Recorded');loadRiderCash()}
+  catch(err){rp.disabled=false;toast('Could not save.')}}};
 
 // ===== Merchant-only charge lists =====
 const DEFAULT_CHARGES=`  <span class="section-kicker">DELIVERY CHARGE LIST</span><h2>Cholvo delivery charge list</h2>

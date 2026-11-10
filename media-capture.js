@@ -1,8 +1,8 @@
-/* CHOLVO media capture: record a voice message (max 60 s) and/or attach up to 3 photos,
+/* CHOLVO media capture: record a voice message (max 60 s) and/or attach up to 8 photos,
    then send them to /api/media (which forwards them to our private Telegram group).
    Usage: CholvoMedia.attach(rootEl, {formEl, endpoint, turnstileKey, keep:['phone'], useTurnstile:()=>bool}) -> controller */
 window.CholvoMedia = (function () {
-  var MAX_SEC = 60, MAX_PHOTOS = 3, PHOTO_PX = 1280;
+  var MAX_SEC = 60, MAX_PHOTOS = 8, PHOTO_PX = 1280;
   var LAME = 'https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js';
   var TS = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
   var loaded = {};

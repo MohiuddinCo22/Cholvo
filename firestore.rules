@@ -32,12 +32,92 @@ service cloud.firestore {
       return tn.matches('^CHV-[A-HJ-NP-Z2-9]{6}$');
     }
 
+    // ---- Rider App (added): a rider's Firestore document id IS their login uid ----
+    // Active rider = signed in, riders/{uid} exists, approvalStatus APPROVED and not deactivated.
+    function riderActive() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/riders/$(request.auth.uid))
+        && get(/databases/$(database)/documents/riders/$(request.auth.uid)).data.approvalStatus == 'APPROVED'
+        && get(/databases/$(database)/documents/riders/$(request.auth.uid)).data.get('active', true) != false;
+    }
+    function riderOwns(tn) {
+      return riderActive()
+        && get(/databases/$(database)/documents/orders/$(tn)).data.get('riderId', '') == request.auth.uid;
+    }
+    // One step forward at a time. A missing riderStage counts as ASSIGNED (set by the admin's assign button).
+    function riderStageOk(a, b) {
+      return (a == 'ASSIGNED' && b == 'GOING_TO_PICKUP')
+        || (a == 'GOING_TO_PICKUP' && b == 'ARRIVED_PICKUP')
+        || (a == 'ARRIVED_PICKUP' && b == 'PICKED_UP')
+        || (a == 'PICKED_UP' && b == 'GOING_TO_CUSTOMER')
+        || (a == 'GOING_TO_CUSTOMER' && b == 'DELIVERED');
+    }
+    // The public status stays inside the old five values (Merchant App and tracking page keep working).
+    function riderStatusOk(stage, newStatus, oldStatus) {
+      return (stage in ['GOING_TO_PICKUP', 'ARRIVED_PICKUP'] && newStatus == oldStatus)
+        || (stage == 'PICKED_UP' && newStatus == 'Picked Up')
+        || (stage == 'GOING_TO_CUSTOMER' && newStatus == 'On the Way')
+        || (stage == 'DELIVERED' && newStatus == 'Delivered');
+    }
+    function riderMayAdvance(tn) {
+      return riderActive()
+        && resource.data.get('riderId', '') == request.auth.uid
+        && resource.data.status in ['Order Received', 'Picked Up', 'On the Way']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['riderStage', 'status', 'updatedAt', 'stageTimes', 'riderFee'])
+        && request.resource.data.updatedAt == request.time
+        && riderFeeOk(request.resource.data)
+        && riderStageOk(resource.data.get('riderStage', 'ASSIGNED'), request.resource.data.riderStage)
+        && riderStatusOk(request.resource.data.riderStage, request.resource.data.status, resource.data.status)
+        && getAfter(/databases/$(database)/documents/tracking/$(tn)).data.status == request.resource.data.status;
+    }
+
+    // Per-delivery earning: the rider app may write riderFee only when it marks DELIVERED, and only the amount the admin set in config/riderSystem.perDelivery.
+    function riderFeeCfg() {
+      return exists(/databases/$(database)/documents/config/riderSystem)
+        ? get(/databases/$(database)/documents/config/riderSystem).data.get('perDelivery', 0)
+        : 0;
+    }
+    function riderFeeOk(d) {
+      return !('riderFee' in d)
+        || (d.riderStage == 'DELIVERED' && d.riderFee is number && d.riderFee > 0 && d.riderFee == riderFeeCfg());
+    }
+    // Rider self-registration: the new login creates its own PENDING rider document (id = uid). Approval stays with the admin.
+    function riderSignup(id, d) {
+      return request.auth != null && request.auth.uid == id
+        && d.keys().hasAll(['name', 'firstName', 'lastName', 'phone', 'gender', 'dob', 'docType', 'docNumber', 'presentAddress',
+             'permanentAddress', 'city', 'zone', 'vehicleType', 'nomineeName', 'nomineePhone', 'nomineeNid', 'nomineeRelation',
+             'privacyAccepted', 'photo', 'approvalStatus', 'active', 'isOnline', 'authUid', 'createdAt'])
+        && d.keys().hasOnly(['name', 'firstName', 'lastName', 'phone', 'email', 'gender', 'dob', 'docType', 'docNumber', 'presentAddress',
+             'permanentAddress', 'city', 'zone', 'vehicleType', 'vehicleNumber', 'licenseNo', 'nomineeName', 'nomineePhone', 'nomineeNid',
+             'nomineeRelation', 'referralCode', 'privacyAccepted', 'photo', 'approvalStatus', 'active', 'isOnline', 'authUid', 'createdAt'])
+        && d.approvalStatus == 'PENDING' && d.active == true && d.isOnline == false
+        && d.authUid == id && d.privacyAccepted == true
+        && d.phone is string && d.phone.matches('^01[0-9]{9}$')
+        && request.auth.token.email == d.phone + '@rider.cholvo.app'
+        && d.gender in ['Male', 'Female', 'Other']
+        && d.docType in ['NID', 'Passport', 'Birth Certificate']
+        && d.vehicleType in ['Cycle', 'E-bike', 'Bike']
+        && d.photo is string && d.photo.size() > 0 && d.photo.size() <= 80000
+        && d.createdAt == request.time
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 120
+        && okStr(d, 'firstName', 60) && okStr(d, 'lastName', 60) && okStr(d, 'email', 120) && okStr(d, 'dob', 12)
+        && okStr(d, 'docNumber', 40) && okStr(d, 'presentAddress', 300) && okStr(d, 'permanentAddress', 300)
+        && okStr(d, 'city', 40) && okStr(d, 'zone', 60) && okStr(d, 'vehicleNumber', 30) && okStr(d, 'licenseNo', 40)
+        && okStr(d, 'nomineeName', 120) && okStr(d, 'nomineePhone', 30) && okStr(d, 'nomineeNid', 40)
+        && okStr(d, 'nomineeRelation', 30) && okStr(d, 'referralCode', 40);
+    }
+
     // Public tracking: status only. Can be created only together with its order.
     match /tracking/{tn} {
       allow get: if true;
       allow list, delete: if admin();
       // A merchant may cancel its own delivery only before it is On the Way (same batch as the order update)
       allow update: if admin()
+        || (riderOwns(tn)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'times'])
+            && request.resource.data.status in ['Picked Up', 'On the Way', 'Delivered']
+            && request.resource.data.updatedAt == request.time
+            && getAfter(/databases/$(database)/documents/orders/$(tn)).data.status == request.resource.data.status)
         || (merchantMayCancel(tn)
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
             && request.resource.data.status == 'Cancelled'
@@ -73,7 +153,7 @@ service cloud.firestore {
           && (!('cod' in d) || (d.cod is number && d.cod >= 0 && d.cod <= 10000000))
           // voice/photo orders: the files themselves go to Telegram, only these two flags are stored
           && (!('hasVoice' in d) || d.hasVoice is bool)
-          && (!('photoCount' in d) || (d.photoCount is int && d.photoCount >= 0 && d.photoCount <= 3));
+          && (!('photoCount' in d) || (d.photoCount is int && d.photoCount >= 0 && d.photoCount <= 8));
       }
       allow create: if validOrder(request.resource.data)
         && (request.resource.data.merchantUid == null
@@ -81,8 +161,10 @@ service cloud.firestore {
                 && request.resource.data.merchantUid == request.auth.uid
                 && approvedMerchant()));
       allow read: if admin()
-        || (approvedMerchant() && resource.data.merchantUid == request.auth.uid);
+        || (approvedMerchant() && resource.data.merchantUid == request.auth.uid)
+        || (riderActive() && resource.data.get('riderId', '') == request.auth.uid);
       allow update: if (admin() && riderOk(request.resource.data))
+        || riderMayAdvance(tn)
         || (merchantMayCancel(tn)
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'cancelledBy'])
             && request.resource.data.status == 'Cancelled'
@@ -93,8 +175,65 @@ service cloud.firestore {
     }
 
     // Riders: admin only. Never readable by merchants or the public.
+    // A rider reads only their own document and may change only isOnline / lastLocationUpdate.
     match /riders/{id} {
-      allow read, write: if admin();
+      allow get: if admin() || (request.auth != null && request.auth.uid == id);
+      allow list, delete: if admin();
+      allow create: if admin() || riderSignup(id, request.resource.data);
+      allow update: if admin()
+        || (riderActive() && request.auth.uid == id
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastLocationUpdate', 'lat', 'lng'])
+            && request.resource.data.isOnline is bool
+            && (!('lat' in request.resource.data) || (request.resource.data.lat is number && request.resource.data.lat >= -90 && request.resource.data.lat <= 90))
+            && (!('lng' in request.resource.data) || (request.resource.data.lng is number && request.resource.data.lng >= -180 && request.resource.data.lng <= 180)));
+    }
+
+    // Registration papers (NID, utility bill, nominee NID ...): small compressed pictures, one document each.
+    // The rider can write them only together with the sign-up (still PENDING) and read only their own. Admin reads and manages all.
+    match /riders/{id}/docs/{k} {
+      allow read: if admin() || (request.auth != null && request.auth.uid == id);
+      allow create: if request.auth != null && request.auth.uid == id
+        && k in ['nidFront', 'nidBack', 'utility', 'nomFront', 'nomBack']
+        && request.resource.data.keys().hasOnly(['data', 'createdAt'])
+        && request.resource.data.data is string && request.resource.data.data.size() > 0 && request.resource.data.data.size() <= 450000
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/riders/$(id)).data.approvalStatus == 'PENDING';
+      allow update, delete: if admin();
+    }
+
+    // Rider cash: the rider asks "I paid Tk X to Cholvo" (pending); the admin approves it. Only approved payments reduce the rider's balance.
+    match /riderPayments/{pid} {
+      allow read: if admin() || (riderActive() && resource.data.riderId == request.auth.uid);
+      allow create: if admin()
+        || (riderActive()
+            && request.resource.data.keys().hasOnly(['riderId', 'amount', 'method', 'ref', 'status', 'createdAt'])
+            && request.resource.data.keys().hasAll(['riderId', 'amount', 'method', 'status', 'createdAt'])
+            && request.resource.data.riderId == request.auth.uid
+            && request.resource.data.amount is number && request.resource.data.amount > 0 && request.resource.data.amount <= 10000000
+            && request.resource.data.method in ['cash', 'bkash', 'nagad', 'other']
+            && okStr(request.resource.data, 'ref', 60)
+            && request.resource.data.status == 'pending'
+            && request.resource.data.createdAt == request.time);
+      allow update, delete: if admin();
+    }
+
+    // Status history of an order: append-only. Admin and the assigned rider write it; nobody edits or deletes.
+    match /orders/{tn}/statusHistory/{hid} {
+      allow read: if admin() || riderOwns(tn);
+      allow create: if admin()
+        || (riderOwns(tn)
+            && request.resource.data.keys().hasOnly(['stage', 'by', 'role', 'at'])
+            && request.resource.data.stage is string && request.resource.data.stage.size() <= 30
+            && request.resource.data.by == request.auth.uid
+            && request.resource.data.role == 'rider'
+            && request.resource.data.at == request.time);
+      allow update, delete: if false;
+    }
+
+    // Company settings (rider limits, support phone, ...): any signed-in user reads, only admin writes.
+    match /config/{doc} {
+      allow read: if request.auth != null;
+      allow write: if admin();
     }
 
     match /merchants/{uid} {
