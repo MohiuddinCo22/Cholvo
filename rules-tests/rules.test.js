@@ -258,8 +258,9 @@ const mediaBatch = (db, tn, extra = {}) => {
   return b.commit();
 };
 test('guest voice+photo order with only a phone number works', () => assertSucceeds(mediaBatch(guest(), 'CHV-VZCEK2')));
-test('photoCount above 3 or negative is rejected', async () => {
-  await assertFails(mediaBatch(guest(), 'CHV-VZCEK3', { photoCount: 4 }));
+test('photoCount 8 is accepted', () => assertSucceeds(mediaBatch(guest(), 'CHV-VZCE87', { photoCount: 8 })));
+test('photoCount above 8 or negative is rejected', async () => {
+  await assertFails(mediaBatch(guest(), 'CHV-VZCEK3', { photoCount: 9 }));
   await assertFails(mediaBatch(guest(), 'CHV-VZCEK4', { photoCount: -1 }));
 });
 test('hasVoice / photoCount must have the right types', async () => {
@@ -347,4 +348,67 @@ test('admin cannot change anything but status/decidedAt, nor re-decide', async (
   await assertFails(updateDoc(doc(admin(), 'passwordResets/' + RID), { phone: '01700000000', status: 'approved', decidedAt: serverTimestamp() }));
   await assertSucceeds(updateDoc(doc(admin(), 'passwordResets/' + RID), { status: 'rejected', decidedAt: serverTimestamp() }));
   await assertFails(updateDoc(doc(admin(), 'passwordResets/' + RID), { status: 'approved', decidedAt: serverTimestamp() }));
+});
+
+// ---- Rider App
+const rEnv = async () => env.withSecurityRulesDisabled(async c => {
+  const db = c.firestore();
+  await setDoc(doc(db, 'riders/rd1'), { name: 'R One', phone: '01700000010', active: true, approvalStatus: 'APPROVED', isOnline: false });
+  await setDoc(doc(db, 'riders/rd2'), { name: 'R Two', phone: '01700000011', active: true, approvalStatus: 'PENDING', isOnline: false });
+  await setDoc(doc(db, 'riders/rd3'), { name: 'R Three', phone: '01700000012', active: true, approvalStatus: 'BLOCKED', isOnline: false });
+  await setDoc(doc(db, 'orders/CHV-RRRRRR'), { tn: 'CHV-RRRRRR', type: 'order', status: 'Order Received', merchantUid: null, riderId: 'rd1' });
+  await setDoc(doc(db, 'tracking/CHV-RRRRRR'), { status: 'Order Received' });
+});
+const stepBatch = (db, tn, stage, status, withTrack) => {
+  const b = writeBatch(db);
+  b.update(doc(db, 'orders/' + tn), { riderStage: stage, status, updatedAt: serverTimestamp() });
+  if (withTrack) b.update(doc(db, 'tracking/' + tn), { status, updatedAt: serverTimestamp() });
+  return b.commit();
+};
+test('rider: reads own document only; pending and blocked riders cannot act', async () => {
+  await rEnv();
+  await assertSucceeds(getDoc(doc(user('rd1'), 'riders/rd1')));
+  await assertFails(getDoc(doc(user('rd1'), 'riders/rd2')));
+  await assertFails(getDocs(collection(user('rd1'), 'riders')));
+  await assertSucceeds(updateDoc(doc(user('rd1'), 'riders/rd1'), { isOnline: true, lastLocationUpdate: serverTimestamp() }));
+  await assertFails(updateDoc(doc(user('rd1'), 'riders/rd1'), { approvalStatus: 'APPROVED', active: true }));
+  await assertFails(updateDoc(doc(user('rd2'), 'riders/rd2'), { isOnline: true }));
+  await assertFails(updateDoc(doc(user('rd3'), 'riders/rd3'), { isOnline: true }));
+});
+test('rider: sees only own orders', async () => {
+  await rEnv();
+  await assertSucceeds(getDocs(query(collection(user('rd1'), 'orders'), where('riderId', '==', 'rd1'))));
+  await assertFails(getDocs(query(collection(user('rd1'), 'orders'), where('riderId', '==', 'rd9'))));
+  await assertFails(getDoc(doc(user('rd2'), 'orders/CHV-RRRRRR')));
+});
+test('rider: moves own order one step at a time, tracking in the same batch', async () => {
+  await rEnv();
+  const r = user('rd1');
+  await assertSucceeds(stepBatch(r, 'CHV-RRRRRR', 'GOING_TO_PICKUP', 'Order Received', false));
+  await assertFails(stepBatch(r, 'CHV-RRRRRR', 'PICKED_UP', 'Picked Up', true));            // skipped ARRIVED_PICKUP
+  await assertSucceeds(stepBatch(r, 'CHV-RRRRRR', 'ARRIVED_PICKUP', 'Order Received', false));
+  await assertFails(stepBatch(r, 'CHV-RRRRRR', 'PICKED_UP', 'Picked Up', false));           // tracking not updated
+  await assertSucceeds(stepBatch(r, 'CHV-RRRRRR', 'PICKED_UP', 'Picked Up', true));
+});
+test('rider: cannot touch another rider\'s order, cannot cancel, cannot edit other fields', async () => {
+  await rEnv();
+  await assertFails(stepBatch(user('rd2'), 'CHV-RRRRRR', 'GOING_TO_PICKUP', 'Order Received', false));
+  await assertFails(stepBatch(user('rd1'), 'CHV-RRRRRR', 'GOING_TO_PICKUP', 'Cancelled', false));
+  await assertFails(updateDoc(doc(user('rd1'), 'orders/CHV-RRRRRR'), { cod: 0, riderStage: 'GOING_TO_PICKUP', updatedAt: serverTimestamp() }));
+  await assertFails(deleteDoc(doc(user('rd1'), 'orders/CHV-RRRRRR')));
+});
+test('rider: status history is append-only', async () => {
+  await rEnv();
+  const h = { stage: 'GOING_TO_PICKUP', by: 'rd1', role: 'rider', at: serverTimestamp() };
+  await assertSucceeds(setDoc(doc(user('rd1'), 'orders/CHV-RRRRRR/statusHistory/h1'), h));
+  await assertFails(setDoc(doc(user('rd1'), 'orders/CHV-RRRRRR/statusHistory/h2'), { ...h, by: 'someone' }));
+  await assertFails(updateDoc(doc(user('rd1'), 'orders/CHV-RRRRRR/statusHistory/h1'), { stage: 'DELIVERED' }));
+  await assertFails(deleteDoc(doc(user('rd1'), 'orders/CHV-RRRRRR/statusHistory/h1')));
+  await assertSucceeds(getDoc(doc(user('rd1'), 'orders/CHV-RRRRRR/statusHistory/h1')));
+});
+test('config: signed-in read, admin write', async () => {
+  await assertSucceeds(setDoc(doc(admin(), 'config/riderSystem'), { maxActiveOrders: 2 }));
+  await assertSucceeds(getDoc(doc(user('rd1'), 'config/riderSystem')));
+  await assertFails(getDoc(doc(guest(), 'config/riderSystem')));
+  await assertFails(setDoc(doc(user('rd1'), 'config/riderSystem'), { maxActiveOrders: 9 }));
 });

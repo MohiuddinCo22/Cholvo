@@ -137,6 +137,9 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
     <form id="rf" style="display:grid;gap:10px;margin-top:10px">
      <input id="rn" placeholder="Rider name" maxlength="120" required aria-label="Rider name">
      <input id="rp" placeholder="Rider mobile (01XXXXXXXXX)" inputmode="numeric" maxlength="11" required aria-label="Rider mobile">
+     <input id="rpw" type="text" placeholder="Rider App password (min 6). Leave empty for a rider without app login" minlength="6" maxlength="128" autocomplete="off" aria-label="Rider app password">
+     <input id="rvt" placeholder="Vehicle type (optional, e.g. Bike)" maxlength="30" aria-label="Vehicle type">
+     <input id="rvn" placeholder="Vehicle number (optional)" maxlength="30" aria-label="Vehicle number">
      <button class="btn">Add rider</button>
     </form></div>
    <div id="rdlist"></div>
@@ -466,17 +469,27 @@ async function loadRiders(){
 function drawRiders(){
  if(!riders.length){$('#rdlist').innerHTML='<p class="msg">No riders yet. Add one above.</p>';return}
  $('#rdlist').innerHTML=riders.map(r=>`<div class="card"><div class="head"><span class="tn">${esc(r.name)}</span><span class="stat ${r.active===false?'':'Delivered'}">${r.active===false?'Inactive':'Active'}</span></div>
-  <small style="color:#6B7A94">${esc(r.phone)}</small>
-  <div class="acts" style="margin-top:10px"><button data-rt="${esc(r.id)}">${r.active===false?'Activate':'Deactivate'}</button><button data-rd="${esc(r.id)}">Delete</button></div></div>`).join('')}
+  <small style="color:#6B7A94">${esc(r.phone)}${r.authUid?' · App login · '+esc(r.approvalStatus||'PENDING')+(r.isOnline?' · ONLINE':' · offline'):' · no app login'}</small>
+  <div class="acts" style="margin-top:10px">${r.authUid?['APPROVED','PENDING','BLOCKED'].filter(x=>x!==(r.approvalStatus||'PENDING')).map(x=>`<button data-ra="${esc(r.id)}|${x}">${x==='APPROVED'?'Approve':x==='BLOCKED'?'Block':'Set pending'}</button>`).join(''):''}<button data-rt="${esc(r.id)}">${r.active===false?'Activate':'Deactivate'}</button><button data-rd="${esc(r.id)}">Delete</button></div></div>`).join('')}
 $('#rf').onsubmit=async e=>{e.preventDefault();
  const name=$('#rn').value.trim(),phone=$('#rp').value.trim();
  if(!name){toast('Enter rider name.');return}
  if(!/^01[0-9]{9}$/.test(phone)){toast('Mobile must be 11 digits, like 01712345678.');return}
- const b=e.target.querySelector('button');b.disabled=true;
- try{await db.collection('riders').add({name,phone,active:true,createdAt:TS});e.target.reset();toast('Rider added');loadRiders()}
+ const pw=$('#rpw').value,b=e.target.querySelector('button');b.disabled=true;
+ try{
+  if(pw){
+   if(pw.length<6){toast('Password must be at least 6 characters.');b.disabled=false;return}
+   const r=await fetch('/api/create-rider',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken:await auth.currentUser.getIdToken(),name,phone,password:pw,vehicleType:$('#rvt').value.trim(),vehicleNumber:$('#rvn').value.trim()})});
+   const j=await r.json().catch(()=>({}));
+   if(!r.ok||!j.ok){const m={exists:'This mobile number already has a Rider App login.',weak_password:'Password is too weak.',not_admin:'Please log in again.',no_secret_live:'Server key is not set up (FIREBASE_SA_LIVE).',no_secret_test:'Server key is not set up (FIREBASE_SA_TEST).'};toast(m[j.code]||'Could not create the rider login ('+(j.code||r.status)+').');b.disabled=false;return}
+   e.target.reset();toast('Rider added with app login');loadRiders();b.disabled=false;return}
+  await db.collection('riders').add({name,phone,active:true,createdAt:TS});e.target.reset();toast('Rider added');loadRiders()}
  catch(err){toast('Could not add rider.')}b.disabled=false};
 $('#rdlist').onclick=async e=>{
- const t=e.target.closest('button[data-rt]'),d=e.target.closest('button[data-rd]');
+ const t=e.target.closest('button[data-rt]'),d=e.target.closest('button[data-rd]'),ra=e.target.closest('button[data-ra]');
+ if(ra){const [id,st]=ra.dataset.ra.split('|');ra.disabled=true;
+  try{await db.doc('riders/'+id).update({approvalStatus:st});toast('Rider '+st.toLowerCase());loadRiders()}
+  catch(err){ra.disabled=false;toast('Could not update rider.')}return}
  if(t){const r=riders.find(x=>x.id===t.dataset.rt);t.disabled=true;
   try{await db.doc('riders/'+r.id).update({active:r.active===false});toast('Rider updated');loadRiders()}
   catch(err){t.disabled=false;toast('Could not update rider.')}}

@@ -19,8 +19,8 @@ const TN = /^CHV-[A-HJ-NP-Z2-9]{6}$/;
 const PHONE = /^01[0-9]{9}$/;
 const MAX_VOICE = 4 * 1024 * 1024;   // ~60 s of mp3 is well under this
 const MAX_PHOTO = 4 * 1024 * 1024;   // the browser shrinks photos before sending
-const MAX_PHOTOS = 3;
-const MAX_BODY = 18 * 1024 * 1024;
+const MAX_PHOTOS = 8;   // Telegram albums allow at most 10
+const MAX_BODY = 32 * 1024 * 1024;
 const PROJECT = { live: 'chovo-35252', test: 'cholvo-staging' };
 
 // Same hosts that env.js treats as staging. Everything else (cholvo.pages.dev, GitHub Pages) is live.
@@ -53,7 +53,7 @@ export async function onRequestPost({ request, env }) {
     const voice = isFile(fd.get('voice')) ? fd.get('voice') : null;
     const photos = fd.getAll('photo').filter(isFile);
     if (!voice && !photos.length) return json({ error: 'Nothing to send' }, 400);
-    if (photos.length > MAX_PHOTOS) return json({ error: 'You can send up to 3 photos.' }, 400);
+    if (photos.length > MAX_PHOTOS) return json({ error: 'You can send up to 8 photos.' }, 400);
     if (voice && (voice.size === 0 || voice.size > MAX_VOICE || !/^audio\//.test(voice.type))) return json({ error: 'The voice message is too long or not supported.' }, 400);
     for (const p of photos) if (p.size === 0 || p.size > MAX_PHOTO || !/^image\/(jpeg|png|webp)$/.test(p.type)) return json({ error: 'A photo is too large or not supported.' }, 400);
 

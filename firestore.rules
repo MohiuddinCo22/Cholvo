@@ -32,12 +32,55 @@ service cloud.firestore {
       return tn.matches('^CHV-[A-HJ-NP-Z2-9]{6}$');
     }
 
+    // ---- Rider App (added): a rider's Firestore document id IS their login uid ----
+    // Active rider = signed in, riders/{uid} exists, approvalStatus APPROVED and not deactivated.
+    function riderActive() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/riders/$(request.auth.uid))
+        && get(/databases/$(database)/documents/riders/$(request.auth.uid)).data.approvalStatus == 'APPROVED'
+        && get(/databases/$(database)/documents/riders/$(request.auth.uid)).data.get('active', true) != false;
+    }
+    function riderOwns(tn) {
+      return riderActive()
+        && get(/databases/$(database)/documents/orders/$(tn)).data.get('riderId', '') == request.auth.uid;
+    }
+    // One step forward at a time. A missing riderStage counts as ASSIGNED (set by the admin's assign button).
+    function riderStageOk(a, b) {
+      return (a == 'ASSIGNED' && b == 'GOING_TO_PICKUP')
+        || (a == 'GOING_TO_PICKUP' && b == 'ARRIVED_PICKUP')
+        || (a == 'ARRIVED_PICKUP' && b == 'PICKED_UP')
+        || (a == 'PICKED_UP' && b == 'GOING_TO_CUSTOMER')
+        || (a == 'GOING_TO_CUSTOMER' && b == 'DELIVERED');
+    }
+    // The public status stays inside the old five values (Merchant App and tracking page keep working).
+    function riderStatusOk(stage, newStatus, oldStatus) {
+      return (stage in ['GOING_TO_PICKUP', 'ARRIVED_PICKUP'] && newStatus == oldStatus)
+        || (stage == 'PICKED_UP' && newStatus == 'Picked Up')
+        || (stage == 'GOING_TO_CUSTOMER' && newStatus == 'On the Way')
+        || (stage == 'DELIVERED' && newStatus == 'Delivered');
+    }
+    function riderMayAdvance(tn) {
+      return riderActive()
+        && resource.data.get('riderId', '') == request.auth.uid
+        && resource.data.status in ['Order Received', 'Picked Up', 'On the Way']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['riderStage', 'status', 'updatedAt', 'stageTimes'])
+        && request.resource.data.updatedAt == request.time
+        && riderStageOk(resource.data.get('riderStage', 'ASSIGNED'), request.resource.data.riderStage)
+        && riderStatusOk(request.resource.data.riderStage, request.resource.data.status, resource.data.status)
+        && getAfter(/databases/$(database)/documents/tracking/$(tn)).data.status == request.resource.data.status;
+    }
+
     // Public tracking: status only. Can be created only together with its order.
     match /tracking/{tn} {
       allow get: if true;
       allow list, delete: if admin();
       // A merchant may cancel its own delivery only before it is On the Way (same batch as the order update)
       allow update: if admin()
+        || (riderOwns(tn)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'times'])
+            && request.resource.data.status in ['Picked Up', 'On the Way', 'Delivered']
+            && request.resource.data.updatedAt == request.time
+            && getAfter(/databases/$(database)/documents/orders/$(tn)).data.status == request.resource.data.status)
         || (merchantMayCancel(tn)
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
             && request.resource.data.status == 'Cancelled'
@@ -73,7 +116,7 @@ service cloud.firestore {
           && (!('cod' in d) || (d.cod is number && d.cod >= 0 && d.cod <= 10000000))
           // voice/photo orders: the files themselves go to Telegram, only these two flags are stored
           && (!('hasVoice' in d) || d.hasVoice is bool)
-          && (!('photoCount' in d) || (d.photoCount is int && d.photoCount >= 0 && d.photoCount <= 3));
+          && (!('photoCount' in d) || (d.photoCount is int && d.photoCount >= 0 && d.photoCount <= 8));
       }
       allow create: if validOrder(request.resource.data)
         && (request.resource.data.merchantUid == null
@@ -81,8 +124,10 @@ service cloud.firestore {
                 && request.resource.data.merchantUid == request.auth.uid
                 && approvedMerchant()));
       allow read: if admin()
-        || (approvedMerchant() && resource.data.merchantUid == request.auth.uid);
+        || (approvedMerchant() && resource.data.merchantUid == request.auth.uid)
+        || (riderActive() && resource.data.get('riderId', '') == request.auth.uid);
       allow update: if (admin() && riderOk(request.resource.data))
+        || riderMayAdvance(tn)
         || (merchantMayCancel(tn)
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'cancelledBy'])
             && request.resource.data.status == 'Cancelled'
@@ -93,8 +138,33 @@ service cloud.firestore {
     }
 
     // Riders: admin only. Never readable by merchants or the public.
+    // A rider reads only their own document and may change only isOnline / lastLocationUpdate.
     match /riders/{id} {
-      allow read, write: if admin();
+      allow get: if admin() || (request.auth != null && request.auth.uid == id);
+      allow list, create, delete: if admin();
+      allow update: if admin()
+        || (riderActive() && request.auth.uid == id
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastLocationUpdate'])
+            && request.resource.data.isOnline is bool);
+    }
+
+    // Status history of an order: append-only. Admin and the assigned rider write it; nobody edits or deletes.
+    match /orders/{tn}/statusHistory/{hid} {
+      allow read: if admin() || riderOwns(tn);
+      allow create: if admin()
+        || (riderOwns(tn)
+            && request.resource.data.keys().hasOnly(['stage', 'by', 'role', 'at'])
+            && request.resource.data.stage is string && request.resource.data.stage.size() <= 30
+            && request.resource.data.by == request.auth.uid
+            && request.resource.data.role == 'rider'
+            && request.resource.data.at == request.time);
+      allow update, delete: if false;
+    }
+
+    // Company settings (rider limits, support phone, ...): any signed-in user reads, only admin writes.
+    match /config/{doc} {
+      allow read: if request.auth != null;
+      allow write: if admin();
     }
 
     match /merchants/{uid} {
