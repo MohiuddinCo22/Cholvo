@@ -1,7 +1,7 @@
 // Cloudflare Pages Function: POST /api/notify-rider   body: { idToken, tn }
 // The admin panel calls this right after assigning an order. It sends a push notification (Firebase Cloud Messaging)
 // to the phone of the rider the order is assigned to. Only the admin may call it (same check as create-rider.js).
-// Title/text come from config/riderSystem (notifTitle / notifBody, set in admin > Rider Cash); {tn} {pickup} {drop} can be used.
+// Title/text come from config/riderSystem (notifTitle / notifBody, set in admin > Rider Cash); {tn} {pickup} {drop} {charge} can be used.
 // Secrets: FIREBASE_SA_LIVE / FIREBASE_SA_TEST (already used by create-rider.js). Web-standard code only.
 import { accessToken, isTestHost, loadSa } from '../_lib/google.js';
 
@@ -56,17 +56,19 @@ export async function onRequestPost({ request, env }) {
     const cd = await fetch(fs + 'config/riderSystem', { headers: H });
     if (cd.ok) cfg = (await cd.json()).fields || {};
     const pickup = str(o.pickup) || str(o.from) || str(o.vendor) || '—', drop = str(o.drop) || str(o.addr) || '—';
-    const fill = s => s.replace(/\{tn\}/g, tn).replace(/\{pickup\}/g, pickup).replace(/\{drop\}/g, drop);
+    const num = f => (f && (f.integerValue || f.doubleValue)) || '';
+    const charge = num(o.deliveryCharge) || num(o.deliveryFee) || num(cfg.perDelivery);   // shown in the notification and the rider app popup
+    const fill = s => s.replace(/\{tn\}/g, tn).replace(/\{pickup\}/g, pickup).replace(/\{drop\}/g, drop).replace(/\{charge\}/g, charge);
     const title = fill(str(cfg.notifTitle) || '🛵 New delivery').slice(0, 80);
-    const text = fill(str(cfg.notifBody) || '{tn}: {pickup} → {drop}').slice(0, 200);
+    const text = fill(str(cfg.notifBody) || '{tn}: {pickup} → {drop}' + (charge ? ' · ৳{charge}' : '')).slice(0, 200);
 
     const r = await fetch('https://fcm.googleapis.com/v1/projects/' + project + '/messages:send', {
       method: 'POST', headers: H,
       body: JSON.stringify({ message: {
         token: fcmToken,
         notification: { title, body: text },
-        data: { tn, kind: 'assigned' },
-        android: { priority: 'HIGH', ttl: '900s', notification: { channel_id: 'orders' } },
+        data: { tn, kind: 'assigned', pickup: pickup.slice(0, 200), drop: drop.slice(0, 200), charge: String(charge) },
+        android: { priority: 'HIGH', ttl: '60s', notification: { channel_id: 'orders', notification_priority: 'PRIORITY_MAX', visibility: 'PUBLIC', default_vibrate_timings: true } },
       } }),
     });
     if (r.ok) return json({ ok: true, sent: true });
