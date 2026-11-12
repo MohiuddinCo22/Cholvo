@@ -45,8 +45,10 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/orders/$(tn)).data.get('riderId', '') == request.auth.uid;
     }
     // One step forward at a time. A missing riderStage counts as ASSIGNED (set by the admin's assign button).
+    // The rider must ACCEPT (or REJECT) a new order first; a rejected order waits for the admin to assign someone else.
     function riderStageOk(a, b) {
-      return (a == 'ASSIGNED' && b == 'GOING_TO_PICKUP')
+      return (a == 'ASSIGNED' && b in ['ACCEPTED', 'REJECTED'])
+        || (a == 'ACCEPTED' && b == 'GOING_TO_PICKUP')
         || (a == 'GOING_TO_PICKUP' && b == 'ARRIVED_PICKUP')
         || (a == 'ARRIVED_PICKUP' && b == 'PICKED_UP')
         || (a == 'PICKED_UP' && b == 'GOING_TO_CUSTOMER')
@@ -54,7 +56,7 @@ service cloud.firestore {
     }
     // The public status stays inside the old five values (Merchant App and tracking page keep working).
     function riderStatusOk(stage, newStatus, oldStatus) {
-      return (stage in ['GOING_TO_PICKUP', 'ARRIVED_PICKUP'] && newStatus == oldStatus)
+      return (stage in ['ACCEPTED', 'REJECTED', 'GOING_TO_PICKUP', 'ARRIVED_PICKUP'] && newStatus == oldStatus)
         || (stage == 'PICKED_UP' && newStatus == 'Picked Up')
         || (stage == 'GOING_TO_CUSTOMER' && newStatus == 'On the Way')
         || (stage == 'DELIVERED' && newStatus == 'Delivered');
@@ -182,7 +184,8 @@ service cloud.firestore {
       allow create: if admin() || riderSignup(id, request.resource.data);
       allow update: if admin()
         || (riderActive() && request.auth.uid == id
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastLocationUpdate', 'lat', 'lng'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastLocationUpdate', 'lat', 'lng', 'fcmToken'])
+            && (!('fcmToken' in request.resource.data) || (request.resource.data.fcmToken is string && request.resource.data.fcmToken.size() <= 400))
             && request.resource.data.isOnline is bool
             && (!('lat' in request.resource.data) || (request.resource.data.lat is number && request.resource.data.lat >= -90 && request.resource.data.lat <= 90))
             && (!('lng' in request.resource.data) || (request.resource.data.lng is number && request.resource.data.lng >= -180 && request.resource.data.lng <= 180)));

@@ -149,6 +149,9 @@ textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radi
    <div class="card"><b>Rider earning per delivery (৳)</b>
     <form id="rcF" style="display:flex;gap:10px;margin-top:10px"><input id="rcFee" type="number" min="0" step="1" placeholder="e.g. 40" style="flex:1" aria-label="Earning per delivery"><button class="btn">Save</button></form>
     <p class="hint">Written on each order when the rider marks it Delivered. Changing it affects only later deliveries.</p></div>
+   <div class="card"><b>Rider notification text</b>
+    <form id="ntF" style="display:grid;gap:10px;margin-top:10px"><input id="ntTitle" maxlength="60" placeholder="Title, e.g. New delivery" aria-label="Notification title"><input id="ntBody" maxlength="160" placeholder="Text. You can use {tn} {pickup} {drop}" aria-label="Notification text"><button class="btn">Save</button></form>
+    <p class="hint">Sent to the rider's phone when you assign an order. Empty = default. Takes effect at once, no new APK needed.</p></div>
    <div id="rcBox"></div>
   </div>
   <div id="chV" hidden>
@@ -335,7 +338,7 @@ function drawOrders(){
 function riderBox(o){
  const opts=riders.filter(r=>r.active!==false||r.id===o.riderId);
  const sel=`<select id="rs-${esc(o.tn)}" aria-label="Choose rider"><option value="">Choose rider…</option>${opts.map(r=>`<option value="${esc(r.id)}"${r.id===o.riderId?' selected':''}>${esc(r.name)} · ${esc(r.phone)}${r.active===false?' (inactive)':''}</option>`).join('')}</select>`;
- return `<div style="margin-top:10px;display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:10px"><small style="color:#6B7A94">🏍 ${o.riderId?'Assigned: '+esc(o.riderName):'No rider assigned'}</small>${sel}
+ return `<div style="margin-top:10px;display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:10px"><small style="color:#6B7A94">🏍 ${o.riderId?'Assigned: '+esc(o.riderName)+(o.riderStage==='REJECTED'?' · ❌ REJECTED by rider — assign another rider':o.riderStage&&o.riderStage!=='ASSIGNED'?' · ✅ accepted ('+esc(o.riderStage)+')':' · ⏳ waiting for rider to accept'):'No rider assigned'}</small>${sel}
   <div class="acts"><button data-as="${esc(o.tn)}">${o.riderId?'Change rider':'Assign rider'}</button>${o.riderId?`<button data-rm="${esc(o.tn)}">Remove rider</button>`:''}</div></div>`}
 $('#q').oninput=drawOrders;$('#fs').onchange=drawOrders;$('#reload').onclick=loadOrders;
 
@@ -346,12 +349,17 @@ $('#olist').onclick=async e=>{
   try{
    if(rm){if(!confirm('Remove rider from '+tn+'?')){btn.disabled=false;return}
     const D=firebase.firestore.FieldValue.delete();
-    await db.doc('orders/'+tn).update({riderId:D,riderName:D,riderPhone:D,riderAssignedAt:D,riderAssignedBy:D});
-    ['riderId','riderName','riderPhone','riderAssignedAt','riderAssignedBy'].forEach(k=>delete o[k]);toast('Rider removed')}
+    await db.doc('orders/'+tn).update({riderId:D,riderName:D,riderPhone:D,riderAssignedAt:D,riderAssignedBy:D,riderStage:D});
+    ['riderId','riderName','riderPhone','riderAssignedAt','riderAssignedBy','riderStage'].forEach(k=>delete o[k]);toast('Rider removed')}
    else{const id=$('#rs-'+tn).value,r=riders.find(x=>x.id===id);if(!r){toast('Choose a rider first.');btn.disabled=false;return}
     const by=auth.currentUser.email;
-    await db.doc('orders/'+tn).update({riderId:r.id,riderName:r.name,riderPhone:r.phone,riderAssignedAt:TS,riderAssignedBy:by});
-    Object.assign(o,{riderId:r.id,riderName:r.name,riderPhone:r.phone,riderAssignedBy:by});toast('Rider assigned: '+r.name)}
+    await db.doc('orders/'+tn).update({riderId:r.id,riderName:r.name,riderPhone:r.phone,riderAssignedAt:TS,riderAssignedBy:by,riderStage:firebase.firestore.FieldValue.delete()});
+    Object.assign(o,{riderId:r.id,riderName:r.name,riderPhone:r.phone,riderAssignedBy:by});delete o.riderStage;
+    let note='';   // tell the rider's phone (push notification)
+    try{const nr=await fetch('/api/notify-rider',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken:await auth.currentUser.getIdToken(),tn})});
+     const nj=await nr.json().catch(()=>({}));
+     note=nj.ok&&nj.sent?' · push sent':nj.code==='no_token'?' · no push token yet (rider must open the app once)':' · push failed ('+(nj.code||nr.status)+')'}catch(_){note=' · push failed'}
+    toast('Rider assigned: '+r.name+note)}
    drawOrders()
   }catch(err){btn.disabled=false;toast('Could not update rider.')}
   return}
@@ -533,11 +541,13 @@ $('#rdlist').onclick=async e=>{
 $('#rcF').onsubmit=async e=>{e.preventDefault();const v=Number($('#rcFee').value),b=e.target.querySelector('button');
  if(!(v>=0)){toast('Enter a number.');return}b.disabled=true;
  try{await db.doc('config/riderSystem').set({perDelivery:v},{merge:true});toast('Saved')}catch(err){toast('Could not save.')}b.disabled=false};
+$('#ntF').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;
+ try{await db.doc('config/riderSystem').set({notifTitle:$('#ntTitle').value.trim(),notifBody:$('#ntBody').value.trim()},{merge:true});toast('Saved')}catch(err){toast('Could not save.')}b.disabled=false};
 async function loadRiderCash(){
  $('#rcBox').innerHTML='<p class="msg">Loading…</p>';
  try{
   const [cfgS,payS,delS,rS]=await Promise.all([db.doc('config/riderSystem').get(),db.collection('riderPayments').get(),db.collection('orders').where('status','==','Delivered').get(),db.collection('riders').get()]);
-  $('#rcFee').value=cfgS.exists&&cfgS.data().perDelivery?cfgS.data().perDelivery:'';
+  $('#rcFee').value=cfgS.exists&&cfgS.data().perDelivery?cfgS.data().perDelivery:'';$('#ntTitle').value=cfgS.exists&&cfgS.data().notifTitle||'';$('#ntBody').value=cfgS.exists&&cfgS.data().notifBody||'';
   const pays=payS.docs.map(d=>({id:d.id,...d.data()})),by={},names={};
   rS.docs.forEach(d=>names[d.id]=d.data());
   const row=id=>by[id]||(by[id]={cod:0,fee:0,paid:0,n:0});
