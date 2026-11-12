@@ -68,7 +68,7 @@ export async function onRequestPost({ request, env }) {
         token: fcmToken,
         notification: { title, body: text },
         data: { tn, kind: 'assigned', pickup: pickup.slice(0, 200), drop: drop.slice(0, 200), charge: String(charge) },
-        android: { priority: 'HIGH', ttl: '60s', notification: { channel_id: 'orders', notification_priority: 'PRIORITY_MAX', visibility: 'PUBLIC', default_vibrate_timings: true } },
+        android: { priority: 'HIGH', ttl: '60s', notification: { channel_id: 'orders_v2', notification_priority: 'PRIORITY_MAX', visibility: 'PUBLIC', default_vibrate_timings: true } },
       } }),
     });
     if (r.ok) return json({ ok: true, sent: true });
