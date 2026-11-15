@@ -35,8 +35,8 @@
       q('#fMy').onclick = myOrders; q('#fOut').onclick = () => { auth.signOut(); toast('Logged out.'); };
       try {
         const s = await db.collection('restaurants').where('active', '==', true).get();
-        q('#rl').innerHTML = s.empty ? '<p class="sub">No restaurants yet.</p>' : s.docs.map(d => `<div class="card"><b>${E(d.data().name)}</b><p class="sub">${E(d.data().address || '')}</p><button class="btn b-or" data-r="${d.id}">View menu</button></div>`).join('');
-        s.docs.forEach(d => q(`[data-r="${d.id}"]`).onclick = () => openRest(d.id, d.data()));
+        q('#rl').innerHTML = s.empty ? '<p class="sub">No restaurants yet.</p>' : s.docs.map(d => `<div class="card"><b>${E(d.data().name)}</b><p class="sub">${E(d.data().address || '')}</p>${d.data().open === false ? '<p class="sub"><b>Closed now</b></p>' : `<button class="btn b-or" data-r="${d.id}">View menu</button>`}</div>`).join('');
+        s.docs.forEach(d => { const b = q(`[data-r="${d.id}"]`); if (b) b.onclick = () => openRest(d.id, d.data()); });
       } catch (e) { q('#rl').innerHTML = '<p class="sub">Could not load restaurants.</p>'; }
     }
     const a = q('#fAny'); if (a) a.onclick = () => q('[data-open="order"]').click();
@@ -73,7 +73,7 @@
   }
   function cartView() {
     const sub = menu.reduce((t, m) => t + (cart[m.id] || 0) * m.price, 0);
-    show(`<h3>${E(rest.name)}</h3>` + menu.map(m => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)"><span>${E(m.name)}<br><small>${tk(m.price)}</small></span><span><button class="btn b-ol" data-m="${m.id}" data-d="-1">−</button> ${cart[m.id] || 0} <button class="btn b-or" data-m="${m.id}" data-d="1">+</button></span></div>`).join('') +
+    show(`<h3>${E(rest.name)}</h3>` + menu.map(m => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)"><span style="display:flex;gap:10px;align-items:center">${m.photo ? `<img src="${E(m.photo)}" alt="" style="width:56px;height:56px;border-radius:10px;object-fit:cover">` : ''}<span>${E(m.name)}<br><small>${tk(m.price)}${m.description ? ' · ' + E(m.description) : ''}</small></span></span><span><button class="btn b-ol" data-m="${m.id}" data-d="-1">−</button> ${cart[m.id] || 0} <button class="btn b-or" data-m="${m.id}" data-d="1">+</button></span></div>`).join('') +
       `<p style="margin:12px 0"><b>Food total: ${tk(sub)}</b></p><button class="btn b-or" id="co" style="width:100%" ${sub ? '' : 'disabled'}>Checkout</button>`);
     document.querySelectorAll('#fm [data-m]').forEach(b => b.onclick = () => { const k = b.dataset.m; cart[k] = Math.max(0, (cart[k] || 0) + +b.dataset.d); cartView(); });
     q('#co').onclick = checkout;
@@ -123,11 +123,11 @@
       const col = db.collection('restaurants/' + uid + '/menu'), s = await col.get();
       q('#mb').innerHTML = '<form id="mf" class="grid"><input name="n" placeholder="Item name" required><input name="p" type="number" min="1" placeholder="Price (৳)" required><button class="btn b-or">Add item</button></form>' +
         s.docs.map(d => `<div style="display:flex;justify-content:space-between;padding:8px 0">${E(d.data().name)} ${tk(d.data().price)} <button class="btn b-ol" data-t="${d.id}">${d.data().available ? 'In stock' : 'Out'}</button> <button class="btn b-nv" data-del="${d.id}">Delete</button></div>`).join('');
-      q('#mf').onsubmit = async e => { e.preventDefault(); await col.add({ name: e.target.n.value.trim(), price: +e.target.p.value, available: true }); menuTab(); };
-      s.docs.forEach(d => { q(`[data-t="${d.id}"]`).onclick = async () => { await d.ref.update({ available: !d.data().available }); menuTab(); }; q(`[data-del="${d.id}"]`).onclick = async () => { await d.ref.delete(); menuTab(); }; });
+      q('#mf').onsubmit = async e => { e.preventDefault(); await col.add({ name: e.target.n.value.trim(), price: +e.target.p.value, available: true, createdAt: TS, updatedAt: TS }); menuTab(); };
+      s.docs.forEach(d => { q(`[data-t="${d.id}"]`).onclick = async () => { await d.ref.update({ available: !d.data().available, updatedAt: TS }); menuTab(); }; q(`[data-del="${d.id}"]`).onclick = async () => { await d.ref.delete(); menuTab(); }; });
     };
     q('#mo').onclick = orders; q('#mm').onclick = menuTab;
-    db.doc('restaurants/' + uid).get().then(r => { if (!r.exists) q('#mb').innerHTML = '<p class="sub">Your restaurant is not listed on Cholvo yet. Contact Cholvo to be listed.</p>'; else orders(); });
+    db.doc('restaurants/' + uid).get().then(r => { if (!r.exists) q('#mb').innerHTML = '<p class="sub">Set up your store in the Cholvo Merchant App (Menu) to get listed.</p>'; else orders(); });
   }
 
   // ---- auth state ----
