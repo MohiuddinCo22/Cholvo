@@ -327,6 +327,61 @@ service cloud.firestore {
         && resource.data.status == 'pending';
     }
 
+    // ---- Stores + menu: what a merchant publishes from the Merchant App (document id of the store = the merchant's uid) ----
+    // The public (customer food app / website) reads ACTIVE stores and their menu. Only the owning approved merchant edits
+    // its own store and menu. `active` (listing on/off) is created true by the owner but can afterwards be changed by admin only;
+    // the owner controls `open` (store open/closed) and each item's `available` (in stock).
+    function isOwner(rid) {
+      return approvedMerchant() && request.auth.uid == rid;
+    }
+    match /restaurants/{rid} {
+      allow get: if admin() || isOwner(rid) || resource.data.active == true;
+      allow list: if admin() || resource.data.active == true;
+      allow create: if admin()
+        || (isOwner(rid)
+            && request.resource.data.keys().hasOnly(['name', 'address', 'phone', 'businessType', 'active', 'open', 'createdAt', 'updatedAt'])
+            && request.resource.data.keys().hasAll(['name', 'address', 'active', 'open', 'createdAt', 'updatedAt'])
+            && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+            && request.resource.data.address is string && request.resource.data.address.size() > 0 && request.resource.data.address.size() <= 300
+            && okStr(request.resource.data, 'phone', 30) && okStr(request.resource.data, 'businessType', 20)
+            && request.resource.data.active == true && request.resource.data.open is bool
+            && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time);
+      allow update: if admin()
+        || (isOwner(rid)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'address', 'phone', 'open', 'updatedAt'])
+            && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+            && request.resource.data.address is string && request.resource.data.address.size() > 0 && request.resource.data.address.size() <= 300
+            && okStr(request.resource.data, 'phone', 30)
+            && request.resource.data.open is bool
+            && request.resource.data.updatedAt == request.time);
+      allow delete: if admin();
+    }
+
+    // Menu items / products. `photo` is a small JPEG data URL (the app shrinks it to about 90 KB).
+    match /restaurants/{rid}/menu/{iid} {
+      function validItem(d) {
+        return d.keys().hasOnly(['name', 'price', 'available', 'category', 'description', 'photo', 'createdAt', 'updatedAt'])
+          && d.keys().hasAll(['name', 'price', 'available', 'updatedAt'])
+          && d.name is string && d.name.size() > 0 && d.name.size() <= 80
+          && d.price is number && d.price > 0 && d.price <= 100000
+          && d.available is bool
+          && okStr(d, 'category', 40) && okStr(d, 'description', 300) && okStr(d, 'photo', 130000)
+          && d.updatedAt == request.time;
+      }
+      // Public sees only items the merchant switched ON (available == true); OFF items are not readable by customers at all.
+      allow get, list: if admin() || isOwner(rid)
+        || (resource.data.available == true
+            && exists(/databases/$(database)/documents/restaurants/$(rid))
+            && get(/databases/$(database)/documents/restaurants/$(rid)).data.active == true);
+      allow create: if admin()
+        || (isOwner(rid) && validItem(request.resource.data) && request.resource.data.keys().hasAll(['createdAt'])
+            && request.resource.data.createdAt == request.time);
+      allow update: if admin()
+        || (isOwner(rid) && validItem(request.resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'price', 'available', 'category', 'description', 'photo', 'updatedAt']));
+      allow delete: if admin() || isOwner(rid);
+    }
+
     match /private/{doc} {
       allow read: if admin() || approvedMerchant();
       allow write: if admin();
