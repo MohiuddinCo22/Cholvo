@@ -1,0 +1,24 @@
+{
+  "merchant": {
+    "latestVersion": "1.1.0",
+    "minimumVersion": "1.0.0",
+    "forceUpdate": false,
+    "active": true,
+    "downloadUrl": "https://cholvo.pages.dev/merchant-download/",
+    "apkUrl": "",
+    "releaseNotes": [
+      "Update notification added - future updates reach you automatically."
+    ]
+  },
+  "rider": {
+    "latestVersion": "0.5.0",
+    "minimumVersion": "0.4.0",
+    "forceUpdate": false,
+    "active": true,
+    "downloadUrl": "https://cholvo.pages.dev/rider-download/",
+    "apkUrl": "",
+    "releaseNotes": [
+      "Update notification added - future updates reach you automatically."
+    ]
+  }
+}

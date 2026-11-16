@@ -1,0 +1,23 @@
+# Cloudflare Pages reads this file automatically.
+
+# The apps (Merchant / Rider) read this file from inside the phone app, so it must allow cross-site reading and must never be cached for long.
+/app-update.json
+  Access-Control-Allow-Origin: *
+  Cache-Control: no-cache, must-revalidate
+  Content-Type: application/json; charset=utf-8
+
+# The APK files you upload to the "downloads" folder: tell the phone it is an app installer.
+/downloads/cholvo-merchant.apk
+  Content-Type: application/vnd.android.package-archive
+  Content-Disposition: attachment; filename="cholvo-merchant.apk"
+  Cache-Control: no-cache, must-revalidate
+/downloads/cholvo-rider.apk
+  Content-Type: application/vnd.android.package-archive
+  Content-Disposition: attachment; filename="cholvo-rider.apk"
+  Cache-Control: no-cache, must-revalidate
+
+# Download pages are for your partners, not for Google
+/merchant-download/*
+  X-Robots-Tag: noindex
+/rider-download/*
+  X-Robots-Tag: noindex

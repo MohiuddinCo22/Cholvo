@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0B2A5B">
+<title>Download Cholvo Merchant | Cholvo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B2A5B;--deep:#071A3A;--orange:#F58220;--sun:#FFA51F;--ink:#12233F;--mist:#F3F6FB;--line:#DCE3EF}
+*{box-sizing:border-box;margin:0}
+body{font-family:Outfit,system-ui,sans-serif;color:var(--ink);background:var(--mist);line-height:1.55;min-height:100vh}
+.top{background:linear-gradient(160deg,var(--navy),var(--deep));color:#fff;text-align:center;padding:34px 20px 70px}
+.top img{width:76px;height:76px;object-fit:contain;background:#fff;border-radius:22px;padding:7px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.top h1{font-size:clamp(1.5rem,5vw,2rem);font-weight:800;margin-top:14px}
+.top p{opacity:.85;margin-top:4px}
+.card{max-width:460px;margin:-44px auto 40px;background:#fff;border:1px solid var(--line);border-radius:24px;padding:24px 22px;box-shadow:0 18px 48px rgba(7,26,58,.12)}
+.ver{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:var(--mist);font-weight:600}
+.ver b{color:var(--orange);font-size:1.15rem}
+h2{font-size:1rem;font-weight:800;color:var(--navy);margin:20px 0 6px}
+ul,ol{padding-left:20px;color:#3d4e6b;font-size:.95rem}
+li{margin:3px 0}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:22px;min-height:56px;border-radius:999px;background:linear-gradient(90deg,var(--orange),var(--sun));color:#fff;font-weight:800;font-size:1.1rem;text-decoration:none;box-shadow:0 10px 24px rgba(245,130,32,.35)}
+.btn:active{transform:scale(.98)}
+.hint{margin-top:14px;font-size:.85rem;color:#5a6b87;text-align:center}
+.bn{font-size:.85rem;color:#5a6b87;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="top">
+  <img src="/logo.jpg" alt="Cholvo">
+  <h1>Cholvo Merchant</h1>
+  <p>Official app download</p>
+</div>
+<main class="card">
+  <div class="ver"><span>Latest version</span><b id="ver">1.1.0</b></div>
+  <div id="notesBox" hidden><h2>What's new</h2><ul id="notes"></ul></div>
+  <a class="btn" id="dl" href="/downloads/cholvo-merchant.apk" download>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 20h14"/></svg>
+    Download APK
+  </a>
+  <h2>How to install</h2>
+  <ol>
+    <li>Tap <b>Download APK</b> and wait for the download to finish.</li>
+    <li>Open the downloaded file.</li>
+    <li>If Android asks, allow installing from this browser, then tap <b>Install</b>.</li>
+  </ol>
+  <p class="bn">ডাউনলোড শেষে ফাইলটি খুলুন এবং Install চাপুন। আগের অ্যাপের ওপরেই আপডেট হবে, ডেটা মুছবে না।</p>
+  <p class="hint">Your account and data stay safe: this installs over your current app.</p>
+</main>
+<script>
+// Shows the version, release notes and the APK link from the same app-update.json the app uses. If anything fails, the page still works with the default link.
+(function(){
+  var KEY='merchant';
+  fetch('/app-update.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(j){
+    var e=j&&j[KEY]; if(!e||typeof e!=='object') return;
+    if(typeof e.latestVersion==='string'&&e.latestVersion) document.getElementById('ver').textContent=e.latestVersion;
+    if(typeof e.apkUrl==='string'&&/^https:\/\//i.test(e.apkUrl.trim())) document.getElementById('dl').href=e.apkUrl.trim();
+    var n=Array.isArray(e.releaseNotes)?e.releaseNotes:(typeof e.releaseNotes==='string'?e.releaseNotes.split(/\r?\n/):[]);
+    n=n.filter(function(x){return typeof x==='string'&&x.trim()}).slice(0,8);
+    if(n.length){var ul=document.getElementById('notes');n.forEach(function(x){var li=document.createElement('li');li.textContent=x;ul.appendChild(li)});document.getElementById('notesBox').hidden=false}
+  }).catch(function(){});
+})();
+</script>
+</body>
+</html>
