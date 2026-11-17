@@ -1,0 +1,446 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function admin() {
+      return request.auth != null && request.auth.token.email == 'admin@cholvo.com';
+    }
+    function approvedMerchant() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/merchants/$(request.auth.uid))
+        && get(/databases/$(database)/documents/merchants/$(request.auth.uid)).data.blocked == false;
+    }
+    function okStr(d, k, max) {
+      return !(k in d) || (d[k] is string && d[k].size() <= max);
+    }
+    // Rider snapshot on an order: all five fields together, or none. Written by admin only.
+    function riderOk(d) {
+      return !d.keys().hasAny(['riderId', 'riderName', 'riderPhone', 'riderAssignedAt', 'riderAssignedBy'])
+        || (d.keys().hasAll(['riderId', 'riderName', 'riderPhone', 'riderAssignedAt', 'riderAssignedBy'])
+            && d.riderId is string && d.riderId.size() > 0 && d.riderId.size() <= 60
+            && d.riderName is string && d.riderName.size() > 0 && d.riderName.size() <= 120
+            && d.riderPhone is string && d.riderPhone.matches('^01[0-9]{9}$')
+            && d.riderAssignedAt is timestamp
+            && d.riderAssignedBy == request.auth.token.email);
+    }
+    // Merchant cancel: own order, approved merchant, status still before On the Way (checked on the stored order)
+    function merchantMayCancel(tn) {
+      return approvedMerchant()
+        && get(/databases/$(database)/documents/orders/$(tn)).data.merchantUid == request.auth.uid
+        && get(/databases/$(database)/documents/orders/$(tn)).data.status in ['Order Received', 'Picked Up'];
+    }
+    function validTn(tn) {
+      return tn.matches('^CHV-[A-HJ-NP-Z2-9]{6}$');
+    }
+
+    // ---- Rider App (added): a rider's Firestore document id IS their login uid ----
+    // Active rider = signed in, riders/{uid} exists, approvalStatus APPROVED and not deactivated.
+    function riderActive() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/riders/$(request.auth.uid))
+        && get(/databases/$(database)/documents/riders/$(request.auth.uid)).data.approvalStatus == 'APPROVED'
+        && get(/databases/$(database)/documents/riders/$(request.auth.uid)).data.get('active', true) != false;
+    }
+    function riderOwns(tn) {
+      return riderActive()
+        && get(/databases/$(database)/documents/orders/$(tn)).data.get('riderId', '') == request.auth.uid;
+    }
+    // One step forward at a time. A missing riderStage counts as ASSIGNED (set by the admin's assign button).
+    // The rider must ACCEPT (or REJECT) a new order first; a rejected order waits for the admin to assign someone else.
+    function riderStageOk(a, b) {
+      return (a == 'ASSIGNED' && b in ['ACCEPTED', 'REJECTED'])
+        || (a == 'ACCEPTED' && b == 'GOING_TO_PICKUP')
+        || (a == 'GOING_TO_PICKUP' && b == 'ARRIVED_PICKUP')
+        || (a == 'ARRIVED_PICKUP' && b == 'PICKED_UP')
+        || (a == 'PICKED_UP' && b == 'GOING_TO_CUSTOMER')
+        || (a == 'GOING_TO_CUSTOMER' && b == 'DELIVERED');
+    }
+    // The public status stays inside the old five values (Merchant App and tracking page keep working).
+    function riderStatusOk(stage, newStatus, oldStatus) {
+      return (stage in ['ACCEPTED', 'REJECTED', 'GOING_TO_PICKUP', 'ARRIVED_PICKUP'] && newStatus == oldStatus)
+        || (stage == 'PICKED_UP' && newStatus == 'Picked Up')
+        || (stage == 'GOING_TO_CUSTOMER' && newStatus == 'On the Way')
+        || (stage == 'DELIVERED' && newStatus == 'Delivered');
+    }
+    function riderMayAdvance(tn) {
+      return riderActive()
+        && resource.data.get('riderId', '') == request.auth.uid
+        && resource.data.status in ['Order Received', 'Picked Up', 'On the Way']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['riderStage', 'status', 'updatedAt', 'stageTimes', 'riderFee'])
+        && request.resource.data.updatedAt == request.time
+        && riderFeeOk(request.resource.data)
+        && riderStageOk(resource.data.get('riderStage', 'ASSIGNED'), request.resource.data.riderStage)
+        && riderStatusOk(request.resource.data.riderStage, request.resource.data.status, resource.data.status)
+        && getAfter(/databases/$(database)/documents/tracking/$(tn)).data.status == request.resource.data.status;
+    }
+
+    // Per-delivery earning: the rider app may write riderFee only when it marks DELIVERED, and only the amount the admin set in config/riderSystem.perDelivery.
+    function riderFeeCfg() {
+      return exists(/databases/$(database)/documents/config/riderSystem)
+        ? get(/databases/$(database)/documents/config/riderSystem).data.get('perDelivery', 0)
+        : 0;
+    }
+    function riderFeeOk(d) {
+      return !('riderFee' in d)
+        || (d.riderStage == 'DELIVERED' && d.riderFee is number && d.riderFee > 0 && d.riderFee == riderFeeCfg());
+    }
+    // Rider self-registration: the new login creates its own PENDING rider document (id = uid). Approval stays with the admin.
+    function riderSignup(id, d) {
+      return request.auth != null && request.auth.uid == id
+        && d.keys().hasAll(['name', 'firstName', 'lastName', 'phone', 'gender', 'dob', 'docType', 'docNumber', 'presentAddress',
+             'permanentAddress', 'city', 'zone', 'vehicleType', 'nomineeName', 'nomineePhone', 'nomineeNid', 'nomineeRelation',
+             'privacyAccepted', 'photo', 'approvalStatus', 'active', 'isOnline', 'authUid', 'createdAt'])
+        && d.keys().hasOnly(['name', 'firstName', 'lastName', 'phone', 'email', 'gender', 'dob', 'docType', 'docNumber', 'presentAddress',
+             'permanentAddress', 'city', 'zone', 'vehicleType', 'vehicleNumber', 'licenseNo', 'nomineeName', 'nomineePhone', 'nomineeNid',
+             'nomineeRelation', 'referralCode', 'privacyAccepted', 'photo', 'approvalStatus', 'active', 'isOnline', 'authUid', 'createdAt'])
+        && d.approvalStatus == 'PENDING' && d.active == true && d.isOnline == false
+        && d.authUid == id && d.privacyAccepted == true
+        && d.phone is string && d.phone.matches('^01[0-9]{9}$')
+        && request.auth.token.email == d.phone + '@rider.cholvo.app'
+        && d.gender in ['Male', 'Female', 'Other']
+        && d.docType in ['NID', 'Passport', 'Birth Certificate']
+        && d.vehicleType in ['Cycle', 'E-bike', 'Bike']
+        && d.photo is string && d.photo.size() > 0 && d.photo.size() <= 80000
+        && d.createdAt == request.time
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 120
+        && okStr(d, 'firstName', 60) && okStr(d, 'lastName', 60) && okStr(d, 'email', 120) && okStr(d, 'dob', 12)
+        && okStr(d, 'docNumber', 40) && okStr(d, 'presentAddress', 300) && okStr(d, 'permanentAddress', 300)
+        && okStr(d, 'city', 40) && okStr(d, 'zone', 60) && okStr(d, 'vehicleNumber', 30) && okStr(d, 'licenseNo', 40)
+        && okStr(d, 'nomineeName', 120) && okStr(d, 'nomineePhone', 30) && okStr(d, 'nomineeNid', 40)
+        && okStr(d, 'nomineeRelation', 30) && okStr(d, 'referralCode', 40);
+    }
+
+    // Public tracking: status only. Can be created only together with its order.
+    match /tracking/{tn} {
+      allow get: if true;
+      allow list, delete: if admin();
+      // A merchant may cancel its own delivery only before it is On the Way (same batch as the order update)
+      allow update: if admin()
+        || (riderOwns(tn)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'times'])
+            && request.resource.data.status in ['Picked Up', 'On the Way', 'Delivered']
+            && request.resource.data.updatedAt == request.time
+            && getAfter(/databases/$(database)/documents/orders/$(tn)).data.status == request.resource.data.status)
+        || (merchantMayCancel(tn)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
+            && request.resource.data.status == 'Cancelled'
+            && request.resource.data.updatedAt == request.time
+            && getAfter(/databases/$(database)/documents/orders/$(tn)).data.status == 'Cancelled');
+      allow create: if validTn(tn)
+        && request.resource.data.keys().hasOnly(['status', 'updatedAt'])
+        && request.resource.data.keys().hasAll(['status', 'updatedAt'])
+        && request.resource.data.status == 'Order Received'
+        && request.resource.data.updatedAt == request.time
+        && existsAfter(/databases/$(database)/documents/orders/$(tn));
+    }
+
+    // Orders: guests and approved merchants create; admin manages; a merchant reads only own.
+    match /orders/{tn} {
+      function validOrder(d) {
+        return d.keys().hasAll(['tn', 'type', 'status', 'merchantUid', 'createdAt'])
+          && d.keys().hasOnly(['tn', 'type', 'status', 'merchantUid', 'createdAt',
+               'vendor', 'phone', 'pickup', 'drop', 'customerName', 'customerPhone',
+               'ptype', 'cod', 'date', 'later', 'name', 'addr', 'product', 'from',
+               'hasVoice', 'photoCount',
+               'address', 'items', 'restaurant', 'restaurantName'])
+          && validTn(tn)
+          && d.tn == tn
+          && d.status == 'Order Received'
+          && d['type'] in ['book', 'order', 'food']
+          && d.createdAt == request.time
+          && okStr(d, 'vendor', 120) && okStr(d, 'phone', 30)
+          && okStr(d, 'pickup', 300) && okStr(d, 'drop', 300)
+          && okStr(d, 'customerName', 120) && okStr(d, 'customerPhone', 30)
+          && okStr(d, 'ptype', 30) && okStr(d, 'date', 40) && okStr(d, 'later', 40)
+          && okStr(d, 'name', 120) && okStr(d, 'addr', 300)
+          && okStr(d, 'product', 300) && okStr(d, 'from', 300)
+          && okStr(d, 'address', 300) && okStr(d, 'items', 600)
+          && okStr(d, 'restaurant', 120) && okStr(d, 'restaurantName', 120)
+          && (!('cod' in d) || (d.cod is number && d.cod >= 0 && d.cod <= 10000000))
+          // voice/photo orders: the files themselves go to Telegram, only these two flags are stored
+          && (!('hasVoice' in d) || d.hasVoice is bool)
+          && (!('photoCount' in d) || (d.photoCount is int && d.photoCount >= 0 && d.photoCount <= 8));
+      }
+      allow create: if validOrder(request.resource.data)
+        && (request.resource.data.merchantUid == null
+            || (request.auth != null
+                && request.resource.data.merchantUid == request.auth.uid
+                && approvedMerchant()));
+      allow read: if admin()
+        || (approvedMerchant() && resource.data.merchantUid == request.auth.uid)
+        || (riderActive() && resource.data.get('riderId', '') == request.auth.uid);
+      allow update: if (admin() && riderOk(request.resource.data))
+        || riderMayAdvance(tn)
+        || (merchantMayCancel(tn)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'cancelledBy'])
+            && request.resource.data.status == 'Cancelled'
+            && request.resource.data.cancelledBy == 'merchant'
+            && request.resource.data.updatedAt == request.time
+            && getAfter(/databases/$(database)/documents/tracking/$(tn)).data.status == 'Cancelled');
+      allow delete: if admin();
+    }
+
+    // Riders: admin only. Never readable by merchants or the public.
+    // A rider reads only their own document and may change only isOnline / lastLocationUpdate.
+    match /riders/{id} {
+      allow get: if admin() || (request.auth != null && request.auth.uid == id);
+      allow list, delete: if admin();
+      allow create: if admin() || riderSignup(id, request.resource.data);
+      allow update: if admin()
+        || (riderActive() && request.auth.uid == id
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastLocationUpdate', 'lat', 'lng', 'fcmToken'])
+            && (!('fcmToken' in request.resource.data) || (request.resource.data.fcmToken is string && request.resource.data.fcmToken.size() <= 400))
+            && request.resource.data.isOnline is bool
+            && (!('lat' in request.resource.data) || (request.resource.data.lat is number && request.resource.data.lat >= -90 && request.resource.data.lat <= 90))
+            && (!('lng' in request.resource.data) || (request.resource.data.lng is number && request.resource.data.lng >= -180 && request.resource.data.lng <= 180)));
+    }
+
+    // Registration papers (NID, utility bill, nominee NID ...): small compressed pictures, one document each.
+    // The rider can write them only together with the sign-up (still PENDING) and read only their own. Admin reads and manages all.
+    match /riders/{id}/docs/{k} {
+      allow read: if admin() || (request.auth != null && request.auth.uid == id);
+      allow create: if request.auth != null && request.auth.uid == id
+        && k in ['nidFront', 'nidBack', 'utility', 'nomFront', 'nomBack']
+        && request.resource.data.keys().hasOnly(['data', 'createdAt'])
+        && request.resource.data.data is string && request.resource.data.data.size() > 0 && request.resource.data.data.size() <= 450000
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/riders/$(id)).data.approvalStatus == 'PENDING';
+      allow update, delete: if admin();
+    }
+
+    // Rider cash: the rider asks "I paid Tk X to Cholvo" (pending); the admin approves it. Only approved payments reduce the rider's balance.
+    match /riderPayments/{pid} {
+      allow read: if admin() || (riderActive() && resource.data.riderId == request.auth.uid);
+      allow create: if admin()
+        || (riderActive()
+            && request.resource.data.keys().hasOnly(['riderId', 'amount', 'method', 'ref', 'status', 'createdAt'])
+            && request.resource.data.keys().hasAll(['riderId', 'amount', 'method', 'status', 'createdAt'])
+            && request.resource.data.riderId == request.auth.uid
+            && request.resource.data.amount is number && request.resource.data.amount > 0 && request.resource.data.amount <= 10000000
+            && request.resource.data.method in ['cash', 'bkash', 'nagad', 'other']
+            && okStr(request.resource.data, 'ref', 60)
+            && request.resource.data.status == 'pending'
+            && request.resource.data.createdAt == request.time);
+      allow update, delete: if admin();
+    }
+
+    // Status history of an order: append-only. Admin and the assigned rider write it; nobody edits or deletes.
+    match /orders/{tn}/statusHistory/{hid} {
+      allow read: if admin() || riderOwns(tn);
+      allow create: if admin()
+        || (riderOwns(tn)
+            && request.resource.data.keys().hasOnly(['stage', 'by', 'role', 'at'])
+            && request.resource.data.stage is string && request.resource.data.stage.size() <= 30
+            && request.resource.data.by == request.auth.uid
+            && request.resource.data.role == 'rider'
+            && request.resource.data.at == request.time);
+      allow update, delete: if false;
+    }
+
+    // Company settings (rider limits, support phone, ...): any signed-in user reads, only admin writes.
+    match /config/{doc} {
+      allow read: if request.auth != null;
+      allow write: if admin();
+    }
+
+    match /merchants/{uid} {
+      allow create: if admin();
+      allow get: if request.auth != null && (request.auth.uid == uid || admin());
+      allow list, update, delete: if admin();
+    }
+
+    // One registration per mobile number: the request's document id IS the number, so a second request
+    // with the same number cannot be created. It is always written together with its phoneIndex entry.
+    match /merchantRequests/{id} {
+      allow create: if request.resource.data.status == 'pending'
+        && id == request.resource.data.mobile
+        && existsAfter(/databases/$(database)/documents/phoneIndex/$(id))
+        && request.resource.data.keys().hasOnly(['businessName', 'ownerFirst', 'ownerLast',
+             'businessType', 'branches', 'email', 'mobile', 'businessPhone', 'samePhone',
+             'agreed', 'status', 'createdAt'])
+        && request.resource.data.businessType in ['Shop', 'Restaurant']
+        && request.resource.data.mobile.matches('^01[0-9]{9}$')
+        && request.resource.data.agreed == true
+        && request.resource.data.businessName.size() <= 120
+        && request.resource.data.createdAt == request.time
+        && okStr(request.resource.data, 'ownerFirst', 80)
+        && okStr(request.resource.data, 'ownerLast', 80)
+        && okStr(request.resource.data, 'email', 120)
+        && okStr(request.resource.data, 'businessPhone', 30)
+        && (!('branches' in request.resource.data) || request.resource.data.branches is number);
+      allow read, update, delete: if admin();
+    }
+
+    // Lets the registration form say "already existing". Guests can only check one number (get), never list them.
+    match /phoneIndex/{phone} {
+      allow get: if true;
+      allow list: if admin();
+      allow create: if admin()
+        || (phone.matches('^01[0-9]{9}$')
+            && request.resource.data.keys().hasOnly(['createdAt'])
+            && request.resource.data.createdAt == request.time
+            && existsAfter(/databases/$(database)/documents/merchantRequests/$(phone)));
+      allow update, delete: if admin();
+    }
+
+    // Merchant App banners: only the list lives here (the pictures are files in the website repo's banners/ folder)
+    match /banners/{id} {
+      function validBanner(d) {
+        return d.keys().hasOnly(['file', 'title', 'order', 'active', 'createdAt'])
+          && d.keys().hasAll(['file', 'order', 'active', 'createdAt'])
+          && d.file is string && d.file.matches('^banner-[a-z0-9]{8}[.]jpg$')
+          && (!('title' in d) || (d.title is string && d.title.size() <= 80))
+          && d.order is int && d.order >= 0 && d.order <= 999
+          && d.active is bool
+          && d.createdAt is timestamp;
+      }
+      allow read: if admin() || approvedMerchant();
+      allow create, update: if admin() && validBanner(request.resource.data);
+      allow delete: if admin();
+    }
+
+    // Notifications sent by the admin to all merchants (shown under the bell in the Merchant App)
+    match /notifications/{id} {
+      allow read: if admin() || approvedMerchant();
+      allow create: if admin()
+        && request.resource.data.keys().hasOnly(['title', 'body', 'createdAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 80
+        && request.resource.data.body is string && request.resource.data.body.size() > 0 && request.resource.data.body.size() <= 500
+        && request.resource.data.createdAt == request.time;
+      allow delete: if admin();
+    }
+
+    // Forgot password: the merchant app creates a request (random unguessable id, kept on the merchant's phone).
+    // The admin approves or rejects it. The new password itself is set by the /api/reset-password function
+    // (server side), which only accepts an approved, unused, not-expired request.
+    match /passwordResets/{rid} {
+      allow create: if rid.matches('^[A-Za-z0-9]{32}$')
+        && request.resource.data.keys().hasOnly(['phone', 'status', 'createdAt'])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.phone is string
+        && request.resource.data.phone.matches('^01[0-9]{9}$')
+        && request.resource.data.createdAt == request.time
+        && exists(/databases/$(database)/documents/phoneIndex/$(request.resource.data.phone));
+      // get only (never list): the id is a secret, so only the device that made the request can follow it
+      allow get: if true;
+      allow list, delete: if admin();
+      allow update: if admin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt'])
+        && request.resource.data.status in ['approved', 'rejected']
+        && request.resource.data.decidedAt == request.time
+        && resource.data.status == 'pending';
+    }
+
+    // ---- Stores + menu: what a merchant publishes from the Merchant App (document id of the store = the merchant's uid) ----
+    // The public (customer food app / website) reads ACTIVE stores and their menu. Only the owning approved merchant edits
+    // its own store and menu. `active` (listing on/off) is created true by the owner but can afterwards be changed by admin only;
+    // the owner controls `open` (store open/closed) and each item's `available` (in stock).
+    function isOwner(rid) {
+      return approvedMerchant() && request.auth.uid == rid;
+    }
+    match /restaurants/{rid} {
+      allow get: if admin() || isOwner(rid) || resource.data.active == true;
+      allow list: if admin() || resource.data.active == true;
+      allow create: if admin()
+        || (isOwner(rid)
+            && request.resource.data.keys().hasOnly(['name', 'address', 'phone', 'businessType', 'active', 'open', 'createdAt', 'updatedAt'])
+            && request.resource.data.keys().hasAll(['name', 'address', 'active', 'open', 'createdAt', 'updatedAt'])
+            && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+            && request.resource.data.address is string && request.resource.data.address.size() > 0 && request.resource.data.address.size() <= 300
+            && okStr(request.resource.data, 'phone', 30) && okStr(request.resource.data, 'businessType', 20)
+            && request.resource.data.active == true && request.resource.data.open is bool
+            && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time);
+      allow update: if admin()
+        || (isOwner(rid)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'address', 'phone', 'open', 'updatedAt'])
+            && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+            && request.resource.data.address is string && request.resource.data.address.size() > 0 && request.resource.data.address.size() <= 300
+            && okStr(request.resource.data, 'phone', 30)
+            && request.resource.data.open is bool
+            && request.resource.data.updatedAt == request.time);
+      allow delete: if admin();
+    }
+
+    // Menu items / products. `photo` is a small JPEG data URL (the app shrinks it to about 90 KB).
+    match /restaurants/{rid}/menu/{iid} {
+      function validItem(d) {
+        return d.keys().hasOnly(['name', 'price', 'available', 'category', 'description', 'photo', 'createdAt', 'updatedAt'])
+          && d.keys().hasAll(['name', 'price', 'available', 'updatedAt'])
+          && d.name is string && d.name.size() > 0 && d.name.size() <= 80
+          && d.price is number && d.price > 0 && d.price <= 100000
+          && d.available is bool
+          && okStr(d, 'category', 40) && okStr(d, 'description', 300) && okStr(d, 'photo', 130000)
+          && d.updatedAt == request.time;
+      }
+      // Public sees only items the merchant switched ON (available == true); OFF items are not readable by customers at all.
+      allow get, list: if admin() || isOwner(rid)
+        || (resource.data.available == true
+            && exists(/databases/$(database)/documents/restaurants/$(rid))
+            && get(/databases/$(database)/documents/restaurants/$(rid)).data.active == true);
+      allow create: if admin()
+        || (isOwner(rid) && validItem(request.resource.data) && request.resource.data.keys().hasAll(['createdAt'])
+            && request.resource.data.createdAt == request.time);
+      allow update: if admin()
+        || (isOwner(rid) && validItem(request.resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'price', 'available', 'category', 'description', 'photo', 'updatedAt']));
+      allow delete: if admin() || isOwner(rid);
+    }
+
+    match /private/{doc} {
+      allow read: if admin() || approvedMerchant();
+      allow write: if admin();
+    }
+
+    // ===== Cholvo Customer App =====
+    match /customers/{uid} {
+      allow get: if admin() || (request.auth != null && request.auth.uid == uid);
+      allow list, delete: if admin();
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'phone', 'address', 'addresses', 'createdAt'])
+        && request.resource.data.keys().hasAll(['name', 'phone', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+        && request.resource.data.phone is string && request.resource.data.phone.matches('^01[0-9]{9}$')
+        && request.auth.token.email == request.resource.data.phone + '@cholvo.app'
+        && okStr(request.resource.data, 'address', 300)
+        && (!('addresses' in request.resource.data) || (request.resource.data.addresses is list && request.resource.data.addresses.size() <= 8))
+        && request.resource.data.createdAt == request.time;
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'address', 'addresses', 'updatedAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+        && okStr(request.resource.data, 'address', 300)
+        && (!('addresses' in request.resource.data) || (request.resource.data.addresses is list && request.resource.data.addresses.size() <= 8))
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    match /foodOrders/{id} {
+      function validFood(d) {
+        return d.keys().hasAll(['customerUid', 'customerName', 'customerPhone', 'address', 'restaurantId', 'restaurantName', 'merchantUid', 'items', 'foodTotal', 'deliveryFee', 'status', 'createdAt'])
+          && d.keys().hasOnly(['customerUid', 'customerName', 'customerPhone', 'address', 'lat', 'lng', 'restaurantId', 'restaurantName', 'pickup', 'merchantUid',
+               'items', 'foodTotal', 'deliveryFee', 'distanceKm', 'note', 'status', 'createdAt'])
+          && d.customerUid == request.auth.uid
+          && exists(/databases/$(database)/documents/customers/$(request.auth.uid))
+          && d.status == 'placed' && d.createdAt == request.time
+          && d.merchantUid == d.restaurantId
+          && get(/databases/$(database)/documents/restaurants/$(d.restaurantId)).data.active == true
+          && d.items is list && d.items.size() > 0 && d.items.size() <= 40
+          && d.foodTotal is number && d.foodTotal > 0 && d.foodTotal <= 1000000
+          && d.deliveryFee is number && d.deliveryFee >= 0 && d.deliveryFee <= 5000
+          && okStr(d, 'customerName', 120) && okStr(d, 'customerPhone', 30) && okStr(d, 'address', 300)
+          && okStr(d, 'restaurantName', 120) && okStr(d, 'pickup', 300) && okStr(d, 'note', 200);
+      }
+      allow create: if request.auth != null && validFood(request.resource.data);
+      allow read: if admin()
+        || (request.auth != null && resource.data.customerUid == request.auth.uid)
+        || (approvedMerchant() && resource.data.merchantUid == request.auth.uid);
+      allow update: if admin()
+        // restaurant: accept / reject / ready, and attach the tracking number
+        || (approvedMerchant() && resource.data.merchantUid == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'tn', 'updatedAt'])
+            && request.resource.data.status in ['accepted', 'rejected', 'ready'])
+        // customer: cancel while still waiting for the restaurant
+        || (request.auth != null && resource.data.customerUid == request.auth.uid && resource.data.status == 'placed'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
+            && request.resource.data.status == 'cancelled' && request.resource.data.updatedAt == request.time);
+      allow delete: if admin();
+    }
+  }
+}
