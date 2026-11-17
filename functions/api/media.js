@@ -61,9 +61,14 @@ export async function onRequestPost({ request, env }) {
     let who = 'Guest (website)';
     const idToken = String(fd.get('idToken') || '');
     if (idToken) {
-      const m = await approvedMerchant(idToken, test ? PROJECT.test : PROJECT.live);
-      if (!m) return json({ error: 'Merchant login could not be verified. Please log in again.' }, 401);
-      who = 'Merchant: ' + (m.businessName || m.phone || m.uid);
+      const project = test ? PROJECT.test : PROJECT.live;
+      const m = await approvedMerchant(idToken, project);
+      if (m) who = 'Merchant: ' + (m.businessName || m.phone || m.uid);
+      else {
+        const c = await knownCustomer(idToken, project);
+        if (!c) return json({ error: 'Login could not be verified. Please log in again.' }, 401);
+        who = 'Customer: ' + (c.name || c.phone || c.uid);
+      }
     } else if (!test) {
       const ok = await turnstileOk(fd.get('cf-turnstile-response'), env.TURNSTILE_SECRET, request.headers.get('CF-Connecting-IP'));
       if (!ok) return json({ error: 'Robot check failed. Please try again.' }, 403);
@@ -150,5 +155,21 @@ async function approvedMerchant(idToken, project) {
     const d = (await r.json()).fields || {};
     if (!d.blocked || d.blocked.booleanValue !== false) return null;
     return { uid, phone: d.phone && d.phone.stringValue, businessName: d.businessName && d.businessName.stringValue };
+  } catch (_) { return null; }
+}
+
+// A signed-in Cholvo Customer App user (customers/{uid} must exist and be readable with their own token).
+async function knownCustomer(idToken, project) {
+  try {
+    const part = idToken.split('.')[1];
+    if (!part) return null;
+    const payload = JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/')));
+    const uid = payload.user_id || payload.sub;
+    if (!uid || payload.aud !== project || !/^[A-Za-z0-9]{10,64}$/.test(uid)) return null;
+    const r = await fetch('https://firestore.googleapis.com/v1/projects/' + project + '/databases/(default)/documents/customers/' + uid,
+      { headers: { Authorization: 'Bearer ' + idToken } });
+    if (!r.ok) return null;
+    const d = (await r.json()).fields || {};
+    return { uid, phone: d.phone && d.phone.stringValue, name: d.name && d.name.stringValue };
   } catch (_) { return null; }
 }

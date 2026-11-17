@@ -140,11 +140,12 @@ service cloud.firestore {
           && d.keys().hasOnly(['tn', 'type', 'status', 'merchantUid', 'createdAt',
                'vendor', 'phone', 'pickup', 'drop', 'customerName', 'customerPhone',
                'ptype', 'cod', 'date', 'later', 'name', 'addr', 'product', 'from',
-               'hasVoice', 'photoCount'])
+               'hasVoice', 'photoCount',
+               'address', 'items', 'restaurant', 'restaurantName'])
           && validTn(tn)
           && d.tn == tn
           && d.status == 'Order Received'
-          && d['type'] in ['book', 'order']
+          && d['type'] in ['book', 'order', 'food']
           && d.createdAt == request.time
           && okStr(d, 'vendor', 120) && okStr(d, 'phone', 30)
           && okStr(d, 'pickup', 300) && okStr(d, 'drop', 300)
@@ -152,6 +153,8 @@ service cloud.firestore {
           && okStr(d, 'ptype', 30) && okStr(d, 'date', 40) && okStr(d, 'later', 40)
           && okStr(d, 'name', 120) && okStr(d, 'addr', 300)
           && okStr(d, 'product', 300) && okStr(d, 'from', 300)
+          && okStr(d, 'address', 300) && okStr(d, 'items', 600)
+          && okStr(d, 'restaurant', 120) && okStr(d, 'restaurantName', 120)
           && (!('cod' in d) || (d.cod is number && d.cod >= 0 && d.cod <= 10000000))
           // voice/photo orders: the files themselves go to Telegram, only these two flags are stored
           && (!('hasVoice' in d) || d.hasVoice is bool)
@@ -385,6 +388,59 @@ service cloud.firestore {
     match /private/{doc} {
       allow read: if admin() || approvedMerchant();
       allow write: if admin();
+    }
+
+    // ===== Cholvo Customer App =====
+    match /customers/{uid} {
+      allow get: if admin() || (request.auth != null && request.auth.uid == uid);
+      allow list, delete: if admin();
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'phone', 'address', 'addresses', 'createdAt'])
+        && request.resource.data.keys().hasAll(['name', 'phone', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+        && request.resource.data.phone is string && request.resource.data.phone.matches('^01[0-9]{9}$')
+        && request.auth.token.email == request.resource.data.phone + '@cholvo.app'
+        && okStr(request.resource.data, 'address', 300)
+        && (!('addresses' in request.resource.data) || (request.resource.data.addresses is list && request.resource.data.addresses.size() <= 8))
+        && request.resource.data.createdAt == request.time;
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'address', 'addresses', 'updatedAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
+        && okStr(request.resource.data, 'address', 300)
+        && (!('addresses' in request.resource.data) || (request.resource.data.addresses is list && request.resource.data.addresses.size() <= 8))
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    match /foodOrders/{id} {
+      function validFood(d) {
+        return d.keys().hasAll(['customerUid', 'customerName', 'customerPhone', 'address', 'restaurantId', 'restaurantName', 'merchantUid', 'items', 'foodTotal', 'deliveryFee', 'status', 'createdAt'])
+          && d.keys().hasOnly(['customerUid', 'customerName', 'customerPhone', 'address', 'lat', 'lng', 'restaurantId', 'restaurantName', 'pickup', 'merchantUid',
+               'items', 'foodTotal', 'deliveryFee', 'distanceKm', 'note', 'status', 'createdAt'])
+          && d.customerUid == request.auth.uid
+          && exists(/databases/$(database)/documents/customers/$(request.auth.uid))
+          && d.status == 'placed' && d.createdAt == request.time
+          && d.merchantUid == d.restaurantId
+          && get(/databases/$(database)/documents/restaurants/$(d.restaurantId)).data.active == true
+          && d.items is list && d.items.size() > 0 && d.items.size() <= 40
+          && d.foodTotal is number && d.foodTotal > 0 && d.foodTotal <= 1000000
+          && d.deliveryFee is number && d.deliveryFee >= 0 && d.deliveryFee <= 5000
+          && okStr(d, 'customerName', 120) && okStr(d, 'customerPhone', 30) && okStr(d, 'address', 300)
+          && okStr(d, 'restaurantName', 120) && okStr(d, 'pickup', 300) && okStr(d, 'note', 200);
+      }
+      allow create: if request.auth != null && validFood(request.resource.data);
+      allow read: if admin()
+        || (request.auth != null && resource.data.customerUid == request.auth.uid)
+        || (approvedMerchant() && resource.data.merchantUid == request.auth.uid);
+      allow update: if admin()
+        // restaurant: accept / reject / ready, and attach the tracking number
+        || (approvedMerchant() && resource.data.merchantUid == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'tn', 'updatedAt'])
+            && request.resource.data.status in ['accepted', 'rejected', 'ready'])
+        // customer: cancel while still waiting for the restaurant
+        || (request.auth != null && resource.data.customerUid == request.auth.uid && resource.data.status == 'placed'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
+            && request.resource.data.status == 'cancelled' && request.resource.data.updatedAt == request.time);
+      allow delete: if admin();
     }
   }
 }
