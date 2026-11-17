@@ -351,10 +351,11 @@ service cloud.firestore {
             && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time);
       allow update: if admin()
         || (isOwner(rid)
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'address', 'phone', 'open', 'updatedAt'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'address', 'phone', 'open', 'photo', 'cuisine', 'updatedAt'])
             && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
             && request.resource.data.address is string && request.resource.data.address.size() > 0 && request.resource.data.address.size() <= 300
             && okStr(request.resource.data, 'phone', 30)
+            && okStr(request.resource.data, 'photo', 90000) && okStr(request.resource.data, 'cuisine', 80)
             && request.resource.data.open is bool
             && request.resource.data.updatedAt == request.time);
       allow delete: if admin();
@@ -435,7 +436,11 @@ service cloud.firestore {
         // restaurant: accept / reject / ready, and attach the tracking number
         || (approvedMerchant() && resource.data.merchantUid == request.auth.uid
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'tn', 'updatedAt'])
-            && request.resource.data.status in ['accepted', 'rejected', 'ready'])
+            && ((request.resource.data.status in ['accepted', 'rejected'] && resource.data.status == 'placed')
+                || (request.resource.data.status == 'ready' && resource.data.status == 'accepted'))
+            && (request.resource.data.status != 'accepted'
+                || ('tn' in request.resource.data
+                    && existsAfter(/databases/$(database)/documents/orders/$(request.resource.data.tn)))))
         // customer: cancel while still waiting for the restaurant
         || (request.auth != null && resource.data.customerUid == request.auth.uid && resource.data.status == 'placed'
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt'])
