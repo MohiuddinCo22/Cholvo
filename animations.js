@@ -1,20 +1,6 @@
-/* Lightweight entrance animations. If JS or IntersectionObserver is unavailable, content remains visible. */
+/* One light scroll reveal for key blocks. Content stays visible without JS or with reduced motion. */
 document.addEventListener("DOMContentLoaded", () => {
-  const targets = document.querySelectorAll("main section, .strip, .svc button, .why div, .slabs div, .result, footer .fgrid > div, .how-step");
-  const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduced || !("IntersectionObserver" in window)) return;
-  targets.forEach((el, index) => {
-    if (el.closest(".modal")) return;
-    el.classList.add("reveal-ready");
-    el.style.transitionDelay = `${Math.min(index % 4, 3) * 55}ms`;
-  });
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("is-visible");
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.08, rootMargin: "0px 0px -24px 0px" });
-  targets.forEach(el => observer.observe(el));
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("is-visible"); io.unobserve(e.target); } }), { threshold: .1 });
+  document.querySelectorAll(".head, .steps li, .svc button, .app, .ladder li, .why div").forEach(el => { if (el.closest(".modal")) return; el.classList.add("reveal"); io.observe(el); });
 });

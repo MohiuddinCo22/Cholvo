@@ -1,6 +1,6 @@
 {
   "merchant": {
-    "latestVersion": "1.1.0",
+    "latestVersion": "1.2.0",
     "minimumVersion": "1.0.0",
     "forceUpdate": false,
     "active": true,
