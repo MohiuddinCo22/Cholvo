@@ -3,283 +3,172 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="png" href="/favicon-32x32.png" sizes="any">
-<title>CHOLVO Delivery | Fast, Safe & Reliable Delivery in Chattogram</title>
-<meta name="description" content="CHOLVO helps businesses and customers in Chattogram with parcel delivery, order booking, tracking and transparent delivery cost estimates.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="cholvo-premium.css">
-<style>
-:root{--navy:#0B2A5B;--deep:#071A3A;--orange:#F58220;--sun:#FFA51F;--ink:#12233F;--mist:#F3F6FB;--line:#DCE3EF;--white:#fff}
-*{box-sizing:border-box;margin:0}
-html{scroll-behavior:smooth;scroll-padding-top:70px}
-body{font-family:Outfit,system-ui,sans-serif;color:var(--ink);background:var(--white);line-height:1.5}
-a{color:inherit;text-decoration:none}
-button,input,select,textarea{font:inherit}
-:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
-.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
-section{padding:56px 0}
-h2{font-size:clamp(1.6rem,4vw,2.1rem);font-weight:800;color:var(--navy);margin-bottom:8px}
-.sub{color:#4B5B77;margin-bottom:28px;max-width:56ch}
-/* header */
-header{position:sticky;top:0;z-index:20;background:var(--white);border-bottom:1px solid var(--line)}
-.bar{display:flex;align-items:center;justify-content:space-between;height:64px}
-.bar img{height:48px;width:auto;display:block}
-.burger{width:44px;height:44px;border:0;background:var(--navy);border-radius:12px;cursor:pointer;display:grid;place-content:center;gap:5px}
-.burger i{display:block;width:20px;height:2.5px;background:#fff;border-radius:2px}
-.burger i:nth-child(2){width:14px;margin-left:auto;background:var(--orange)}
-.menu{display:none;position:absolute;right:12px;top:68px;width:min(300px,calc(100% - 24px));background:var(--white);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 40px rgba(7,26,58,.18);padding:10px}
-.menu.open{display:block}
-.menu a.l{display:block;padding:12px 14px;border-radius:10px;font-weight:600}
-.menu a.l:hover{background:var(--mist)}
-.menu .two{display:grid;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:13px 22px;font-weight:700;cursor:pointer;transition:transform .15s}
-.btn:active{transform:scale(.97)}
-.b-or{background:var(--orange);color:#fff}
-.b-nv{background:var(--navy);color:#fff}
-.b-ol{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.7)}
-.b-fb{background:#1877F2;color:#fff}
-/* hero */
- 
-.hero{background:linear-gradient(180deg,#FFF1E0,#FFFAF4);padding:32px 0 0;overflow:hidden}
-.hero .wrap{display:grid;gap:24px;align-items:center}
-@media(min-width:800px){.hero .wrap{grid-template-columns:1.1fr 1fr}}
-.chip{display:inline-block;background:#fff;border:1px solid #F6D3AE;color:var(--orange);font-weight:700;padding:6px 14px;border-radius:999px;font-size:.85rem}
-.hero h1{font-size:clamp(3rem,13vw,5.5rem);font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--navy);margin:16px 0 6px}
-.tag{font-size:clamp(1.15rem,3.5vw,1.5rem);font-weight:600}.tag b{color:var(--orange)}
-.lead{color:#4B5B77;margin:12px 0 22px;max-width:44ch}
-.cta{display:flex;flex-wrap:wrap;gap:12px}
-.b-ol{background:#fff;color:var(--navy);border:2px solid var(--navy)}
-.trackbar{display:flex;background:#fff;border-radius:999px;padding:6px;box-shadow:0 10px 30px rgba(245,130,32,.2);margin:22px 0 28px;max-width:460px}
-.trackbar input{border:0;background:none;padding:12px 16px;min-width:0}
-.trackbar button{border:0;background:var(--orange);color:#fff;border-radius:999px;padding:0 22px;font-weight:700;cursor:pointer}
-.photo{border-radius:28px 28px 0 0;overflow:hidden;align-self:end}
-.photo img{display:block;width:100%;max-height:430px;object-fit:cover;object-position:top}
-.strip{background:#fff;border-bottom:1px solid var(--line)}
-.strip .wrap{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:18px 20px}
-@media(min-width:800px){.strip .wrap{grid-template-columns:repeat(4,1fr)}}
-.strip div{display:flex;gap:10px;align-items:center}
-.strip i{flex:none;width:40px;height:40px;border-radius:50%;background:#FFE9D2;color:var(--orange);display:grid;place-items:center;font-style:normal;font-weight:800}
-.strip b{display:block;font-size:.92rem;color:var(--navy)}.strip span{font-size:.78rem;color:#6B7A94}
-/* calculator */
-.calc{background:var(--mist)}
-.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:24px}
-.grid{display:grid;gap:16px;grid-template-columns:1fr}
-@media(min-width:760px){.grid.c2{grid-template-columns:1fr 1fr}.split{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:start}}
-label{display:block;font-weight:600;font-size:.92rem;margin-bottom:6px}
-input,select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
-input:focus,select:focus,textarea:focus{border-color:var(--orange);outline:0}
-.hint{font-size:.8rem;color:#6B7A94;margin-top:4px}
-.result{background:var(--navy);color:#fff;border-radius:18px;padding:24px}
-.result h3{font-size:1.1rem;margin-bottom:12px}
-.row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.15)}
-.row span:first-child{color:#C5D2EA}
-.total{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px;font-weight:800}
-.total b{font-size:2rem;color:var(--sun)}
-.empty{color:#C5D2EA}
-/* why + partner */
-.why{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
-.why div{border-left:4px solid var(--orange);padding:6px 0 6px 14px}
-.why b{display:block;color:var(--navy)}
-.why span{font-size:.92rem;color:#4B5B77}
-.partner{background:var(--navy);color:#fff}
-.partner h2{color:#fff}.partner .sub{color:#CFDAEE}
-.slabs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 26px}
-.slabs div{background:rgba(255,255,255,.08);border-radius:14px;padding:14px;text-align:center}
-.slabs b{display:block;font-size:1.7rem;color:var(--sun)}
-.slabs span{font-size:.82rem;color:#CFDAEE}
-.fit{color:#CFDAEE;margin-bottom:22px}
-/* track + contact */
-.track form{display:flex;gap:10px;flex-wrap:wrap}
-.track input{flex:1;min-width:200px}
-#trackOut{margin-top:14px;font-weight:600;color:var(--navy)}
-.contact a{display:block;padding:6px 0;font-weight:600}
-footer{background:var(--deep);color:#B6C4DD;padding:28px 0 90px;font-size:.9rem}
-footer img{height:44px;background:#fff;border-radius:10px;padding:4px;margin-bottom:10px}
-.help{position:fixed;right:16px;bottom:16px;z-index:25;background:#25D366;color:#fff;border-radius:999px;padding:13px 20px;font-weight:700;box-shadow:0 10px 26px rgba(0,0,0,.28)}
-/* modal */
-.modal{display:none;position:fixed;inset:0;z-index:40;background:rgba(7,26,58,.7);padding:16px;overflow:auto}
-.modal.open{display:block}
-.sheet{background:#fff;border-radius:20px;max-width:520px;margin:20px auto;padding:24px}
-.sheet h3{color:var(--navy);font-size:1.4rem;margin-bottom:4px}
-.x{float:right;border:0;background:var(--mist);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.2rem}
-.tabs{display:flex;gap:6px;background:var(--mist);padding:4px;border-radius:12px;margin:14px 0}
-.tabs button{flex:1;border:0;background:none;padding:10px;border-radius:9px;font-weight:700;cursor:pointer;color:#4B5B77}
-.tabs button.on{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.12)}
-[hidden]{display:none!important}
-.hp{position:absolute;left:-9999px}
-input:disabled,textarea:disabled,select:disabled{background:#E9EDF4;color:#8A94A6;opacity:.6;cursor:not-allowed}
-form.media-on div:has(>:disabled)>label{opacity:.5}
-.media{border:1px dashed var(--line);border-radius:14px;padding:12px;background:var(--mist)}
-.media .opt{font-weight:400;color:#6B7A94}
-.mrow{display:flex;flex-wrap:wrap;gap:8px}
-.mb{background:#fff;color:var(--navy);border:1px solid var(--line);padding:10px 14px;font-size:.9rem}
-.mb.rec{background:#d90429;color:#fff;border-color:#d90429}
-.mb:disabled{opacity:.5;cursor:not-allowed}
-.media audio{width:100%;margin-top:10px}
-.mthumbs{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-.mthumb{position:relative;width:64px;height:64px}
-.mthumb img{width:100%;height:100%;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
-.mthumb button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--navy);color:#fff;font-size:14px;line-height:22px;cursor:pointer;padding:0}
-.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;z-index:60;display:none;max-width:90%}
-@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
-/* services */
-.svc{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-.svc button{text-align:left;background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;display:grid;gap:6px;transition:border-color .15s,transform .15s}
-.svc button:hover{border-color:var(--orange);transform:translateY(-2px)}
-.svc i{width:46px;height:46px;border-radius:14px;background:#FFE9D2;display:grid;place-items:center;font-style:normal;font-size:1.4rem}
-.svc b{color:var(--navy);font-size:1.05rem}.svc span{font-size:.88rem;color:#4B5B77}.svc em{font-style:normal;color:var(--orange);font-weight:700;font-size:.88rem}
-/* timeline */
-.tl{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:0}
-.tl li{position:relative;padding:0 0 18px 34px;color:#6B7A94;font-weight:600}
-.tl li:before{content:"";position:absolute;left:0;top:2px;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--line)}
-.tl li:after{content:"";position:absolute;left:9px;top:24px;bottom:0;width:2px;background:var(--line)}
-.tl li:last-child:after{display:none}
-.tl li.ok{color:var(--navy)}.tl li.ok:before{background:var(--orange);border-color:var(--orange)}.tl li.ok:after{background:var(--orange)}
-.tl li.now:before{box-shadow:0 0 0 5px #FFE0C2}
-.tl small{display:block;font-weight:500;color:#6B7A94}
-.stat{display:inline-block;background:#FFE9D2;color:#B85A00;padding:4px 12px;border-radius:999px;font-size:.85rem;font-weight:700}
-.fgrid{display:grid;gap:22px;grid-template-columns:1fr}
-@media(min-width:760px){.fgrid{grid-template-columns:1.4fr 1fr 1fr}}
-footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}footer a:hover{color:#fff}
-.legal{margin-top:22px;padding-top:14px;border-top:1px solid rgba(255,255,255,.15)}
-</style>
-<link rel="stylesheet" href="cholvo-reference.css">
-<link rel="stylesheet" href="cholvo-final.css">
+<title>CHOLVO Delivery | Parcel Delivery, Booking &amp; Tracking in Chattogram</title>
+<meta name="description" content="CHOLVO is a courier and parcel delivery service in Chattogram. Get an instant delivery cost estimate, book a pickup, track your parcel and deliver with trusted riders.">
+<meta name="theme-color" content="#0B2A5B">
+<link rel="canonical" href="https://cholvo.pages.dev/">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:type" content="website"><meta property="og:site_name" content="CHOLVO Delivery">
+<meta property="og:title" content="CHOLVO Delivery | Your Parcel. Our Priority.">
+<meta property="og:description" content="Book a delivery, track your parcel and know your cost upfront. Courier service in Chattogram.">
+<meta property="og:url" content="https://cholvo.pages.dev/"><meta property="og:image" content="https://cholvo.pages.dev/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://cholvo.pages.dev/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"CHOLVO Delivery","description":"Courier and parcel delivery service in Chattogram, Bangladesh.","url":"https://cholvo.pages.dev/","telephone":"+8801615546040","logo":"https://cholvo.pages.dev/logo.jpg","areaServed":"Chattogram, Bangladesh","sameAs":["https://facebook.com/cholvobd"]}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cholvo.css">
 </head>
-
 <body>
+<a class="skip" href="#main">Skip to content</a>
 <header>
  <div class="wrap bar">
-  <a href="#home"><img src="logo.jpg" alt="Cholvo, everything moves with Cholvo"></a>
-  <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false"><i></i><i></i><i></i></button>
+  <a href="#home" aria-label="CHOLVO home"><img src="logo.jpg" width="48" height="48" alt="CHOLVO, everything moves with Cholvo"></a>
+  <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><i></i><i></i><i></i></button>
+  <nav class="menu" id="menu" aria-label="Main">
+   <a class="l" href="#services">Services</a><a class="l" href="#how-it-works">How it works</a><a class="l" href="#pricing">Pricing</a><a class="l" href="#coverage">Coverage</a><a class="l" id="navCharges" href="#charges" hidden>Charges</a><a class="l" href="#track">Track parcel</a><a class="l" href="#apps">Apps</a><a class="l" href="#contact">Contact</a>
+   <div class="two"><a class="btn b-nv" href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook</a><button class="btn b-or" id="navProfile" hidden>Profile</button><button class="btn b-nv" id="navAuth" data-open="auth">Merchant login</button></div>
+  </nav>
+  <button class="btn b-or hbook" data-book>Book delivery</button>
  </div>
- <nav class="menu" id="menu">
-  <a class="l" href="#home">Home</a><a class="l" href="#services">Services</a><a class="l" href="#pricing">Pricing</a><a class="l" id="navCharges" href="#charges" hidden>Charges</a><a class="l" href="#rules">Vendor Rules</a><a class="l" href="#track">Tracking</a><a class="l" href="#about">About</a><a class="l" href="#contact">Contact</a>
-  <div class="two"><a class="btn b-fb" href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook</a><button class="btn b-or" id="navProfile" hidden>Profile</button><button class="btn b-nv" id="navAuth" data-open="auth">Merchant login</button></div>
- </nav>
 </header>
 
-<main id="home">
-<section class="hero">
+<main id="main">
+<section class="hero" id="home">
  <div class="wrap">
   <div>
-   <span class="chip">FAST&nbsp; · &nbsp;SAFE&nbsp; · &nbsp;RELIABLE</span>
-   <h1>আপনার প্রতিটি পার্সেলের<br><span class="hero-priority">এখন আরও সহজ</span><br>CHOLVO Delivery</h1>
-   <p class="tag">আপনার পার্সেল পৌঁছে যাবে নিরাপদে, দ্রুততম সময়ে — <b>CHOLVO</b> এর সাথে!</p>
-   <p class="lead">গুরুত্বপূর্ণ ডকুমেন্ট থেকে প্রতিদিনের পার্সেল—চট্টগ্রামজুড়ে আপনার ব্যবসা ও ডেলিভারি আরও সহজ করতে আমরা আছি আপনার পাশে।</p>
-   <div class="cta"><button class="btn b-or" id="bookBtn">Book a delivery <span aria-hidden="true">→</span></button><button class="btn b-ol" data-open="order">Order anything</button></div>
-   <form class="trackbar" id="heroTrack"><input id="ht" placeholder="Track your parcel (e.g. CHV-ABC123)" aria-label="Tracking number" required><button>Track</button></form>
+   <span class="chip">Courier &amp; parcel delivery in Chattogram</span>
+   <h1>Your Parcel. <span>Our Priority.</span></h1>
+   <p class="lead">Fast, secure and reliable parcel delivery for businesses and individuals. Book your delivery, track your parcel and know your cost before you send.</p>
+   <p class="bn" lang="bn">গুরুত্বপূর্ণ ডকুমেন্ট থেকে প্রতিদিনের পার্সেল—চট্টগ্রামজুড়ে নিরাপদে, দ্রুত পৌঁছে দিই।</p>
+   <div class="cta"><button class="btn b-or" id="bookBtn">Book a Delivery</button><a class="btn b-ghost" href="#track">Track Your Parcel</a></div>
+   <form class="trackbar" id="heroTrack"><input id="ht" placeholder="Tracking number, e.g. CHV-ABC123" aria-label="Tracking number" required><button>Track</button></form>
+   <p class="trust"><span>Reliable delivery</span><span>Live status updates</span><span>Trusted service</span></p>
   </div>
-  <div class="photo"><img src="hero-delivery-art.jpg" alt="CHOLVO delivery rider on a motorcycle with branded delivery bag and route graphics"><div class="photo-note"><span class="note-dot"></span><span><b>Chattogram delivery</b><small>Moving your business forward</small></span></div><span class="float-pin pin-one">⌖</span><span class="float-pin pin-two">📦</span></div>
+  <div class="scene" id="scene" role="img" aria-label="Illustration of a CHOLVO parcel travelling along a delivery route from pickup to destination">
+   <svg class="route" viewBox="0 0 520 468" aria-hidden="true">
+    <ellipse class="ground" cx="260" cy="330" rx="250" ry="110"/><ellipse class="ground" cx="260" cy="330" rx="170" ry="70"/>
+    <path id="rp" class="path" d="M70 340 C 140 430, 250 400, 280 300 S 380 120, 450 70"/>
+    <circle class="rider-dot" r="9"><animateMotion dur="7s" repeatCount="indefinite"><mpath href="#rp"/></animateMotion></circle>
+   </svg>
+   <span class="pin a"><svg viewBox="0 0 24 24" fill="none" stroke="#F58220" stroke-width="3"><circle cx="12" cy="12" r="5"/></svg></span><span class="pin-l" style="left:3%;top:86%">Pickup</span>
+   <span class="pin b"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 3 3 10v10h6v-6h6v6h6V10z"/></svg></span><span class="pin-l" style="right:5%;top:22%">Delivered</span>
+   <div class="shadow"></div>
+   <div class="stage" id="stage"><div class="cube" aria-hidden="true"><i class="f">CHOLVO</i><i class="k">CHOLVO</i><i class="r"></i><i class="l"></i><i class="t"></i><i class="b"></i></div></div>
+   <div class="fcard fc-track"><small><span class="live"></span>Example tracking</small><b id="stTxt">Order Received</b><div class="pbar"><i id="stBar"></i></div></div>
+   <div class="fcard fc-price"><small>Delivery in Chattogram</small><b>From ৳80</b><small>Estimate before you book</small></div>
+  </div>
  </div>
 </section>
-<div class="strip"><div class="wrap">
- <div><i>⚡</i><p><b>Fast delivery</b><span>Same day, on time</span></p></div>
- <div><i>✔</i><p><b>Safe and secure</b><span>Handled with care</span></p></div>
- <div><i>◎</i><p><b>Live tracking</b><span>Know every step</span></p></div>
- <div><i>☎</i><p><b>Quick support</b><span>Call or WhatsApp</span></p></div>
-</div></div>
 
-<section class="charges" id="charges" hidden>
- <div class="wrap" id="chargesBody"></div>
+<section class="charges" id="charges" hidden><div class="wrap" id="chargesBody"></div></section>
+
+<section class="track" id="track" aria-labelledby="th">
+ <div class="wrap"><div class="track-card">
+  <h2 id="th">Track your parcel</h2>
+  <p class="sub">Enter the tracking number you received when you booked.</p>
+  <form id="trackForm"><input id="tn" placeholder="e.g. CHV-ABC123" required aria-label="Tracking number" autocomplete="off"><button class="btn b-or" type="submit">Track parcel</button></form>
+  <div id="trackOut" aria-live="polite"></div>
+ </div></div>
 </section>
 
-<section class="calc" id="pricing">
+<section id="services" aria-labelledby="sh">
  <div class="wrap">
-  <span class="section-kicker">DELIVERY CHARGE CALCULATOR</span><h2>Know your delivery cost upfront.</h2>
-  <p class="sub">Enter pickup and delivery addresses to estimate road distance, delivery charge and COD fee.</p>
+  <div class="head"><h2 id="sh">Delivery services</h2><p class="sub">Flexible delivery for shops, restaurants and everyday customers across Chattogram.</p></div>
+  <div class="svc">
+   <button data-book><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></svg></i><b>Document delivery</b><span>Important papers, delivered safely.</span><em>Book now</em></button>
+   <button data-book><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></i><b>Parcel delivery</b><span>Small and medium parcels across the city.</span><em>Book now</em></button>
+   <button data-book><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16a8 8 0 0 1-16 0zM8 7c0-2 2-2 2-4M13 7c0-2 2-2 2-4"/></svg></i><b>Food delivery</b><span>Hot food from restaurants, picked up fast.</span><em>Book now</em></button>
+   <button data-order><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg></i><b>Order anything</b><span>Tell us what you need and where to collect it.</span><em>Order now</em></button>
+  </div>
+ </div>
+</section>
+
+<section class="how" id="how-it-works" aria-labelledby="hh">
+ <div class="wrap">
+  <div class="head"><h2 id="hh">How CHOLVO works</h2><p class="sub">Four clear steps to get your parcel moving.</p></div>
+  <ol class="steps">
+   <li><h3>Place an order</h3><p>Choose a service and share the order details.</p></li>
+   <li><h3>Parcel pickup</h3><p>We collect the parcel from the pickup address.</p></li>
+   <li><h3>Rider assigned</h3><p>A rider takes your parcel on the way. Follow the status with your tracking number.</p></li>
+   <li><h3>Delivered</h3><p>Your parcel reaches its destination.</p></li>
+  </ol>
+  <div class="cta"><button class="btn b-or" id="howBookBtn">Book a Delivery</button></div>
+ </div>
+</section>
+
+<section class="calc" id="pricing" aria-labelledby="ph">
+ <div class="wrap">
+  <div class="head"><h2 id="ph">Know your delivery cost upfront</h2><p class="sub">Enter pickup and delivery addresses to estimate road distance, delivery charge and COD fee.</p></div>
   <div class="split">
    <form class="card grid c2" id="calcForm">
     <div><label for="area">Delivery area</label><select id="area"><option>Inside Chattogram</option></select></div>
-    <div>
-  <label for="dist">Distance (km)</label>
-  <input id="dist" type="number" min="0" step="0.1" placeholder="Auto">
-  <p class="hint">Calculated automatically from pickup and delivery addresses.</p>
-    </div>
+    <div><label for="dist">Distance (km)</label><input id="dist" type="number" min="0" step="0.1" placeholder="Auto"><p class="hint">Calculated automatically from pickup and delivery addresses.</p></div>
     <div style="grid-column:1/-1"><label for="pick">Pickup address</label><input id="pick" placeholder="Pickup area or shop name, e.g. GEC Circle" autocomplete="off"></div>
     <div style="grid-column:1/-1"><label for="addr">Delivery address</label><input id="addr" placeholder="Delivery area or address, e.g. Agrabad" autocomplete="off"></div>
     <div><label for="ptype">Parcel type</label><select id="ptype"><option>Document</option><option>Parcel</option><option>Food</option><option>Other</option></select></div>
     <div><label for="dtype">Delivery type</label><select id="dtype"><option>Express</option><option>Sameday</option><option>Next day</option><option selected>Standard</option></select></div>
     <div><label for="wt">Parcel weight (kg)</label><input id="wt" type="number" min="0" step="0.1" value="1"></div>
     <div><label for="cod">COD amount (৳)</label><input id="cod" type="number" min="0" value="0"></div>
-    <button class="btn b-or" style="grid-column:1/-1" type="submit">Calculate</button>
+    <button class="btn b-or" style="grid-column:1/-1" type="submit">Calculate cost</button>
    </form>
-   <div class="result" aria-live="polite"><div class="route-visual"><img src="delivery-route-art.jpg" alt="Delivery route map illustration with rider and location pins"></div><h3>Your estimate</h3><div id="out" class="empty">Fill in the form and press Calculate to see your charges.</div></div>
+   <div class="result" aria-live="polite"><div class="route-visual"><img src="delivery-route-art.jpg" width="400" height="240" loading="lazy" alt="Delivery route map illustration with rider and location pins"></div><h3>Your estimate</h3><div id="out" class="empty">Fill in the form and press Calculate to see your charges.</div></div>
   </div>
  </div>
 </section>
 
-<section id="services">
- <div class="wrap">
-  <h2>Our services</h2>
-  <p class="sub">Flexible delivery solutions for shops, restaurants and everyday customers across Chattogram.</p>
-  <div class="svc">
-   <button data-book><i>📄</i><b>Document delivery</b><span>Important papers, delivered safely.</span><em>Book now</em></button>
-   <button data-book><i>📦</i><b>Parcel delivery</b><span>Small and medium parcels across the city.</span><em>Book now</em></button>
-   <button data-book><i>🍱</i><b>Food delivery</b><span>Hot food from restaurants, picked up fast.</span><em>Book now</em></button>
-   <button data-order><i>🛍️</i><b>Order anything</b><span>Tell us what you need and where to collect it.</span><em>Order now</em></button>
+<section class="cov" id="coverage" aria-labelledby="ch">
+ <div class="wrap cov-grid">
+  <div>
+   <h2 id="ch">Delivering inside Chattogram</h2>
+   <p class="sub">CHOLVO currently delivers inside Chattogram. The charge depends on road distance, so you always know what you pay.</p>
+   <ul class="ladder"><li>Up to 1 km<b>৳80</b></li><li>Up to 2 km<b>৳100</b></li><li>Up to 3 km<b>৳120</b></li><li>Up to 5 km<b>৳140</b></li><li>Beyond 5 km<b>+৳10 per km</b></li></ul>
+  </div>
+  <div class="cov-map" role="img" aria-label="Chattogram service area with pickup and delivery points">
+   <svg viewBox="0 0 400 300" aria-hidden="true"><circle class="ring" cx="200" cy="150" r="130"/><circle class="ring" cx="200" cy="150" r="85"/><circle class="core" cx="200" cy="150" r="42"/>
+    <path d="M90 210 Q160 120 210 150 T320 80" fill="none" stroke="#F58220" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>
+    <circle cx="90" cy="210" r="9" fill="#fff"/><circle cx="320" cy="80" r="9" fill="#F58220"/><circle cx="200" cy="150" r="6" fill="#FFA51F"/>
+    <text x="200" y="204" fill="#fff" font-size="15" font-weight="700" text-anchor="middle">Chattogram</text></svg>
   </div>
  </div>
 </section>
 
-<section class="promo-wrap" aria-label="CHOLVO delivery promotion">
- <div class="wrap">
-  <div class="promo-banner">
-   <div class="promo-copy"><span class="promo-kicker">YOUR BUSINESS, MOVING FORWARD</span><h2>More deliveries.<br><em>Less hassle.</em></h2><p>Let CHOLVO take care of the pickup and delivery, while you focus on growing your business.</p><div class="cta"><button class="btn b-or" data-open="auth">Become a partner <span aria-hidden="true">→</span></button><a class="btn promo-outline" href="#partner">Explore partnership</a></div></div>
-   <div class="promo-art" role="img" aria-label="CHOLVO rider ready for delivery"><div class="promo-orbit orbit-a"></div><div class="promo-orbit orbit-b"></div><div class="promo-box">📦<small>CHOLVO</small></div><div class="promo-sticker">FAST<br>SAFE<br><b>RELIABLE</b></div></div>
-  </div>
- </div>
-</section>
-
-
-
-<section id="about" class="about-premium">
- <div class="wrap">
-  <div class="about-layout">
-   <div class="about-copy">
-    <span class="section-kicker">WHY CHOOSE CHOLVO?</span>
-    <h2>More than delivery.<br><span class="accent-text">A partner for your business.</span></h2>
-    <p class="sub">Fast, reliable delivery inside Chattogram for shops, restaurants and everyday customers—backed by clear pricing and helpful support.</p>
-    <div class="why">
-     <div><b>Professional riders</b><span>Careful pickup and delivery for your parcels.</span></div>
-     <div><b>Affordable pricing</b><span>Know your estimated delivery cost upfront.</span></div>
-     <div><b>Real-time tracking</b><span>Check the latest available parcel status.</span></div>
-     <div><b>Business support</b><span>Delivery options for vendors and growing shops.</span></div>
-    </div>
-   </div>
-   <div class="about-visual">
-    <img src="rider2.png" alt="CHOLVO delivery rider ready to deliver a parcel" loading="lazy">
-    <div class="about-visual-label"><span class="live-dot"></span><div><b>Moving your business forward</b><small>Fast · Safe · Reliable</small></div></div>
-    <span class="about-floating">📦 <b>CHOLVO</b><small>Delivery partner</small></span>
+<section id="about" aria-labelledby="ah">
+ <div class="wrap about-grid">
+  <div>
+   <h2 id="ah">More than delivery. A partner for your business.</h2>
+   <p class="sub" style="margin:10px 0 22px">Careful handling, clear pricing and helpful support for shops, restaurants and everyday customers.</p>
+   <div class="why">
+    <div><b>Reliable delivery</b><span>Careful pickup and delivery for your parcels.</span></div>
+    <div><b>Transparent pricing</b><span>Know your estimated cost upfront.</span></div>
+    <div><b>Live status</b><span>Check the latest parcel status any time.</span></div>
+    <div><b>Dedicated support</b><span>Call or WhatsApp our team.</span></div>
    </div>
   </div>
- </div>
-</section>
-
-
-<section id="how-it-works" class="how-section">
- <div class="wrap">
-  <div class="how-heading"><div><span class="section-kicker">SIMPLE FROM START TO FINISH</span><h2>How it works</h2><p class="sub">Four clear steps to get your parcel moving with CHOLVO.</p></div><button class="btn b-or" id="howBookBtn">Book a delivery <span aria-hidden="true">→</span></button></div>
-  <div class="how-steps">
-   <article class="how-step"><span class="step-icon">📝</span><span class="step-number">01</span><h3>Place an order</h3><p>Choose a service and share the order details.</p></article>
-   <span class="step-arrow" aria-hidden="true">→</span>
-   <article class="how-step"><span class="step-icon">📦</span><span class="step-number">02</span><h3>Parcel pickup</h3><p>We collect the parcel from the pickup address.</p></article>
-   <span class="step-arrow" aria-hidden="true">→</span>
-   <article class="how-step"><span class="step-icon">🏍️</span><span class="step-number">03</span><h3>Rider assigned</h3><p>A rider is assigned for the delivery.</p></article>
-   <span class="step-arrow" aria-hidden="true">→</span>
-   <article class="how-step"><span class="step-icon">🏠</span><span class="step-number">04</span><h3>Delivered</h3><p>Your parcel reaches its destination.</p></article>
-  </div>
+  <img src="rider2.webp" width="440" height="440" loading="lazy" alt="CHOLVO delivery rider ready to deliver a parcel">
  </div>
 </section>
 
 <section class="partner" id="partner">
  <div class="wrap">
-  <span class="section-kicker light-kicker">GROW WITH CHOLVO</span><h2>Vendor Partnership Program</h2>
+  <h2>Vendor Partnership Program</h2>
   <p class="sub">Your business’s trusted delivery partner. Save more as your monthly deliveries grow.</p>
   <div class="slabs"><div><b>0%</b><span>0–50 deliveries</span></div><div><b>5%</b><span>51–100 deliveries</span></div><div><b>10%</b><span>101–150 deliveries</span></div></div>
   <p class="fit">Partners with 150+ successful deliveries a month for 3 months get free brand promotion through influencers. Built for restaurants, online shops, food and product businesses.</p>
   <button class="btn b-or" id="footAuth" data-open="auth">Merchant login / registration</button>
+ </div>
+</section>
+
+<section class="apps" id="apps" aria-labelledby="aph">
+ <div class="wrap">
+  <div class="head"><h2 id="aph">CHOLVO apps</h2><p class="sub">Download the Android app for your role.</p></div>
+  <div class="app-grid">
+   <div class="app"><div class="phone" aria-hidden="true"><i></i><b></b><i></i><b></b></div><div><h3>Merchant app</h3><p>For approved CHOLVO merchants.</p><a class="btn b-or" href="/merchant-download/">Download merchant app</a></div></div>
+   <div class="app"><div class="phone" aria-hidden="true"><i></i><b></b><i></i><b></b></div><div><h3>Rider app</h3><p>For CHOLVO delivery riders.</p><a class="btn b-nv" href="/rider-download/">Download rider app</a></div></div>
+  </div>
  </div>
 </section>
 
@@ -383,36 +272,23 @@ footer h4{color:#fff;margin-bottom:8px}footer a{display:block;padding:3px 0}foot
  </div>
 </section>
 
-<section class="track" id="track">
+<section class="contact" id="contact" aria-labelledby="coh">
  <div class="wrap">
-  <span class="section-kicker">STAY IN THE LOOP</span><h2>Track your package.</h2>
-  <p class="sub">Enter the tracking number you received when you booked.</p>
-  <form class="card" id="trackForm" style="display:flex;gap:10px;flex-wrap:wrap">
-   <input id="tn" placeholder="e.g. CHV-240001" required aria-label="Tracking number"><button class="btn b-nv" type="submit">Track</button>
-  </form>
-  <div id="trackOut"></div>
- </div>
-</section>
-
-<section class="contact" id="contact" style="background:var(--mist)">
- <div class="wrap">
-  <span class="section-kicker">WE ARE HERE TO HELP</span><h2>Let’s get moving.</h2>
-  <a href="tel:+8801615546040">Call: +8801615-546040</a>
-  <a href="https://wa.me/8801615546040" target="_blank" rel="noopener">WhatsApp: 01615-546040</a>
-  <a href="https://wa.me/8801622959521" target="_blank" rel="noopener">WhatsApp: 01622-959521</a>
-  <a href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook: @cholvobd</a>
+  <div class="head"><h2 id="coh">Let’s get moving</h2><p class="sub">Questions about a delivery? Talk to our team.</p></div>
+  <div class="cbtns"><a class="btn b-nv" href="tel:+8801615546040">Call +8801615-546040</a><a class="btn b-or" href="https://wa.me/8801615546040" target="_blank" rel="noopener">WhatsApp 01615-546040</a><a class="btn b-nv" href="https://wa.me/8801622959521" target="_blank" rel="noopener">WhatsApp 01622-959521</a><a class="btn b-fb" href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook @cholvobd</a></div>
  </div>
 </section>
 </main>
 
 <footer><div class="wrap">
  <div class="fgrid">
-  <div><img src="logo.jpg" alt="Cholvo"><p>Cholvo Delivery. Your business grows, we are by your side.</p></div>
-  <div><h4>Quick links</h4><a href="#home">Home</a><a href="#services">Services</a><a href="#pricing">Pricing</a><a href="#rules">Vendor rules</a><a href="#track">Track parcel</a></div>
+  <div><img src="logo.jpg" width="54" height="54" alt="CHOLVO" loading="lazy"><p>CHOLVO Delivery. Your parcel, our priority.</p></div>
+  <div><h4>Services</h4><a href="#services">Document delivery</a><a href="#services">Parcel delivery</a><a href="#services">Food delivery</a><a href="#pricing">Delivery pricing</a></div>
+  <div><h4>Company</h4><a href="#track">Track parcel</a><a href="#coverage">Coverage</a><a href="#rules">Vendor rules</a><a href="/privacy.html">Privacy policy</a><a href="/merchant-download/">Merchant app</a><a href="/rider-download/">Rider app</a></div>
   <div><h4>Contact</h4><a href="tel:+8801615546040">+8801615-546040</a><a href="https://wa.me/8801622959521" target="_blank" rel="noopener">WhatsApp</a><a href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook @cholvobd</a></div>
  </div>
- <p class="legal">&copy; 2026 Cholvo. All rights reserved.</p>
-</div><p id="buildTag" style="text-align:center;font-size:.7rem;opacity:.55;margin:10px 0 0">build 30-oct-b</p></footer>
+ <p class="legal">&copy; 2026 CHOLVO. All rights reserved.</p>
+</div></footer>
 <a class="help" href="https://wa.me/8801615546040" target="_blank" rel="noopener">Help</a>
 
 <!-- Auth -->
@@ -668,15 +544,17 @@ $$('[data-book]').forEach(b=>b.onclick=()=>$('#bookBtn').click());
 $$('[data-order]').forEach(b=>b.onclick=()=>open('order'));
 const STEPS=['Order Received','Picked Up','On the Way','Dropped Off','Delivered'];
 function renderTrack(tn,status,times={}){
- if(status==='Cancelled'){$('#trackOut').innerHTML=`<div class="card"><span class="stat" style="background:#FDE3E1;color:#B3261E">Cancelled</span><p style="margin-top:8px">Tracking number: ${tn}</p><p style="margin-top:8px">This delivery has been cancelled.${times.Cancelled?` <small>${times.Cancelled}</small>`:''} If you have any questions, please contact Cholvo support.</p></div>`;return}
+ const out=$('#trackOut'),E=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ if(status==='Cancelled'){out.innerHTML=`<div class="tcard"><span class="stat" style="background:#FDE3E1;color:#B3261E">Cancelled</span><p class="tn">${E(tn)}</p><p>This delivery has been cancelled.${times.Cancelled?` <small>${E(times.Cancelled)}</small>`:''} If you have any questions, please contact CHOLVO support.</p></div>`;return}
  const i=STEPS.indexOf(status);
- $('#trackOut').innerHTML=`<div class="card"><span class="stat">${status}</span><p style="margin-top:8px">Tracking number: ${tn}</p><ul class="tl">${STEPS.map((s,k)=>`<li class="${k<=i?'ok':''} ${k===i?'now':''}">${s}${times[s]?`<small>${times[s]}</small>`:''}</li>`).join('')}</ul></div>`}
+ out.innerHTML=`<div class="tcard"><span class="stat">${E(status)}</span><p class="tn">Tracking number: ${E(tn)}</p><ol class="stepper">${STEPS.map((s,k)=>`<li class="${k<=i?'ok':''} ${k===i?'now':''}"${k===i?' aria-current="step"':''}>${s}${times[s]?`<small>${E(times[s])}</small>`:''}</li>`).join('')}</ol></div>`}
+
 $('#trackForm').onsubmit=async e=>{e.preventDefault();const t=$('#tn').value.trim().toUpperCase(),o=$('#trackOut');
  if(t==='CHV-DEMO'){renderTrack(t,'On the Way');return}
  if(!LIVE){o.textContent='Live tracking works once Firebase is connected. Type CHV-DEMO to preview.';return}
  try{const r=await db.doc('tracking/'+t).get();r.exists?renderTrack(t,r.data().status,r.data().status==='Cancelled'?(r.data().times||{}):{}):o.textContent='No parcel found with this tracking number.'}catch(err){o.textContent='Could not load tracking. Try again.'}};
 </script>
-  <script src="animations.js"></script>
+  <script src="animations.js" defer></script><script src="hero-3d.js" defer></script>
   <script src="maps.js"></script>
 </body>
 </html>
