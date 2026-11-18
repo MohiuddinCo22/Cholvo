@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CHOLVO Delivery | Parcel Delivery, Booking &amp; Tracking in Chattogram</title>
-<meta name="description" content="CHOLVO is a courier and parcel delivery service in Chattogram. Get an instant delivery cost estimate, book a pickup, track your parcel and deliver with trusted riders.">
+<meta name="description" content="CHOLVO is a courier and parcel delivery service in Chattogram. Get an instant delivery cost estimate, track your parcel and book through the CHOLVO Merchant app.">
 <meta name="theme-color" content="#0B2A5B">
 <link rel="canonical" href="https://cholvo.pages.dev/">
 <link rel="icon" href="/favicon.ico" sizes="any">
@@ -17,7 +17,7 @@
 <meta property="og:description" content="Book a delivery, track your parcel and know your cost upfront. Courier service in Chattogram.">
 <meta property="og:url" content="https://cholvo.pages.dev/"><meta property="og:image" content="https://cholvo.pages.dev/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://cholvo.pages.dev/og-image.jpg">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"CHOLVO Delivery","description":"Courier and parcel delivery service in Chattogram, Bangladesh.","url":"https://cholvo.pages.dev/","telephone":"+8801615546040","logo":"https://cholvo.pages.dev/logo.jpg","areaServed":"Chattogram, Bangladesh","sameAs":["https://facebook.com/cholvobd"]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"CHOLVO Delivery","description":"Courier and parcel delivery service in Chattogram, Bangladesh.","url":"https://cholvo.pages.dev/","telephone":"+8801615546040","logo":"https://cholvo.pages.dev/logo.jpg","address":{"@type":"PostalAddress","streetAddress":"CDA Market, Kazir Dewri Circle","addressLocality":"Chattogram","addressCountry":"BD"},"areaServed":"Bangladesh","sameAs":["https://facebook.com/cholvobd"]}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="cholvo.css">
@@ -29,10 +29,10 @@
   <a href="#home" aria-label="CHOLVO home"><img src="logo.jpg" width="48" height="48" alt="CHOLVO, everything moves with Cholvo"></a>
   <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><i></i><i></i><i></i></button>
   <nav class="menu" id="menu" aria-label="Main">
-   <a class="l" href="#services">Services</a><a class="l" href="#how-it-works">How it works</a><a class="l" href="#pricing">Pricing</a><a class="l" href="#coverage">Coverage</a><a class="l" id="navCharges" href="#charges" hidden>Charges</a><a class="l" href="#track">Track parcel</a><a class="l" href="#apps">Apps</a><a class="l" href="#contact">Contact</a>
-   <div class="two"><a class="btn b-nv" href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook</a><button class="btn b-or" id="navProfile" hidden>Profile</button><button class="btn b-nv" id="navAuth" data-open="auth">Merchant login</button></div>
+   <a class="l" href="#services">Services</a><a class="l" href="#how-it-works">How it works</a><a class="l" href="#pricing">Pricing</a><a class="l" href="#coverage">Coverage</a><a class="l" href="#track">Track parcel</a><a class="l" href="#apps">Apps</a><a class="l" href="#contact">Contact</a>
+   <div class="two"><a class="btn b-nv" href="/merchant-download/">Merchant login</a></div>
   </nav>
-  <button class="btn b-or hbook" data-book>Book delivery</button>
+  <a class="btn b-or hbook" href="/merchant-download/">Book delivery</a>
  </div>
 </header>
 
@@ -40,11 +40,11 @@
 <section class="hero" id="home">
  <div class="wrap">
   <div>
-   <span class="chip">Courier &amp; parcel delivery in Chattogram</span>
+   <span class="chip">Courier &amp; parcel delivery from Chattogram</span>
    <h1>Your Parcel. <span>Our Priority.</span></h1>
    <p class="lead">Fast, secure and reliable parcel delivery for businesses and individuals. Book your delivery, track your parcel and know your cost before you send.</p>
    <p class="bn" lang="bn">গুরুত্বপূর্ণ ডকুমেন্ট থেকে প্রতিদিনের পার্সেল—চট্টগ্রামজুড়ে নিরাপদে, দ্রুত পৌঁছে দিই।</p>
-   <div class="cta"><button class="btn b-or" id="bookBtn">Book a Delivery</button><a class="btn b-ghost" href="#track">Track Your Parcel</a></div>
+   <div class="cta"><a class="btn b-or" id="bookBtn" href="/merchant-download/">Book a Delivery</a><a class="btn b-ghost" href="#track">Track Your Parcel</a></div>
    <form class="trackbar" id="heroTrack"><input id="ht" placeholder="Tracking number, e.g. CHV-ABC123" aria-label="Tracking number" required><button>Track</button></form>
    <p class="trust"><span>Reliable delivery</span><span>Live status updates</span><span>Trusted service</span></p>
   </div>
@@ -59,12 +59,11 @@
    <div class="shadow"></div>
    <div class="stage" id="stage"><div class="cube" aria-hidden="true"><i class="f">CHOLVO</i><i class="k">CHOLVO</i><i class="r"></i><i class="l"></i><i class="t"></i><i class="b"></i></div></div>
    <div class="fcard fc-track"><small><span class="live"></span>Example tracking</small><b id="stTxt">Order Received</b><div class="pbar"><i id="stBar"></i></div></div>
-   <div class="fcard fc-price"><small>Delivery in Chattogram</small><b>From ৳80</b><small>Estimate before you book</small></div>
+   <div class="fcard fc-price"><small>Inside Chattogram</small><b>From ৳50</b><small>Know the cost before you book</small></div>
   </div>
  </div>
 </section>
 
-<section class="charges" id="charges" hidden><div class="wrap" id="chargesBody"></div></section>
 
 <section class="track" id="track" aria-labelledby="th">
  <div class="wrap"><div class="track-card">
@@ -78,12 +77,7 @@
 <section id="services" aria-labelledby="sh">
  <div class="wrap">
   <div class="head"><h2 id="sh">Delivery services</h2><p class="sub">Flexible delivery for shops, restaurants and everyday customers across Chattogram.</p></div>
-  <div class="svc">
-   <button data-book><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></svg></i><b>Document delivery</b><span>Important papers, delivered safely.</span><em>Book now</em></button>
-   <button data-book><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></i><b>Parcel delivery</b><span>Small and medium parcels across the city.</span><em>Book now</em></button>
-   <button data-book><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16a8 8 0 0 1-16 0zM8 7c0-2 2-2 2-4M13 7c0-2 2-2 2-4"/></svg></i><b>Food delivery</b><span>Hot food from restaurants, picked up fast.</span><em>Book now</em></button>
-   <button data-order><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg></i><b>Order anything</b><span>Tell us what you need and where to collect it.</span><em>Order now</em></button>
-  </div>
+  <div class="svc"><a href="/merchant-download/"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></svg></i><b>Document delivery</b><span>Important papers, delivered safely.</span><em>Book in the app</em></a><a href="/merchant-download/"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></i><b>Parcel delivery</b><span>Small and medium parcels across the city.</span><em>Book in the app</em></a><a href="/merchant-download/"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16a8 8 0 0 1-16 0zM8 7c0-2 2-2 2-4M13 7c0-2 2-2 2-4"/></svg></i><b>Food delivery</b><span>Hot food from restaurants, picked up fast.</span><em>Book in the app</em></a></div>
  </div>
 </section>
 
@@ -91,47 +85,62 @@
  <div class="wrap">
   <div class="head"><h2 id="hh">How CHOLVO works</h2><p class="sub">Four clear steps to get your parcel moving.</p></div>
   <ol class="steps">
-   <li><h3>Place an order</h3><p>Choose a service and share the order details.</p></li>
+   <li><h3>Book in the app</h3><p>Install the CHOLVO Merchant app, sign up or log in, then book your parcel.</p></li>
    <li><h3>Parcel pickup</h3><p>We collect the parcel from the pickup address.</p></li>
    <li><h3>Rider assigned</h3><p>A rider takes your parcel on the way. Follow the status with your tracking number.</p></li>
    <li><h3>Delivered</h3><p>Your parcel reaches its destination.</p></li>
   </ol>
-  <div class="cta"><button class="btn b-or" id="howBookBtn">Book a Delivery</button></div>
+  <div class="cta"><a class="btn b-or" href="/merchant-download/">Book a Delivery</a></div>
  </div>
 </section>
 
 <section class="calc" id="pricing" aria-labelledby="ph">
  <div class="wrap">
-  <div class="head"><h2 id="ph">Know your delivery cost upfront</h2><p class="sub">Enter pickup and delivery addresses to estimate road distance, delivery charge and COD fee.</p></div>
-  <div class="split">
-   <form class="card grid c2" id="calcForm">
-    <div><label for="area">Delivery area</label><select id="area"><option>Inside Chattogram</option></select></div>
-    <div><label for="dist">Distance (km)</label><input id="dist" type="number" min="0" step="0.1" placeholder="Auto"><p class="hint">Calculated automatically from pickup and delivery addresses.</p></div>
-    <div style="grid-column:1/-1"><label for="pick">Pickup address</label><input id="pick" placeholder="Pickup area or shop name, e.g. GEC Circle" autocomplete="off"></div>
-    <div style="grid-column:1/-1"><label for="addr">Delivery address</label><input id="addr" placeholder="Delivery area or address, e.g. Agrabad" autocomplete="off"></div>
-    <div><label for="ptype">Parcel type</label><select id="ptype"><option>Document</option><option>Parcel</option><option>Food</option><option>Other</option></select></div>
-    <div><label for="dtype">Delivery type</label><select id="dtype"><option>Express</option><option>Sameday</option><option>Next day</option><option selected>Standard</option></select></div>
-    <div><label for="wt">Parcel weight (kg)</label><input id="wt" type="number" min="0" step="0.1" value="1"></div>
-    <div><label for="cod">COD amount (৳)</label><input id="cod" type="number" min="0" value="0"></div>
-    <button class="btn b-or" style="grid-column:1/-1" type="submit">Calculate cost</button>
+  <div class="head"><h2 id="ph">Delivery charge calculator</h2><p class="sub">Choose your route, parcel and service. The charge updates as you go.</p></div>
+  <div class="pc">
+   <form class="pc-form" id="calcForm" novalidate>
+    <div class="pc-sec"><h3><b>1</b>Route</h3>
+     <div class="pc-route"><div><label for="from">Pickup district</label><select id="from"></select></div>
+      <button type="button" class="pc-swap" id="swap" aria-label="Swap pickup and delivery districts"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg></button>
+      <div><label for="to">Delivery district</label><select id="to"></select></div></div>
+     <span class="pc-pill" id="routeTxt"></span></div>
+    <div class="pc-sec"><h3><b>2</b>What are you sending?</h3><div class="pc-opts pc-3" role="radiogroup" aria-label="What are you sending">
+     <label class="opt"><input type="radio" name="ptype" value="regular" checked><span class="oc"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></i><span><b>Regular parcel</b><small>Everyday parcels</small></span></span></label><label class="opt"><input type="radio" name="ptype" value="document"><span class="oc"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></svg></i><span><b>Documents</b><small>Paper only, no products</small></span></span></label><label class="opt"><input type="radio" name="ptype" value="book"><span class="oc"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M9 8h6M9 12h6"/></svg></i><span><b>Book</b><small>Books and printed matter</small></span></span></label></div></div>
+    <div class="pc-sec"><h3><b>3</b>Weight</h3>
+     <div class="pc-w"><div class="stp"><button type="button" id="wm" aria-label="Decrease weight by 0.5 kg">&minus;</button><input id="wt" type="number" inputmode="decimal" min="0.5" max="600" step="0.5" value="0.5" aria-label="Weight in kg"><span>kg</span><button type="button" id="wp" aria-label="Increase weight by 0.5 kg">+</button></div>
+      <div class="chips" id="chips"><button type="button" data-w="0.5">0.5 kg</button><button type="button" data-w="1">1 kg</button><button type="button" data-w="2">2 kg</button><button type="button" data-w="3">3 kg</button><button type="button" data-w="5">5 kg</button><button type="button" data-w="10">10 kg</button></div></div>
+     <p class="hint">Include the packaging. Between 0.5 kg and 600 kg.</p><p class="err" id="wErr" role="alert" hidden>Enter a weight between 0.5 kg and 600 kg.</p></div>
+    <div class="pc-sec pc-two"><div><h3><b>4</b>Service</h3><div class="pc-opts">
+     <label class="opt"><input type="radio" name="service" value="regular" checked><span class="oc"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg></i><span><b>Regular</b><small>Standard delivery</small></span><em id="pReg"></em></span></label><label class="opt"><input type="radio" name="service" value="express"><span class="oc"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3 5 13h6l-1 8 8-10h-6z"/></svg></i><span><b>Express</b><small>Same day, within one district</small></span><em id="pExp"></em></span></label></div></div>
+     <div><h3><b>5</b>Delivery</h3><div class="pc-opts">
+     <label class="opt"><input type="radio" name="delivery" value="home" checked><span class="oc"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7v9H4z"/><path d="M10 20v-6h4v6"/></svg></i><span><b>Home delivery</b><small>To the customer's door</small></span><em id="pHome"></em></span></label><label class="opt"><input type="radio" name="delivery" value="point"><span class="oc"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V5l8-2v18M13 8h6v13M8 8h2M8 12h2M8 16h2"/></svg></i><span><b>Point delivery</b><small>Collect from CHOLVO hub</small></span><em id="pPoint"></em></span></label></div></div></div>
+    <div class="pc-sec"><h3><b>6</b>Cash to collect <small>(optional)</small></h3>
+     <div class="pc-cod"><span aria-hidden="true">৳</span><input id="cod" type="number" min="0" inputmode="numeric" placeholder="Amount the customer pays" aria-label="Cash on delivery amount"></div>
+     <p class="hint">See what reaches you after the delivery charge and the 1% COD charge.</p></div>
    </form>
-   <div class="result" aria-live="polite"><div class="route-visual"><img src="delivery-route-art.jpg" width="400" height="240" loading="lazy" alt="Delivery route map illustration with rider and location pins"></div><h3>Your estimate</h3><div id="out" class="empty">Fill in the form and press Calculate to see your charges.</div></div>
+   <aside class="pc-card" aria-label="Your estimate">
+    <p class="lbl">Total charge</p><p class="big" id="total" aria-live="polite">৳65</p><p class="rt" id="routeTxt2"></p>
+    <dl><div><dt>Delivery charge</dt><dd id="rDel"></dd></div><div id="rCodW" hidden><dt>COD charge (1%)</dt><dd id="rCod"></dd></div><div id="rGetW" hidden><dt>You receive</dt><dd id="rGet"></dd></div></dl>
+    <p class="save" id="save"></p>
+    <a class="btn b-or" href="/merchant-download/">Book this delivery</a>
+    <a class="btn b-ghost" href="/merchant-download/">Become a merchant</a>
+    <p class="fine">Standard rates. Partner merchants get volume discounts.</p>
+   </aside>
   </div>
  </div>
 </section>
 
 <section class="cov" id="coverage" aria-labelledby="ch">
- <div class="wrap cov-grid">
-  <div>
-   <h2 id="ch">Delivering inside Chattogram</h2>
-   <p class="sub">CHOLVO currently delivers inside Chattogram. The charge depends on road distance, so you always know what you pay.</p>
-   <ul class="ladder"><li>Up to 1 km<b>৳80</b></li><li>Up to 2 km<b>৳100</b></li><li>Up to 3 km<b>৳120</b></li><li>Up to 5 km<b>৳140</b></li><li>Beyond 5 km<b>+৳10 per km</b></li></ul>
-  </div>
-  <div class="cov-map" role="img" aria-label="Chattogram service area with pickup and delivery points">
-   <svg viewBox="0 0 400 300" aria-hidden="true"><circle class="ring" cx="200" cy="150" r="130"/><circle class="ring" cx="200" cy="150" r="85"/><circle class="core" cx="200" cy="150" r="42"/>
-    <path d="M90 210 Q160 120 210 150 T320 80" fill="none" stroke="#F58220" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>
-    <circle cx="90" cy="210" r="9" fill="#fff"/><circle cx="320" cy="80" r="9" fill="#F58220"/><circle cx="200" cy="150" r="6" fill="#FFA51F"/>
-    <text x="200" y="204" fill="#fff" font-size="15" font-weight="700" text-anchor="middle">Chattogram</text></svg>
+ <div class="wrap">
+  <div class="head"><h2 id="ch">Every district, one clear rate card</h2><p class="sub">CHOLVO delivers from Chattogram to all 64 districts. Search or pick a district to see what it costs.</p></div>
+  <div class="cv">
+   <div class="cv-main">
+    <div class="cv-search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="cvq" type="search" placeholder="Search a district" aria-label="Search a district" autocomplete="off"></div>
+    <div class="cv-tabs" id="cvTabs" role="tablist" aria-label="Divisions"></div>
+    <div class="cv-list" id="cvList"></div>
+    <p class="cv-empty" id="cvEmpty" hidden>No district found. Check the spelling and try again.</p>
+   </div>
+   <aside class="cv-card" id="cvCard" aria-live="polite" aria-label="Rates for the selected district"></aside>
   </div>
  </div>
 </section>
@@ -158,7 +167,7 @@
   <p class="sub">Your business’s trusted delivery partner. Save more as your monthly deliveries grow.</p>
   <div class="slabs"><div><b>0%</b><span>0–50 deliveries</span></div><div><b>5%</b><span>51–100 deliveries</span></div><div><b>10%</b><span>101–150 deliveries</span></div></div>
   <p class="fit">Partners with 150+ successful deliveries a month for 3 months get free brand promotion through influencers. Built for restaurants, online shops, food and product businesses.</p>
-  <button class="btn b-or" id="footAuth" data-open="auth">Merchant login / registration</button>
+  <a class="btn b-or" href="/merchant-download/">Become a merchant</a>
  </div>
 </section>
 
@@ -282,266 +291,29 @@
 
 <footer><div class="wrap">
  <div class="fgrid">
-  <div><img src="logo.jpg" width="54" height="54" alt="CHOLVO" loading="lazy"><p>CHOLVO Delivery. Your parcel, our priority.</p></div>
-  <div><h4>Services</h4><a href="#services">Document delivery</a><a href="#services">Parcel delivery</a><a href="#services">Food delivery</a><a href="#pricing">Delivery pricing</a></div>
-  <div><h4>Company</h4><a href="#track">Track parcel</a><a href="#coverage">Coverage</a><a href="#rules">Vendor rules</a><a href="/privacy.html">Privacy policy</a><a href="/merchant-download/">Merchant app</a><a href="/rider-download/">Rider app</a></div>
-  <div><h4>Contact</h4><a href="tel:+8801615546040">+8801615-546040</a><a href="https://wa.me/8801622959521" target="_blank" rel="noopener">WhatsApp</a><a href="https://facebook.com/cholvobd" target="_blank" rel="noopener">Facebook @cholvobd</a></div>
+  <div><img src="logo.jpg" width="54" height="54" alt="CHOLVO" loading="lazy"><p>Delivering across Bangladesh since 2026.</p><div class="socs"><a class="soc" href="https://facebook.com/cholvobd" target="_blank" rel="noopener" aria-label="CHOLVO on Facebook"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8h3V4h-3a4 4 0 0 0-4 4v2H7v4h3v8h4v-8h3l1-4h-4V8z" fill="currentColor"/></svg></a><a class="soc" href="https://instagram.com/cholvobd" target="_blank" rel="noopener" aria-label="CHOLVO on Instagram"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg></a><a class="soc" href="https://www.linkedin.com/company/cholvo" target="_blank" rel="noopener" aria-label="CHOLVO on LinkedIn"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4v11H4zM6 4a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM10 9h4v1.6c.6-1.1 2-1.8 3.4-1.8C20 8.8 21 10.5 21 13v7h-4v-6c0-1.4-.5-2.2-1.7-2.2S14 12.7 14 14v6h-4z" fill="currentColor"/></svg></a></div></div>
+  <div><h4>Services</h4><a href="/merchant-download/">Book delivery</a><a href="#track">Track parcel</a><a href="#pricing">Pricing</a><a href="#coverage">Coverage</a></div>
+  <div><h4>Business</h4><a href="/merchant-download/">Merchant sign-in</a><a href="/merchant-download/">Merchant sign-up</a><a href="/admin.html">Moderator</a><a href="#partner">Business</a></div>
+  <div><h4>Company</h4><a href="#about">About</a><a href="#contact">Contact</a><a href="#rules">Terms and conditions</a><a href="/privacy.html">Privacy policy</a></div>
+  <div><h4>Office</h4><address>CDA Market, Kazir Dewri Circle,<br>Chattogram<br><a href="tel:+8801615546040">Hotline +8801615-546040</a></address></div>
  </div>
  <p class="legal">&copy; 2026 CHOLVO. All rights reserved.</p>
 </div></footer>
 <a class="help" href="https://wa.me/8801615546040" target="_blank" rel="noopener">Help</a>
 
-<!-- Auth -->
-<div class="modal" id="m-auth"><div class="sheet">
- <button class="x" data-close aria-label="Close">&times;</button>
- <h3>Merchant account</h3>
- <div class="tabs"><button class="on" data-tab="login">Login</button><button data-tab="reg">Register</button></div>
- <form id="loginForm" class="grid">
-  <div><label>Phone number</label><input name="phone" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" autocomplete="username" required></div>
-  <div><label>Password</label><input name="pw" type="password" minlength="6" autocomplete="current-password" required></div>
-  <button class="btn b-or">Login</button>
-  <p class="hint">New merchant? Register first. Your login phone number and password are given to you after Cholvo approves your registration.</p>
- </form>
- <form id="regForm" class="grid" hidden>
-  <div><label>Your business name</label><input name="businessName" maxlength="120" required></div>
-  <div class="grid c2"><div><label>Business owner first name</label><input name="ownerFirst" maxlength="60" required></div>
-  <div><label>Business owner last name</label><input name="ownerLast" maxlength="60" required></div></div>
-  <div><label>Business type</label><select name="businessType" required><option value="" selected disabled>Select business type</option><option value="Shop">Shop</option><option value="Restaurant">Restaurant</option></select></div>
-  <div><label>Number of branches to register</label><input name="branches" type="number" min="1" max="500" value="1" required></div>
-  <div><label>Enter your business email</label><input name="email" type="email" maxlength="120" autocomplete="email" required></div>
-  <div><label>Mobile phone number</label><input name="mobile" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" autocomplete="tel" required>
-   <p id="regDup" role="alert" hidden style="color:#C62828;font-weight:700;font-size:.9rem;margin-top:6px">Already existing: this mobile number is already registered. Please login, or contact Cholvo support.</p></div>
-  <label class="chk"><input type="checkbox" name="samePhone" id="samePhone" checked><span>My business phone is the same as my mobile number</span></label>
-  <div id="bizPhoneWrap" hidden><label>Business phone number</label><input name="businessPhone" id="bizPhone" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX"></div>
-  <label class="chk"><input type="checkbox" name="agreed" required><span>I am registering after agreeing to all Cholvo terms and conditions</span></label>
-  <input class="hp" name="website" tabindex="-1" autocomplete="off">
-  <button class="btn b-or">Register</button>
-  <button type="button" class="linkbtn" id="openAgree">View Merchant Agreement</button>
- </form>
-</div></div>
-
-<!-- Merchant profile -->
-<div class="modal" id="m-profile"><div class="sheet">
- <button class="x" data-close aria-label="Close">&times;</button>
- <h3>My profile</h3>
- <div class="pkv" id="profileInfo"></div>
- <h4 class="ph">Change password</h4>
- <form id="pwForm" class="grid">
-  <div><label>Current password</label><input name="cur" type="password" minlength="6" autocomplete="current-password" required></div>
-  <div><label>New password</label><input name="n1" type="password" minlength="6" autocomplete="new-password" required><p class="hint">At least 6 characters. A 6-digit number works too.</p></div>
-  <div><label>Confirm new password</label><input name="n2" type="password" minlength="6" autocomplete="new-password" required></div>
-  <button class="btn b-or">Change password</button>
- </form>
- <button type="button" class="btn b-nv" id="profLogout" style="margin-top:14px;width:100%">Logout</button>
-</div></div>
-
-<!-- Merchant agreement popup (content is copied from the #rules section) -->
-<div class="modal" id="m-agree"><div class="sheet">
- <button class="x" id="closeAgree" type="button" aria-label="Close">&times;</button>
- <h3>Cholvo Courier – Vendor Rules &amp; Regulations</h3>
- <div id="agreeBody" class="agree"></div>
- <button type="button" class="btn b-or" id="closeAgree2" style="margin-top:14px;width:100%">Close</button>
-</div></div>
-
-<div class="modal" id="m-reqdone"><div class="sheet" style="text-align:center">
- <button class="x" data-close aria-label="Close">&times;</button>
- <h3>Registration received</h3>
- <p style="margin-top:8px">Thank you! Cholvo will review your registration. After approval, you will receive your login phone number and password.</p>
- <button class="btn b-or" data-close style="margin-top:14px">Done</button>
-</div></div>
-
-<!-- Book -->
-<div class="modal" id="m-book"><div class="sheet">
- <button class="x" data-close aria-label="Close">&times;</button>
- <h3>Book delivery</h3>
- <form id="bookForm" class="grid" style="margin-top:14px">
-  <div><label>Vendor name</label><input name="vendor" required></div>
-  <div><label>Vendor phone number</label><input name="phone" inputmode="numeric" pattern="01[0-9]{9}" required></div>
-  <div><label>Pickup address</label><textarea name="pickup" rows="2" required></textarea></div>
-  <div><label>Delivery address</label><textarea name="drop" rows="2" required></textarea></div>
-  <div><label>Customer name</label><input name="customerName" autocomplete="name" required></div>
-  <div><label>Customer phone number</label><input name="customerPhone" type="tel" inputmode="numeric" pattern="01[0-9]{9}" placeholder="01XXXXXXXXX" autocomplete="tel" required></div>
-  <div class="grid c2"><div><label>Parcel type</label><select name="ptype"><option>Document</option><option>Parcel</option><option>Food</option><option>Other</option></select></div>
-  <div><label>COD (৳)</label><input name="cod" type="number" min="0" value="0"></div></div>
-  <div><label>Order date</label><input name="date" type="date" required></div>
-  <div><label>Schedule for later (optional)</label><input name="later" type="datetime-local"><p class="hint">Leave empty for the next available pickup.</p></div>
-  <div class="media" data-media>
-   <label>Prefer to talk or show us? <span class="opt">(optional)</span></label>
-   <div class="mrow"><button type="button" class="btn mb" data-rec>🎤 Record voice</button><button type="button" class="btn mb" data-pick>📷 Add photos (0/3)</button><button type="button" class="btn mb" data-del hidden>Delete voice</button></div>
-   <audio controls hidden data-ap></audio><p class="hint" data-st></p><div class="mthumbs" data-thumbs></div>
-   <input type="file" accept="image/*" multiple hidden data-photos><div data-ts></div>
-   <p class="hint">Send a voice message (up to 1 minute) and/or up to 8 photos. The other fields above are then switched off and only your phone number is needed. Remove the voice/photos to type the details instead.</p>
-  </div>
-  <input class="hp" name="website" tabindex="-1" autocomplete="off">
-  <button class="btn b-or">Book parcel</button>
- </form>
-</div></div>
-
-<!-- Order -->
-<div class="modal" id="m-order"><div class="sheet">
- <button class="x" data-close aria-label="Close">&times;</button>
- <h3>Order anything</h3>
- <form id="orderForm" class="grid" style="margin-top:14px">
-  <div><label>Name</label><input name="name" required></div>
-  <div><label>Phone number</label><input name="phone" inputmode="numeric" pattern="01[0-9]{9}" required></div>
-  <div><label>Address</label><textarea name="addr" rows="2" required></textarea></div>
-  <div><label>Product name</label><input name="product" required></div>
-  <div><label>Where should we collect it from?</label><textarea name="from" rows="2" placeholder="Restaurant or shop name and area" required></textarea></div>
-  <div class="media" data-media>
-   <label>Prefer to talk or show us? <span class="opt">(optional)</span></label>
-   <div class="mrow"><button type="button" class="btn mb" data-rec>🎤 Record voice</button><button type="button" class="btn mb" data-pick>📷 Add photos (0/3)</button><button type="button" class="btn mb" data-del hidden>Delete voice</button></div>
-   <audio controls hidden data-ap></audio><p class="hint" data-st></p><div class="mthumbs" data-thumbs></div>
-   <input type="file" accept="image/*" multiple hidden data-photos><div data-ts></div>
-   <p class="hint">Send a voice message (up to 1 minute) and/or up to 8 photos. The other fields above are then switched off and only your phone number is needed. Remove the voice/photos to type the details instead.</p>
-  </div>
-  <input class="hp" name="website" tabindex="-1" autocomplete="off">
-  <button class="btn b-or">Submit order</button>
- </form>
-</div></div>
-<div class="modal" id="m-done"><div class="sheet" style="text-align:center">
- <button class="x" data-close aria-label="Close">&times;</button>
- <h3>Order confirmed</h3><p>Your tracking number</p>
- <p id="doneTN" style="font-size:2rem;font-weight:800;color:var(--orange);margin:10px 0"></p>
- <p class="hint">Save this number to track your parcel.</p>
- <button class="btn b-or" data-close style="margin-top:14px">Done</button>
-</div></div>
-<div class="toast" id="toast"></div>
 <script src="env.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
-<script src="media-capture.js"></script>
-
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-let merchant=null; // Step 2: replaced by Firebase Auth state
-const toast=t=>{const e=$('#toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',3200)};
-const open=n=>$('#m-'+n).classList.add('open'),close=()=>$$('.modal').forEach(m=>m.classList.remove('open'));
+// old merchant sign-up links now lead to the app download page
+if(location.hash==='#merchant-registration'||/[?&]register=merchant\b/.test(location.search))location.replace('/merchant-download/');
 const menu=$('#menu'),burger=$('#burger');
 burger.onclick=()=>{const o=menu.classList.toggle('open');burger.setAttribute('aria-expanded',o)};
-menu.addEventListener('click',e=>{if(e.target.closest('a.l,button'))menu.classList.remove('open')});
-$$('[data-open]').forEach(b=>b.onclick=()=>open(b.dataset.open));
-$$('[data-close]').forEach(b=>b.onclick=close);
-$$('.modal').forEach(m=>m.onclick=e=>{if(e.target===m)close()});
-$('#bookBtn').onclick=()=>open('book');
-const howBookBtn=$('#howBookBtn');if(howBookBtn)howBookBtn.onclick=()=>$('#bookBtn').click();
-$$('.tabs button').forEach(b=>b.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));$('#loginForm').hidden=b.dataset.tab!=='login';$('#regForm').hidden=b.dataset.tab!=='reg'});
-// Direct link: your-site/#merchant-registration (or ?register=merchant) opens the Merchant Register form straight away
-function openMerchantReg(){open('auth');const t=document.querySelector('#m-auth .tabs button[data-tab="reg"]');if(t)t.click()}
-if(location.hash==='#merchant-registration'||/[?&]register=merchant\b/.test(location.search))window.addEventListener('load',openMerchantReg);
-window.addEventListener('hashchange',()=>{if(location.hash==='#merchant-registration')openMerchantReg()});
-// pricing lives in maps.js
-
-// ===== CONFIG: paste your keys here =====
-// CFG now comes from env.js (staging vs production by hostname)
-const MAIL={service:'service_4jw0dqu',template:'template_i8c3cf4',key:'r2rf4UWIT_uK8DB96'};
-// ========================================
-const LIVE=CFG.apiKey!=='YOUR_API_KEY',MAILON=MAIL.key!=='YOUR_PUBLIC_KEY'&&!IS_STAGING; // no real emails in staging
-let auth,db,TS;
-if(LIVE){firebase.initializeApp(CFG);auth=firebase.auth();db=firebase.firestore();TS=firebase.firestore.FieldValue.serverTimestamp();auth.onAuthStateChanged(checkMerchant);if(MAILON)emailjs.init({publicKey:MAIL.key})}
-const em=p=>p+'@cholvo.app',busy=(f,on)=>{const b=f.querySelector('button:not(.x)');if(b)b.disabled=on};
-const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(x=>x.toString(16).padStart(2,'0')).join('');
-const newTN=()=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let r='';crypto.getRandomValues(new Uint8Array(6)).forEach(n=>r+=c[n%c.length]);return'CHV-'+r};
-const cool=()=>{try{const t=+localStorage.getItem('cvt')||0;if(Date.now()-t<30000)return true;localStorage.setItem('cvt',Date.now())}catch(_){}return false};
-const vals=f=>{const x=Object.fromEntries(new FormData(f));delete x.website;delete x['cf-turnstile-response'];if('cod' in x)x.cod=+x.cod||0;return x};
-const TS_KEY='0x4AAAAAAF1UIWBKP_JCxYEa';
-const MEDIA_API='/api/media';
-['bookForm','orderForm'].forEach(id=>{const f=document.getElementById(id);if(f&&window.CholvoMedia)f._mc=CholvoMedia.attach(f.querySelector('[data-media]'),{formEl:f,endpoint:MEDIA_API,turnstileKey:TS_KEY,keep:['phone'],useTurnstile:()=>!IS_STAGING&&!merchant})});
-async function save(e,type){e.preventDefault();const f=e.target;if(f.website&&f.website.value)return;
- if(!LIVE){toast('Demo mode: add your Firebase config to save orders.');return}
- if(cool()){toast('Please wait a few seconds before sending again.');return}
- busy(f,true);
- try{const tn=newTN(),d=vals(f),bt=db.batch(),mc=f._mc,hasM=!!(mc&&mc.has());let extra={};
-  if(hasM){
-   if(!/^01[0-9]{9}$/.test(d.phone||'')){busy(f,false);toast('Please enter your phone number (01XXXXXXXXX).');return}
-   const c=mc.counts(),tok=(merchant&&auth.currentUser)?await auth.currentUser.getIdToken():'';
-   const text=Object.entries(d).filter(([k,v])=>v!==''&&v!==undefined&&k!=='phone').map(([k,v])=>k+': '+v).join('\n');
-   await mc.upload({tn,type,phone:d.phone,text,idToken:tok});
-   extra={hasVoice:c.voice,photoCount:c.photos};
-  }
-  bt.set(db.doc('orders/'+tn),{...d,...extra,type,tn,status:'Order Received',merchantUid:merchant?merchant.uid:null,createdAt:TS});
-  bt.set(db.doc('tracking/'+tn),{status:'Order Received',updatedAt:TS});
-  await bt.commit();
-  if(MAILON)emailjs.send(MAIL.service,MAIL.template,{type,tracking:tn,summary:Object.entries(d).map(([k,v])=>k+': '+v).join('\n')+(hasM?'\n(voice/photos sent to Telegram)':'')}).catch(()=>{});
-  close();f.reset();if(mc)mc.reset();$('#doneTN').textContent=tn;open('done')
- }catch(err){if(err&&err.media){try{localStorage.removeItem('cvt')}catch(_){}}toast(err&&err.media?err.message:'Could not send. Check your connection and try again.')}
- busy(f,false)}
-$('#bookForm').onsubmit=e=>save(e,'book');
-$('#orderForm').onsubmit=e=>save(e,'order');
-$('#loginForm').onsubmit=async e=>{e.preventDefault();const f=e.target;
- if(!LIVE){toast('Demo mode: add your Firebase config.');return}
- busy(f,true);
- try{const c=await auth.signInWithEmailAndPassword(em(f.phone.value),f.pw.value),m=await db.doc('merchants/'+c.user.uid).get();
-  if(!m.exists||m.data().blocked){await auth.signOut();throw{code:m.exists?'blocked':'notapproved'}}
-  f.reset();close();toast('Logged in.')
- }catch(err){const c=err.code||'';console.error('Login error:',c||err);toast(c==='auth/too-many-requests'?'Too many attempts. Try again later.':c==='blocked'?'This account is blocked. Please contact support.':c==='notapproved'?'This account has no approved merchant record yet. Please contact support.':c==='permission-denied'?'Login check failed (permission). Please contact support.':(c==='auth/wrong-password'||c==='auth/invalid-credential'||c==='auth/user-not-found'||c==='auth/invalid-email')?'Wrong phone number or password.':'Could not login ('+(c||'unknown error')+').')}
- busy(f,false)};
-// registration request: goes to admin for approval, no login is created here
-$('#samePhone').onchange=e=>{$('#bizPhoneWrap').hidden=e.target.checked;$('#bizPhone').required=!e.target.checked};
-$('#openAgree').onclick=()=>{$('#agreeBody').innerHTML=$('#rulesBody').innerHTML;$('#m-agree').classList.add('open')};
-const shutAgree=()=>$('#m-agree').classList.remove('open');
-$('#closeAgree').onclick=shutAgree;$('#closeAgree2').onclick=shutAgree;
-$('#m-agree').onclick=e=>{if(e.target.id==='m-agree')shutAgree()};
-const regDup=()=>{const p=$('#regDup');p.hidden=false;p.scrollIntoView({block:'center'})};
-$('#regForm').mobile.oninput=()=>{$('#regDup').hidden=true};
-$('#regForm').onsubmit=async e=>{e.preventDefault();const f=e.target;if(f.website.value)return;
- if(!LIVE){toast('Demo mode: add your Firebase config.');return}
- if(cool()){toast('Please wait a few seconds before sending again.');return}
- busy(f,true);
- try{const same=f.samePhone.checked,d={businessName:f.businessName.value.trim(),ownerFirst:f.ownerFirst.value.trim(),ownerLast:f.ownerLast.value.trim(),businessType:f.businessType.value,branches:Math.max(1,parseInt(f.branches.value,10)||1),email:f.email.value.trim(),mobile:f.mobile.value.trim(),businessPhone:same?f.mobile.value.trim():f.businessPhone.value.trim(),samePhone:same,agreed:true};
-  const idx=db.doc('phoneIndex/'+d.mobile);
-  if((await idx.get()).exists){regDup();try{localStorage.removeItem('cvt')}catch(_){}busy(f,false);return}
-  const bt=db.batch();bt.set(db.doc('merchantRequests/'+d.mobile),{...d,status:'pending',createdAt:TS});bt.set(idx,{createdAt:TS});await bt.commit();
-  if(MAILON)emailjs.send(MAIL.service,MAIL.template,{type:'merchant registration request',tracking:'-',summary:Object.entries(d).map(([k,v])=>k+': '+v).join('\n')}).catch(()=>{});
-  f.reset();$('#bizPhoneWrap').hidden=true;close();open('reqdone')
- }catch(err){
-  // a second registration with the same number is refused by the rules: confirm it really is a duplicate
-  try{if(err&&err.code==='permission-denied'&&(await db.doc('phoneIndex/'+f.mobile.value.trim()).get()).exists){regDup();try{localStorage.removeItem('cvt')}catch(_){}busy(f,false);return}}catch(_){}
-  toast('Could not send your registration. Check your connection and try again.')}
- busy(f,false)};
-// merchant-only content (charge lists) and login state in the menu
-let mdata={};
-const logout=()=>{close();auth.signOut();toast('Logged out.')};
-function showProfile(){
- const d=mdata,rows=[['Business name',d.businessName],['Owner',[d.ownerFirst,d.ownerLast].filter(Boolean).join(' ')],['Business type',d.businessType],['Branches',d.branches],['Email',d.email],['Mobile (login number)',d.phone]];
- const box=$('#profileInfo');box.innerHTML='';
- rows.forEach(([k,v])=>{const a=document.createElement('span'),b=document.createElement('span');a.textContent=k;b.textContent=(v===undefined||v==='')?'-':v;box.append(a,b)});
- open('profile')}
-$('#profLogout').onclick=logout;
-$('#navProfile').onclick=showProfile;
-$('#pwForm').onsubmit=async e=>{e.preventDefault();const f=e.target,u=auth.currentUser;
- if(!u){toast('Please login again.');return}
- if(f.n1.value!==f.n2.value){toast('The new passwords do not match.');return}
- busy(f,true);
- try{await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,f.cur.value));
-  await u.updatePassword(f.n1.value);
-  f.reset();toast('Password changed.')
- }catch(err){const c=err.code||'';toast(c==='auth/wrong-password'||c==='auth/invalid-credential'?'Current password is wrong.':c==='auth/weak-password'?'New password is too weak.':c==='auth/too-many-requests'?'Too many attempts. Try again later.':'Could not change the password. Try again.')}
- busy(f,false)};
-// merchant-only content (charge lists) and login state in the menu
-async function checkMerchant(u){
- merchant=null;mdata={};
- if(u){try{const m=await db.doc('merchants/'+u.uid).get();
-   if(m.exists&&!m.data().blocked){merchant=u;mdata=m.data()}else if(m.exists)auth.signOut();else toast('No approved merchant record found for this login.')}catch(err){console.error('Merchant check failed:',err.code||err);toast('Could not verify merchant account ('+(err.code||'error')+').')}}
- const nav=$('#navAuth'),prof=$('#navProfile'),foot=$('#footAuth');
- nav.onclick=merchant?logout:()=>open('auth');
- nav.textContent=merchant?'Logout':'Merchant login';
- prof.hidden=!merchant;
- foot.textContent=merchant?'My profile':'Merchant login / registration';
- foot.onclick=merchant?showProfile:()=>open('auth');
- const sec=$('#charges'),body=$('#chargesBody'),link=$('#navCharges');
- if(!merchant){sec.hidden=true;link.hidden=true;body.innerHTML='';return}
- // show the section for every approved merchant; explain neutrally if the list cannot be loaded
- sec.hidden=false;link.hidden=false;
- try{const d=await db.doc('private/charges').get();
-  if(d.exists&&d.data().html)body.innerHTML=d.data().html;
-  else{body.innerHTML='<p class="sub" style="padding:10px 0">Charge lists are not available right now. Please contact Cholvo support.</p>';console.warn('private/charges is missing: open admin, Charges tab, press Save')}
- }catch(err){body.innerHTML='<p class="sub" style="padding:10px 0">Charge lists are not available right now. Please contact Cholvo support.</p>';console.error('Could not read private/charges:',err.code||err)}
-}
-$('#heroTrack').onsubmit=e=>{e.preventDefault();$('#tn').value=$('#ht').value;location.hash='#track';$('#trackForm').requestSubmit()};
-$$('[data-book]').forEach(b=>b.onclick=()=>$('#bookBtn').click());
-$$('[data-order]').forEach(b=>b.onclick=()=>open('order'));
+menu.addEventListener('click',e=>{if(e.target.closest('a'))menu.classList.remove('open')});
+// parcel tracking (public, read-only)
+const LIVE=CFG.apiKey!=='YOUR_API_KEY';let db;
+if(LIVE){firebase.initializeApp(CFG);db=firebase.firestore()}
 const STEPS=['Order Received','Picked Up','On the Way','Dropped Off','Delivered'];
 function renderTrack(tn,status,times={}){
  const out=$('#trackOut'),E=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -549,12 +321,12 @@ function renderTrack(tn,status,times={}){
  const i=STEPS.indexOf(status);
  out.innerHTML=`<div class="tcard"><span class="stat">${E(status)}</span><p class="tn">Tracking number: ${E(tn)}</p><ol class="stepper">${STEPS.map((s,k)=>`<li class="${k<=i?'ok':''} ${k===i?'now':''}"${k===i?' aria-current="step"':''}>${s}${times[s]?`<small>${E(times[s])}</small>`:''}</li>`).join('')}</ol></div>`}
 
+$('#heroTrack').onsubmit=e=>{e.preventDefault();$('#tn').value=$('#ht').value;location.hash='#track';$('#trackForm').requestSubmit()};
 $('#trackForm').onsubmit=async e=>{e.preventDefault();const t=$('#tn').value.trim().toUpperCase(),o=$('#trackOut');
  if(t==='CHV-DEMO'){renderTrack(t,'On the Way');return}
  if(!LIVE){o.textContent='Live tracking works once Firebase is connected. Type CHV-DEMO to preview.';return}
  try{const r=await db.doc('tracking/'+t).get();r.exists?renderTrack(t,r.data().status,r.data().status==='Cancelled'?(r.data().times||{}):{}):o.textContent='No parcel found with this tracking number.'}catch(err){o.textContent='Could not load tracking. Try again.'}};
 </script>
-  <script src="animations.js" defer></script><script src="hero-3d.js" defer></script>
-  <script src="maps.js"></script>
+<script src="animations.js" defer></script><script src="calculator.js" defer></script><script src="coverage.js" defer></script>
 </body>
 </html>
