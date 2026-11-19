@@ -137,12 +137,15 @@
 
 <section class="cov" id="coverage" aria-labelledby="ch">
  <div class="wrap">
-  <div class="head"><h2 id="ch">Every district, one clear rate card</h2><p class="sub">CHOLVO delivers from Chattogram to all 64 districts. Search or pick a district to see what it costs.</p></div>
+  <div class="head"><h2 id="ch">Every district, one clear rate card</h2><p class="sub">CHOLVO delivers from Chattogram to all 64 districts. Search, or tap any district on the map to see what it costs.</p></div>
   <div class="cv">
    <div class="cv-main">
     <div class="cv-search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="cvq" type="search" placeholder="Search a district" aria-label="Search a district" autocomplete="off"></div>
     <div class="cv-tabs" id="cvTabs" role="tablist" aria-label="Divisions"></div>
-    <div class="cv-list" id="cvList"></div>
+    <div class="cv-pick" id="cvPick" aria-hidden="true"></div>
+    <div class="cv-view" id="cvView" role="group" aria-label="Map style" hidden><button type="button" class="on" data-v="geo">Map</button><button type="button" data-v="hex">Tiles</button></div>
+    <div class="cv-map" id="cvMap"><div class="cv-tip" id="cvTip" role="presentation"></div></div>
+    <div class="cv-legend"><span><i class="hubdot"></i>CHOLVO hub</span><span><i class="routedot"></i>Delivery route</span><span class="cv-hint">Tap a district to see its rates · Boundaries © geoBoundaries, CC BY 4.0</span></div>
     <p class="cv-empty" id="cvEmpty" hidden>No district found. Check the spelling and try again.</p>
    </div>
    <aside class="cv-card" id="cvCard" aria-live="polite" aria-label="Rates for the selected district"></aside>
@@ -332,6 +335,6 @@ $('#trackForm').onsubmit=async e=>{e.preventDefault();const t=$('#tn').value.tri
  if(!LIVE){o.textContent='Live tracking works once Firebase is connected. Type CHV-DEMO to preview.';return}
  try{const r=await db.doc('tracking/'+t).get();r.exists?renderTrack(t,r.data().status,r.data().status==='Cancelled'?(r.data().times||{}):{}):o.textContent='No parcel found with this tracking number.'}catch(err){o.textContent='Could not load tracking. Try again.'}};
 </script>
-<script src="journey3d.js" defer></script><script src="animations.js" defer></script><script src="calculator.js" defer></script><script src="coverage.js" defer></script>
+<script src="journey3d.js" defer></script><script src="animations.js" defer></script><script src="calculator.js" defer></script><script src="coverage-geo.js" defer></script><script src="coverage.js" defer></script>
 </body>
 </html>
