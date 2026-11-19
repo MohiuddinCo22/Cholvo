@@ -53,10 +53,12 @@
   function plane(o) { // flat on the ground: w along x, l along z (before ry)
     return mk('pl', `width:${o.w}px;height:${o.l}px;margin:${-o.l / 2}px 0 0 ${-o.w / 2}px;transform:translate3d(${o.x}px,${-(o.y || 0)}px,${o.z}px) rotateY(${o.ry || 0}deg) rotateX(90deg);${o.css || ''}`);
   }
+  const tileCache = {};
   const winTile = lit => {
+    const key = lit < .45 ? 0 : lit < .6 ? 1 : lit < .72 ? 2 : 3; if (tileCache[key]) return tileCache[key];
     let r = '';
     for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) r += `<rect x='${i * 34 + 8}' y='${j * 44 + 10}' width='18' height='24' rx='2' fill='${rnd() < lit ? '%23FFD27A' : '%2336588F'}'/>`;
-    return `background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='102' height='132'%3E${r}%3C/svg%3E");background-size:102px 132px;background-position:center bottom;`;
+    return tileCache[key] = `background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='102' height='132'%3E${r}%3C/svg%3E");background-size:102px 132px;background-position:center bottom;`;
   };
 
   /* ---------- path (office door -> down the street -> left turn -> house) ---------- */
@@ -83,17 +85,17 @@
   const add = (e, x, z, r) => { frag.appendChild(e); if (x !== undefined) reg(e, x, z, r); return e; };
 
   // ground + road
-  frag.appendChild(plane({ w: 7200, l: 4800, x: 1500, z: 700, y: 0, css: 'background:radial-gradient(closest-side,#1d4a7d,#16385f 70%);-webkit-mask-image:radial-gradient(closest-side,#000 55%,transparent 100%);mask-image:radial-gradient(closest-side,#000 55%,transparent 100%)' }));
-  frag.appendChild(plane({ w: 5200, l: 3400, x: 1500, z: 700, y: 1, css: 'background-image:linear-gradient(rgba(255,255,255,.07) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.07) 2px,transparent 2px);background-size:120px 120px;-webkit-mask-image:radial-gradient(closest-side,#000 40%,transparent 100%);mask-image:radial-gradient(closest-side,#000 40%,transparent 100%)' }));
+  frag.appendChild(plane({ w: 6000, l: 4000, x: 1500, z: 700, y: -3, css: 'background-image:linear-gradient(rgba(255,255,255,.06) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.06) 2px,transparent 2px),radial-gradient(closest-side,#1d4a7d 0,#16385f 62%,rgba(22,56,95,0) 100%);background-size:120px 120px,120px 120px,100% 100%' }));
   frag.appendChild(plane({ w: 560, l: 330, x: 0, z: 80, y: 2, css: 'background:#5f7494;border-radius:6px' })); // forecourt
   const dashes = [];
-  for (let s = 0; s < CS[CS.length - 1] - 60; s += 100) {
-    const a = at(s), b = at(s + 100), ry = Math.atan2(b.x - a.x, b.z - a.z) * DEG, cx = (a.x + b.x) / 2, cz = (a.z + b.z) / 2;
-    add(plane({ w: 176, l: 118, x: cx, z: cz, y: 3, ry, css: 'background:#1b2538;border-left:10px solid #6f84a6;border-right:10px solid #6f84a6' }), cx, cz, 130);
-  }
-  for (let s = 0; s < CS[CS.length - 1] - 40; s += 64) {
+  const road = (cx, cz, len, ry) => add(plane({ w: 176, l: len, x: cx, z: cz, y: 3, ry, css: 'background:#1b2538;border-left:10px solid #6f84a6;border-right:10px solid #6f84a6' }), cx, cz, len / 2 + 80);
+  road(0, (-330 + Z1 - R) / 2, Z1 - R + 330, 0);
+  const arcA = CS[P.findIndex(q => q[1] >= Z1 - R)], arcB = CS[P.findIndex(q => q[0] >= R)];
+  for (let s = arcA; s < arcB; s += 70) { const a = at(s), b = at(Math.min(arcB, s + 70)); road((a.x + b.x) / 2, (a.z + b.z) / 2, 96, Math.atan2(b.x - a.x, b.z - a.z) * DEG); }
+  road((R + X_STOP + 400) / 2, Z1, X_STOP + 400 - R + 10, 90);
+  for (let s = 0; s < CS[CS.length - 1] - 40; s += 150) {
     const a = at(s), b = at(s + 20), ry = Math.atan2(b.x - a.x, b.z - a.z) * DEG;
-    const d = add(plane({ w: 8, l: 34, x: a.x, z: a.z, y: 5, ry, css: '' }), a.x, a.z, 40);
+    const d = add(plane({ w: 8, l: 40, x: a.x, z: a.z, y: 5, ry, css: '' }), a.x, a.z, 40);
     d.className += ' dash'; dashes.push({ el: d, s, on: false });
   }
 
@@ -109,20 +111,20 @@
     return e;
   }
   const lane = innerWidth < 760 ? 540 : 330; // distance from road centre line to building centre
-  for (let z = 980; z < Z1 - 100; z += lite ? 260 : 200) {
+  for (let z = 980; z < Z1 - 100; z += lite ? 300 : 260) {
     building(-lane - rr(0, 50), z + rr(-30, 30), rr(150, 210), rr(150, 190), rr(150, innerWidth < 760 ? 250 : 330));
     if (z < Z1 - 480) building(lane + rr(0, 50), z + rr(-30, 30), rr(150, 210), rr(150, 190), rr(150, innerWidth < 760 ? 250 : 330));
   }
-  for (let x = 760; x < X_STOP + 500; x += lite ? 270 : 210) {
+  for (let x = 760; x < X_STOP + 500; x += lite ? 330 : 280) {
     if (x < X_STOP - 1000) building(x + rr(-20, 20), Z1 - lane - rr(0, 50), rr(150, 210), rr(150, 190), rr(160, 420));
     if (x < X_STOP - 380 || x > X_STOP + 120) building(x + rr(-20, 20), Z1 + lane + rr(0, 60) + (x > X_STOP - 380 ? 120 : 0), rr(150, 210), rr(150, 190), rr(160, 420));
   }
   // far second row (taller, for depth)
-  for (let z = 760; z < Z1 + 300; z += lite ? 420 : 300) {
+  for (let z = 760; z < Z1 + 300; z += lite ? 520 : 420) {
     building(-lane - 330 - rr(0, 80), z, rr(190, 260), rr(180, 240), rr(300, 620));
     building(lane + 330 + rr(0, 80), z, rr(190, 260), rr(180, 240), rr(300, 620));
   }
-  for (let x = 900; x < X_STOP - 1100; x += lite ? 420 : 300) building(x, Z1 - lane - 330 - rr(0, 80), rr(190, 260), rr(180, 240), rr(300, 620));
+  for (let x = 900; x < X_STOP - 1100; x += lite ? 560 : 440) building(x, Z1 - lane - 330 - rr(0, 80), rr(190, 260), rr(180, 240), rr(300, 620));
 
   // trees + street lamps
   const tree = (x, z) => {
@@ -137,9 +139,9 @@
   };
   const along = (f, a, b, step, side) => { for (let s = a; s < b; s += step) { const q = at(s), n = at(s + 8); const dx = n.x - q.x, dz = n.z - q.z, L = Math.hypot(dx, dz) || 1; f(q.x - dz / L * side, q.z + dx / L * side); } };
   const sEnd = CS[CS.length - 1];
-  along(tree, 260, sEnd - 500, lite ? 380 : 230, 128);
-  along(tree, 320, sEnd - 700, lite ? 440 : 290, -128);
-  along(lamp, 200, sEnd - 400, 330, 106);
+  along(tree, 260, sEnd - 500, lite ? 520 : 360, 128);
+  along(tree, 320, sEnd - 700, lite ? 600 : 420, -128);
+  along(lamp, 200, sEnd - 400, 560, 106);
 
   // ---------- CHOLVO office (open front, roller shutter, van parked inside) ----------
   const OZ = -200; // centre z
@@ -223,6 +225,8 @@
     [.8, 'Dropped Off', 'Arriving at the doorstep', 'দোরগোড়ায় পৌঁছেছে'],
     [.93, 'Delivered', 'Delivered. That is CHOLVO.', 'পার্সেল পৌঁছে গেছে']
   ];
+  const SKY_KEYS = [['#071A3A', '#0B2A5B', '#F58220'], ['#0B2A5B', '#27579F', '#FFA14A'], ['#123F7F', '#3A78CC', '#FFCF94']];
+  const skyL = SKY_KEYS.map(k => { const d = mk('skl', `background:linear-gradient(180deg,${k[0]} 0%,${k[1]} 38%,${k[2]} 66%)`); sky.appendChild(d); return d; });
   let stage = -1, copyOn = true, ctaOn = false, vw = innerWidth, vh = innerHeight, hh = 65, runH = 0, top0 = 0;
   const SKY = [[0, ['#071A3A', '#0B2A5B', '#F58220']], [.45, ['#0B2A5B', '#27579F', '#FFA14A']], [1, ['#123F7F', '#3A78CC', '#FFCF94']]];
   const skyAt = p => { let i = 1; while (i < SKY.length - 1 && p > SKY[i][0]) i++; const a = SKY[i - 1], b = SKY[i], t = sm(a[0], b[0], p); return a[1].map((c, k) => mixc(c, b[1][k], t)); };
@@ -238,6 +242,7 @@
   };
 
   /* ---------- per-frame render ---------- */
+  let lastEx = 0, lastEz = 0, lastTh = 999, firstCull = true;
   let target = 0, cur = -1, lastT = 0, tt = 0, visible = true;
   const read = () => { const pv = Math.max(420, vh - hh); target = clamp((scrollY - top0) / runH); };
 
@@ -288,16 +293,20 @@
     bb(pinEnd, HX, 205 + Math.sin(time * 2.2) * 5, HZ - 20, sm(.92, .98, p) * 1.0);
 
     // far scenery culling
+    const lx = Math.sin(th / DEG), lz = -Math.cos(th / DEG), ed = D * Math.cos(pitch / DEG) * .9, ex = Tx - lx * ed, ez = Tz - lz * ed;
+    if (Math.abs(ex - lastEx) + Math.abs(ez - lastEz) + Math.abs(th - lastTh) > 12 || firstCull) {
+      lastEx = ex; lastEz = ez; lastTh = th; firstCull = false;
     for (const it of items) {
-      const on = Math.hypot(it.x - Tx, it.z - Tz) - it.r < 3000;
+      const rx = it.x - ex, rz = it.z - ez, dist = Math.hypot(rx, rz) - it.r, front = rx * lx + rz * lz;
+      const on = dist < 2400 && front > -it.r - 120;
       if (on !== it.on) { it.on = on; it.el.style.display = on ? '' : 'none'; }
+    }
     }
     // route dashes light up behind the van
     for (const d of dashes) { const on = d.s + S_START * 0 < s; if (on !== d.on) { d.on = on; d.el.classList.toggle('on', on); } }
 
     // sky + skyline
-    const [c1, c2, c3] = skyAt(p);
-    sky.style.background = `linear-gradient(180deg,${c1} 0%,${c2} 38%,${c3} 66%)`;
+    skyL[1].style.opacity = sm(0, .45, p); skyL[2].style.opacity = sm(.45, 1, p);
     const horizon = vh * .46 - PP * k * Math.tan(pitch / DEG) * .55;
     city.style.transform = `translate3d(${-th * 14}px,${horizon}px,0)`;
 

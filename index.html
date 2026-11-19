@@ -42,6 +42,12 @@
   <div class="h3-sky"></div>
   <div class="h3-city" aria-hidden="true"></div>
   <div class="h3-world" id="h3World" aria-hidden="true"><div class="h3-cam" id="h3Cam"></div></div>
+  <canvas id="h3Canvas" class="h3-canvas" aria-hidden="true"></canvas>
+  <div class="h3-pins" aria-hidden="true">
+   <div class="bb hub"><div class="bbi"><span class="dot"></span><b>CHOLVO Hub</b><small>Chattogram</small></div></div>
+   <div class="bb van"><div class="bbi"><span class="live"></span><b>CHV-DEMO</b><small>On the way</small></div></div>
+   <div class="bb end"><div class="bbi"><span class="ok">&#10003;</span><b>Delivered</b><small>Parcel received</small></div></div>
+  </div>
   <div class="h3-copy">
    <div class="wrap"><div class="h3-text">
     <span class="chip">Courier &amp; parcel delivery from Chattogram</span>
@@ -326,6 +332,6 @@ $('#trackForm').onsubmit=async e=>{e.preventDefault();const t=$('#tn').value.tri
  if(!LIVE){o.textContent='Live tracking works once Firebase is connected. Type CHV-DEMO to preview.';return}
  try{const r=await db.doc('tracking/'+t).get();r.exists?renderTrack(t,r.data().status,r.data().status==='Cancelled'?(r.data().times||{}):{}):o.textContent='No parcel found with this tracking number.'}catch(err){o.textContent='Could not load tracking. Try again.'}};
 </script>
-<script src="journey.js" defer></script><script src="animations.js" defer></script><script src="calculator.js" defer></script><script src="coverage.js" defer></script>
+<script src="journey3d.js" defer></script><script src="animations.js" defer></script><script src="calculator.js" defer></script><script src="coverage.js" defer></script>
 </body>
 </html>
